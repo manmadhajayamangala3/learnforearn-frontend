@@ -1865,7 +1865,7 @@ body { font-family: 'Rajdhani', 'Inter', -apple-system, sans-serif; font-size: 1
   position: fixed;
   top: 56px;
   bottom: 0;
-  width: 360px;
+  width: 500px;
   background: var(--bg-card);
   z-index: 60;
   display: flex;
