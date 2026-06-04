@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import {
   Swords, BookOpen, Brain, Briefcase,
   ChevronRight, Trophy, Target,
-  CheckCircle, ArrowRight, Zap, Ghost,
+  CheckCircle, ArrowRight, Zap, Ghost, Menu, X as XIcon,
 } from 'lucide-react'
 
 const C = {
@@ -157,12 +157,13 @@ const PROOF_POINTS = [
 ]
 
 export default function LandingPage() {
-  const { user } = useAuth()
+  const { user, login, logout } = useAuth()
   const navigate = useNavigate()
   const [hoveredStep, setHoveredStep] = useState(null)
   const [guestLoading, setGuestLoading] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const handleEnter = () => navigate(user ? '/skill-arena/dashboard' : '/login')
+  const handleEnter = () => navigate(user ? '/skill-arena/dashboard' : '/login?redirect=/skill-arena/dashboard')
   const scrollToHow = () => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })
 
   const handleGuest = async () => {
@@ -188,7 +189,7 @@ export default function LandingPage() {
     }}>
 
       {/* ── Navbar ─────────────────────────────────────────── */}
-      <nav style={{
+      <nav className="lp-navbar" style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 2rem', height: 64,
@@ -212,7 +213,7 @@ export default function LandingPage() {
         </div>
 
         {/* Section links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.125rem' }}>
+        <div className="lp-nav-links" style={{ display: 'flex', alignItems: 'center', gap: '0.125rem' }}>
           {NAV_LINKS.map(link => (
             <div
               key={link.label}
@@ -247,28 +248,99 @@ export default function LandingPage() {
           ))}
         </div>
 
-        {/* Auth */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        {/* Desktop auth */}
+        <div className="lp-nav-auth" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           {user ? (
-            <button
-              onClick={handleEnter}
-              style={{ ...primaryBtn, padding: '0.5rem 1.25rem', fontSize: '0.875rem' }}
-            >
-              Enter Arena <ChevronRight size={14} />
-            </button>
+            <>
+              <button
+                onClick={logout}
+                className="lp-signout-btn"
+                style={{ ...ghostBtn, fontSize: '0.8125rem', color: '#EF4444', borderColor: 'rgba(239,68,68,0.25)' }}
+              >
+                Sign Out
+              </button>
+              <button onClick={handleEnter} style={{ ...primaryBtn, padding: '0.5rem 1.25rem', fontSize: '0.875rem' }}>
+                Enter Arena <ChevronRight size={14} />
+              </button>
+            </>
           ) : (
             <>
-              <Link to="/login" style={ghostBtn}>Sign In</Link>
-              <button
-                onClick={handleEnter}
-                style={{ ...primaryBtn, padding: '0.5rem 1.25rem', fontSize: '0.875rem' }}
-              >
+              <Link to="/login?redirect=/" style={ghostBtn}>Sign In</Link>
+              <button onClick={handleEnter} style={{ ...primaryBtn, padding: '0.5rem 1.25rem', fontSize: '0.875rem' }}>
                 Get Started Free <ChevronRight size={14} />
               </button>
             </>
           )}
         </div>
+
+        {/* Mobile: hamburger button (CSS shows only on mobile) */}
+        <button
+          className="lp-mob-menu-btn"
+          onClick={() => setMobileMenuOpen(o => !o)}
+          style={{ background: 'transparent', border: '1px solid rgba(155,110,212,0.3)', borderRadius: 8, color: '#C4B5FD', width: 38, height: 38, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+        >
+          {mobileMenuOpen ? <XIcon size={18} /> : <Menu size={18} />}
+        </button>
       </nav>
+
+      {/* Mobile nav dropdown */}
+      {mobileMenuOpen && (
+        <>
+          <div onClick={() => setMobileMenuOpen(false)}
+            style={{ position: 'fixed', inset: 0, zIndex: 98, background: 'rgba(0,0,0,0.5)' }} />
+          <div style={{ position: 'fixed', top: 64, left: 0, right: 0, zIndex: 99, background: 'rgba(9,14,28,0.98)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(155,110,212,0.2)', padding: '0.75rem 1rem 1.25rem' }}>
+            {/* Nav links */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '1rem' }}>
+              {NAV_LINKS.map(link => (
+                <button key={link.label}
+                  onClick={() => { if (link.live) { handleEnter(); setMobileMenuOpen(false) } }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0.875rem 1rem', background: 'transparent', border: 'none', borderRadius: 10, color: link.live ? '#C4B5FD' : '#64748B', fontWeight: link.live ? 700 : 400, fontSize: '1rem', cursor: link.live ? 'pointer' : 'default', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  <span>{link.label}</span>
+                  {link.live ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.72rem', color: '#4ADE80', fontWeight: 700 }}>
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#4ADE80', boxShadow: '0 0 6px #4ADE80', display: 'inline-block' }} /> LIVE
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '0.62rem', color: '#64748B', background: 'rgba(100,116,139,0.12)', border: '1px solid rgba(100,116,139,0.2)', padding: '0.1rem 0.45rem', borderRadius: 4, letterSpacing: '0.04em', fontWeight: 700 }}>SOON</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            {/* Auth buttons */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+              {user ? (
+                <>
+                  <button onClick={() => { handleEnter(); setMobileMenuOpen(false) }}
+                    style={{ ...primaryBtn, width: '100%', justifyContent: 'center', padding: '0.875rem' }}>
+                    <Swords size={16} /> Enter Arena
+                  </button>
+                  <button onClick={logout}
+                    style={{ ...ghostBtn, width: '100%', justifyContent: 'center', padding: '0.75rem', color: '#EF4444', borderColor: 'rgba(239,68,68,0.25)' }}>
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => { handleEnter(); setMobileMenuOpen(false) }}
+                    style={{ ...primaryBtn, width: '100%', justifyContent: 'center', padding: '0.875rem' }}>
+                    <Swords size={16} /> Get Started Free
+                  </button>
+                  <Link to="/login?redirect=/"
+                    style={{ ...ghostBtn, width: '100%', justifyContent: 'center', padding: '0.75rem', textAlign: 'center' }}
+                    onClick={() => setMobileMenuOpen(false)}>
+                    Sign In
+                  </Link>
+                  <button onClick={() => { handleGuest(); setMobileMenuOpen(false) }}
+                    disabled={guestLoading}
+                    style={{ ...ghostBtn, width: '100%', justifyContent: 'center', padding: '0.75rem' }}>
+                    <Ghost size={14} /> {guestLoading ? 'Starting…' : 'Try as Guest'}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ── Hero ───────────────────────────────────────────── */}
       <section style={{
@@ -377,7 +449,7 @@ export default function LandingPage() {
           </div>
 
           {/* Stats strip */}
-          <div style={{
+          <div className="lp-stats-strip" style={{
             display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
             marginTop: '4rem',
             background: C.bgCard, borderRadius: 16,
@@ -677,7 +749,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ─────────────────────────────────────────── */}
-      <footer style={{
+      <footer className="lp-footer" style={{
         borderTop: '1px solid rgba(255,255,255,0.05)',
         padding: '1.75rem 2rem',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
