@@ -19,12 +19,14 @@ import AdminConcepts from './pages/admin-skill-arena/AdminConcepts'
 import AdminRoadmaps from './pages/admin-skill-arena/AdminRoadmaps'
 import AdminQuestions from './pages/admin-skill-arena/AdminQuestions'
 import AdminFeedbacks from './pages/admin-skill-arena/AdminFeedbacks'
+import FeedbackNudge from './components/FeedbackNudge'
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+        <FeedbackNudge />
         <Routes>
           {/* Landing */}
           <Route path="/" element={<LandingPage />} />

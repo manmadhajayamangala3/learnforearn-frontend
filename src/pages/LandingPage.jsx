@@ -755,7 +755,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Feedback ───────────────────────────────────────── */}
-      <section style={{ padding: '4rem 1.5rem', background: 'linear-gradient(180deg, transparent, rgba(155,110,212,0.04) 50%, transparent)' }}>
+      <section id="feedback" style={{ padding: '4rem 1.5rem', background: 'linear-gradient(180deg, transparent, rgba(155,110,212,0.04) 50%, transparent)' }}>
         <div style={{ maxWidth: 560, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
             <p style={{ color: C.primary, fontWeight: 700, fontSize: '0.8rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Your Voice</p>
