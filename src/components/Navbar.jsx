@@ -1,9 +1,11 @@
-import { Menu } from 'lucide-react'
+import { Menu, Sun, Moon } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 import { getRank } from '../utils/slRank'
 
 export default function Navbar({ onMenuClick, title = '' }) {
   const { user } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const isAdmin = user?.role === 'ADMIN'
 
   // Use xp/level/rank from user object (set by /api/auth/me which includes DB values)
@@ -22,6 +24,9 @@ export default function Navbar({ onMenuClick, title = '' }) {
       </div>
 
       <div className="navbar-right">
+<button className="theme-icon-btn" onClick={toggleTheme} title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
         {!isAdmin && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
             <span className={`rank-badge ${rank.cls}`}>{rank.label}</span>
