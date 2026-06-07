@@ -125,7 +125,7 @@ function AboutGateModal({ subject, onClose }) {
 
   const Section = ({ label, children }) => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
-      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '0.12em', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{label}</div>
+      <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.68rem', letterSpacing: '0.12em', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>{label}</div>
       {children}
     </div>
   )
@@ -189,6 +189,12 @@ function AboutGateModal({ subject, onClose }) {
           {subject.prerequisites?.length > 0 && (
             <Section label="What you need to know first">
               <ListItems items={subject.prerequisites} />
+            </Section>
+          )}
+
+          {subject.toolsRequired?.length > 0 && (
+            <Section label="Tools Required">
+              <ListItems items={subject.toolsRequired} />
             </Section>
           )}
 
