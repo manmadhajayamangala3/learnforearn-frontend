@@ -95,9 +95,9 @@ export const getHunterStats     = ()        => withCache('hunterStats',        6
 // ─── ROADMAPS ────────────────────────────────
 export const getRoadmaps        = ()        => withCache('roadmaps',          5*60_000, () => api.get('/roadmaps'))
 export const getRoadmap         = (id)      => withCache(`roadmap:${id}`,     5*60_000, () => api.get(`/roadmaps/${id}`))
-export const enrollRoadmap      = (id)      => api.post(`/roadmaps/${id}/enroll`)
-export const pauseRoadmap       = (id)      => api.post(`/roadmaps/${id}/pause`)
-export const resumeRoadmap      = (id)      => api.post(`/roadmaps/${id}/resume`)
+export const enrollRoadmap      = (id)      => api.post(`/roadmaps/${id}/enroll`) .then(r => { clearApiCache(`roadmap:${id}`, 'roadmaps'); return r })
+export const pauseRoadmap       = (id)      => api.post(`/roadmaps/${id}/pause`)  .then(r => { clearApiCache(`roadmap:${id}`, 'roadmaps'); return r })
+export const resumeRoadmap      = (id)      => api.post(`/roadmaps/${id}/resume`) .then(r => { clearApiCache(`roadmap:${id}`, 'roadmaps'); return r })
 export const getEnrolledRoadmaps = ()       => api.get('/roadmaps/enrolled')
 
 // ─── ADMIN ───────────────────────────────────
