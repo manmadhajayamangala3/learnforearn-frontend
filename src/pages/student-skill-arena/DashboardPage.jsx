@@ -1974,7 +1974,11 @@ export default function DashboardPage() {
                         <button
                           onClick={async e => {
                             e.stopPropagation()
-                            clearApiCache(`roadmap:${r.id}`, 'roadmaps')
+                            // If rich data already loaded, use instantly — no network call
+                            const hasRich = r.overview || (r.roleTargets && r.roleTargets.length > 0)
+                              || (r.outcomes && r.outcomes.length > 0)
+                            if (hasRich) { setAboutRoadmap(r); return }
+                            // First time only: fetch detail to get rich fields
                             const fresh = await getRoadmap(r.id).catch(() => null)
                             setAboutRoadmap(fresh ? fresh.data : r)
                           }}
