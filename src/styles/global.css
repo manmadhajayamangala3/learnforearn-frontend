@@ -2843,3 +2843,31 @@ body { font-family: 'Rajdhani', 'Inter', -apple-system, sans-serif; font-size: 1
   .mission-arena-label { display: none; }
   .mission-detail-hours { display: none; }
 }
+
+/* ── Problem Solving CSS Variables ── */
+:root {
+  --ps-bg:            #050D1A;
+  --ps-nav-bg:        rgba(5,13,26,0.95);
+  --ps-nav-border:    rgba(14,165,233,0.1);
+  --ps-card-bg:       #0A1628;
+  --ps-card-border:   rgba(14,165,233,0.12);
+  --ps-accent:        #0EA5E9;
+  --ps-accent-dim:    rgba(14,165,233,0.15);
+  --ps-code-bg:       #020810;
+  --ps-code-border:   rgba(14,165,233,0.15);
+  --ps-hint-bg:       rgba(14,165,233,0.06);
+  --ps-muted:         #3A5070;
+}
+[data-theme="light"] {
+  --ps-bg:            #EFF6FF;
+  --ps-nav-bg:        rgba(239,246,255,0.97);
+  --ps-nav-border:    rgba(2,132,199,0.15);
+  --ps-card-bg:       #FFFFFF;
+  --ps-card-border:   rgba(2,132,199,0.18);
+  --ps-accent:        #0284C7;
+  --ps-accent-dim:    rgba(2,132,199,0.1);
+  --ps-code-bg:       #F0F9FF;
+  --ps-code-border:   rgba(2,132,199,0.2);
+  --ps-hint-bg:       rgba(2,132,199,0.06);
+  --ps-muted:         #64748B;
+}

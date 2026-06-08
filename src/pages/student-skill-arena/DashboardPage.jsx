@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { label: 'SKILL ARENA',  view: 'arena' },
   { label: 'DUNGEON GATE', view: 'gates' },
   { label: 'HUNTER PATH',  view: 'paths' },
+  { label: 'CHALLANGES',   view: null, href: '/problem-solving' },
 ]
 
 const DAILY_QUESTS = [
@@ -1917,7 +1918,7 @@ export default function DashboardPage() {
         <div className="sl-dash-nav-links">
           {NAV_ITEMS.map(item => (
             <button key={item.label} className={`sl-nav-link${activeView === item.view ? ' active' : ''}`}
-              onClick={() => switchView(item.view)}>
+              onClick={() => item.href ? navigate(item.href) : switchView(item.view)}>
               {item.label}
             </button>
           ))}
@@ -1959,10 +1960,10 @@ export default function DashboardPage() {
             </div>
             {NAV_ITEMS.map(item => (
               <button key={item.label}
-                onClick={() => { switchView(item.view); setMobileMenuOpen(false) }}
+                onClick={() => { item.href ? navigate(item.href) : switchView(item.view); setMobileMenuOpen(false) }}
                 style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', width: '100%', padding: '1.125rem 1.25rem', background: activeView === item.view ? 'rgba(155,110,212,0.1)' : 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.04)', borderLeft: activeView === item.view ? '3px solid #9B6ED4' : '3px solid transparent', color: activeView === item.view ? '#B48AE8' : 'var(--text-secondary)', fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: '1.0625rem', letterSpacing: '0.08em', cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s', textTransform: 'uppercase' }}>
                 <span style={{ fontSize: '1.25rem', width: 24, textAlign: 'center', flexShrink: 0 }}>
-                  {item.view === 'arena' ? '⚔️' : item.view === 'gates' ? '🚪' : '🗺️'}
+                  {item.view === 'arena' ? '⚔️' : item.view === 'gates' ? '🚪' : item.view === 'paths' ? '🗺️' : '💻'}
                 </span>
                 <span style={{ flex: 1 }}>{item.label}</span>
                 {activeView === item.view && (

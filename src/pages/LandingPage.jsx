@@ -5,7 +5,7 @@ import { useTheme } from '../context/ThemeContext'
 import { guestLogin, submitFeedback } from '../api/api'
 import toast from 'react-hot-toast'
 import {
-  Swords, BookOpen, Brain, Briefcase,
+  Swords, BookOpen, Code2, Briefcase,
   ChevronRight, Trophy, Target,
   CheckCircle, ArrowRight, Zap, Ghost, Menu, X as XIcon,
   Sun, Moon,
@@ -68,7 +68,7 @@ const primaryBtn = {
 const features = [
   { Icon: Swords,   iconD: '#C4B5FD', iconL: '#7C5DBB', label: 'Skills Arena',    status: 'Live',         statusColorD: '#4ADE80', statusColorL: '#15803D', statusBg: 'rgba(74,222,128,0.12)',       desc: 'Structured career roadmaps with concept-by-concept learning, real code examples, quizzes, and XP progression.', glow: 'rgba(155,110,212,0.15)', activeBorder: 'rgba(155,110,212,0.4)', isLive: true },
   { Icon: BookOpen, iconD: '#60A5FA', iconL: '#1D4ED8', label: 'Resume Builder',  status: 'Coming Soon',  statusColorD: '#64748B', statusColorL: '#64748B', statusBg: 'rgba(100,116,139,0.12)', desc: 'Auto-build a proof-of-skills resume from your learning journey and quiz performance.',                              glow: 'rgba(96,165,250,0.07)',  activeBorder: 'rgba(155,110,212,0.18)', isLive: false },
-  { Icon: Brain,    iconD: '#F59E0B', iconL: '#B45309', label: 'AI Mentor',       status: 'Coming Soon',  statusColorD: '#64748B', statusColorL: '#64748B', statusBg: 'rgba(100,116,139,0.12)', desc: "AI-powered explanations, code reviews, and personalised hints when you're stuck on a concept.",                   glow: 'rgba(245,158,11,0.07)', activeBorder: 'rgba(155,110,212,0.18)', isLive: false },
+  { Icon: Code2,    iconD: '#0EA5E9', iconL: '#0284C7', label: 'Problem Solving',  status: 'Live',         statusColorD: '#4ADE80', statusColorL: '#15803D', statusBg: 'rgba(74,222,128,0.12)',       desc: 'Four learning tracks — Start Coding, Logic Building, Skill Up, and Interview Prep — with solutions in C, Python, Java, and C++.', glow: 'rgba(14,165,233,0.1)', activeBorder: 'rgba(14,165,233,0.25)', isLive: true, href: '/problem-solving' },
   { Icon: Briefcase,iconD: '#4ADE80', iconL: '#15803D', label: 'Jobs Board',      status: 'Coming Soon',  statusColorD: '#64748B', statusColorL: '#64748B', statusBg: 'rgba(100,116,139,0.12)', desc: 'Curated job listings matched to your skill level and completed roadmap badges.',                                   glow: 'rgba(74,222,128,0.07)',  activeBorder: 'rgba(155,110,212,0.18)', isLive: false },
 ]
 
@@ -81,8 +81,8 @@ const steps = [
 const NAV_LINKS = [
   { label: 'Skills Arena', live: true },
   { label: 'Missions',     live: true, href: '/missions' },
+  { label: 'Code GYM',    live: true, href: '/problem-solving' },
   { label: 'Resume', live: false },
-  { label: 'AI', live: false },
   { label: 'Jobs', live: false },
   { label: 'Feedback', live: true, scrollTo: 'feedback' }
 ]
@@ -530,7 +530,7 @@ export default function LandingPage() {
           {features.map(f => (
             <div
               key={f.label}
-              onClick={f.isLive ? handleEnter : undefined}
+              onClick={f.isLive ? (f.href ? () => navigate(f.href) : handleEnter) : undefined}
               style={{
                 background: C.bgCard,
                 border: `1px solid ${f.activeBorder}`,
@@ -566,9 +566,9 @@ export default function LandingPage() {
                 {f.isLive && (
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: '0.375rem',
-                    color: lt ? C.primary : '#C4B5FD', fontSize: '0.875rem', fontWeight: 600,
+                    color: f.href ? '#0EA5E9' : (lt ? C.primary : '#C4B5FD'), fontSize: '0.875rem', fontWeight: 600,
                   }}>
-                    Enter Arena <ArrowRight size={14} />
+                    {f.href ? 'Start Solving' : 'Enter Arena'} <ArrowRight size={14} />
                   </div>
                 )}
               </div>
@@ -684,22 +684,149 @@ export default function LandingPage() {
             borderRadius: 14, overflow: 'hidden',
           }}>
             {[
-              { number: '20+', label: 'Missions available' },
-              { number: '4',   label: 'Technologies covered' },
-              { number: '∞',   label: 'Ways to solve them' },
+              { number: '20+', label: 'Missions' },
+              { number: '4',   label: 'Technologies' },
+              { number: '∞',   label: 'Ways to solve' },
             ].map((s, i) => (
               <div key={i} style={{
-                textAlign: 'center', padding: '1.5rem 1rem',
+                textAlign: 'center', padding: '1.25rem 0.5rem',
                 background: lt ? 'rgba(255,255,255,0.7)' : 'rgba(13,17,32,0.5)',
               }}>
                 <div style={{
                   fontFamily: "'Orbitron', sans-serif", fontWeight: 900,
-                  fontSize: 'clamp(1.5rem, 3vw, 2rem)',
+                  fontSize: 'clamp(1.25rem, 3vw, 2rem)',
                   color: lt ? '#8C4200' : '#FF7F2A', marginBottom: '0.25rem',
                 }}>
                   {s.number}
                 </div>
-                <div style={{ color: C.muted, fontSize: '0.8rem' }}>{s.label}</div>
+                <div style={{ color: C.muted, fontSize: 'clamp(0.65rem, 1.5vw, 0.8rem)' }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── Problem Solving Section ────────────────────────── */}
+      <section style={{ padding: '5rem 1.5rem' }}>
+        <div style={{ maxWidth: 1060, margin: '0 auto' }}>
+
+          {/* Label */}
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+              color: lt ? '#0284C7' : '#0EA5E9', fontWeight: 700, fontSize: '0.78rem',
+              letterSpacing: '0.14em', textTransform: 'uppercase',
+              background: lt ? 'rgba(2,132,199,0.07)' : 'rgba(14,165,233,0.08)',
+              border: `1px solid ${lt ? 'rgba(2,132,199,0.2)' : 'rgba(14,165,233,0.2)'}`,
+              borderRadius: 20, padding: '0.3rem 0.9rem',
+            }}>
+              💻 NEW — Problem Solving
+            </span>
+          </div>
+
+          {/* 2-col layout */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))',
+            gap: '2.5rem', alignItems: 'center', marginBottom: '2.5rem',
+          }}>
+            {/* Left — headline + CTA */}
+            <div>
+              <h2 style={{
+                fontSize: 'clamp(1.875rem, 4vw, 2.75rem)', fontWeight: 800,
+                letterSpacing: '-0.025em', lineHeight: 1.15,
+                color: C.text, margin: '0 0 1.25rem',
+              }}>
+                Know the code.<br />
+                <span style={{
+                  background: lt
+                    ? 'linear-gradient(135deg, #0284C7, #0369A1)'
+                    : 'linear-gradient(135deg, #0EA5E9, #38BDF8)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}>
+                  Crack the interview.
+                </span>
+              </h2>
+              <p style={{ color: C.sub, fontSize: '1.0625rem', lineHeight: 1.8, margin: '0 0 2rem', maxWidth: 420 }}>
+                Four tracks built for every type of learner — from writing your first print statement to solving questions asked at Amazon and Google.
+                Every problem shows brute force to optimized in four languages.
+              </p>
+              <button
+                onClick={() => navigate('/problem-solving')}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                  background: lt
+                    ? 'linear-gradient(135deg, #0284C7, #0369A1)'
+                    : 'linear-gradient(135deg, #0EA5E9, #38BDF8)',
+                  border: 'none', borderRadius: 8,
+                  padding: '0.75rem 1.75rem',
+                  color: '#fff', fontWeight: 700, fontSize: '0.9375rem',
+                  cursor: 'pointer',
+                  boxShadow: lt ? '0 4px 20px rgba(2,132,199,0.3)' : '0 4px 24px rgba(14,165,233,0.35)',
+                  transition: 'transform 0.15s, box-shadow 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = lt ? '0 8px 28px rgba(2,132,199,0.45)' : '0 8px 32px rgba(14,165,233,0.55)' }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = lt ? '0 4px 20px rgba(2,132,199,0.3)' : '0 4px 24px rgba(14,165,233,0.35)' }}
+              >
+                💻 Start Solving — Free
+              </button>
+            </div>
+
+            {/* Right — 4 track cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(140px,100%), 1fr))', gap: '0.75rem' }}>
+              {[
+                { icon: '💻', title: 'Start Coding',    color: '#22C55E', href: '/problem-solving/start-coding',   desc: 'Never coded before? Begin here. Step-by-step from Hello World to functions.' },
+                { icon: '🧠', title: 'Logic Building',  color: '#F59E0B', href: '/problem-solving/logic-building', desc: "Can code but can't solve problems? Train your problem-solving mind." },
+                { icon: '⚡', title: 'Skill Up',         color: '#0EA5E9', href: '/problem-solving/skill-up',       desc: 'Arrays, strings, searching — same problem, 4 languages, brute to optimized.' },
+                { icon: '💼', title: 'Interview Prep',  color: '#EF4444', href: '/problem-solving/interview-prep', desc: 'Most-asked questions from Amazon, Google, TCS, and more. All levels.' },
+              ].map((track, i) => (
+                <div key={i}
+                  onClick={() => navigate(track.href)}
+                  style={{
+                    padding: '1.125rem 1rem',
+                    background: lt ? 'rgba(255,255,255,0.7)' : `${track.color}08`,
+                    border: `1px solid ${lt ? `${track.color}25` : `${track.color}22`}`,
+                    borderTop: `3px solid ${track.color}`,
+                    borderRadius: 12, cursor: 'pointer',
+                    transition: 'transform 0.15s, box-shadow 0.15s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = `0 6px 20px ${track.color}20` }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}
+                >
+                  <div style={{ fontSize: '1.375rem', marginBottom: '0.4rem' }}>{track.icon}</div>
+                  <div style={{ fontWeight: 700, fontSize: '0.875rem', color: track.color, marginBottom: '0.35rem' }}>{track.title}</div>
+                  <p style={{ color: C.sub, fontSize: '0.78rem', lineHeight: 1.55, margin: 0 }}>{track.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Stats row */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '1px',
+            background: lt ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)',
+            borderRadius: 14, overflow: 'hidden',
+          }}>
+            {[
+              { number: '35+', label: 'Problems & growing' },
+              { number: '4',   label: 'Languages' },
+              { number: '3',   label: 'Approaches each' },
+            ].map((s, i) => (
+              <div key={i} style={{
+                textAlign: 'center', padding: '1.25rem 0.5rem',
+                background: lt ? 'rgba(255,255,255,0.7)' : 'rgba(13,17,32,0.5)',
+              }}>
+                <div style={{
+                  fontFamily: "'Orbitron', sans-serif", fontWeight: 900,
+                  fontSize: 'clamp(1.25rem, 3vw, 2rem)',
+                  color: lt ? '#0284C7' : '#0EA5E9', marginBottom: '0.25rem',
+                }}>
+                  {s.number}
+                </div>
+                <div style={{ color: C.muted, fontSize: 'clamp(0.65rem, 1.5vw, 0.8rem)' }}>{s.label}</div>
               </div>
             ))}
           </div>
