@@ -1760,7 +1760,7 @@ export default function DashboardPage() {
           </button>
         ) : (
           <div className="sl-gate-status" style={{ color: sealed ? '#0cbd09' : `${gr.color}BB` }}>
-            {sealed ? 'NEW GATE ACTIVATED' : `IN PROGRESS ${p}%`}
+            {sealed ? '' : `IN PROGRESS ${p}%`}
           </div>
         )}
       </div>
