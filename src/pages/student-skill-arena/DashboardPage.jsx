@@ -891,8 +891,26 @@ function SubjectPanel({ subjectId, onClose, onSkillClick, selectedConceptId, nav
             <div className="sl-panel-subject-icon" style={{ background: subject.color + '22', width: 36, height: 36, fontSize: '1.25rem' }}>
               {subject.icon}
             </div>
-            <div style={{ minWidth: 0 }}>
-              <div className="sl-panel-subject-title" style={{ fontSize: '0.9rem' }}>{subject.title}</div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                <div className="sl-panel-subject-title" style={{ fontSize: '0.9rem' }}>{subject.title}</div>
+                <button
+                  onClick={() => navigate(`/missions?subjectTitle=${encodeURIComponent(subject.title)}`)}
+                  title={`View missions for ${subject.title}`}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+                    background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.35)',
+                    borderRadius: 4, padding: '0.15rem 0.45rem', cursor: 'pointer',
+                    fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem',
+                    letterSpacing: '0.06em', color: '#F59E0B',
+                    transition: 'all 0.15s', flexShrink: 0,
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.2)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(245,158,11,0.1)'}
+                >
+                  ⚔ MISSIONS
+                </button>
+              </div>
             </div>
           </div>
 

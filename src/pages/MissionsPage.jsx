@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Sun, Moon } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
@@ -41,7 +41,17 @@ export default function MissionsPage() {
   const { user }                  = useAuth()
   const { theme, toggleTheme }    = useTheme()
   const navigate                  = useNavigate()
+  const [searchParams]            = useSearchParams()
   const light                     = theme === 'light'
+
+  // Pre-apply filter when arriving from Skill Arena subject button
+  useEffect(() => {
+    const subjectFromUrl = searchParams.get('subjectTitle')
+    if (subjectFromUrl) {
+      setCategory('subject')
+      setSubFilter(subjectFromUrl)
+    }
+  }, [])
 
   useEffect(() => {
     getMissions()
