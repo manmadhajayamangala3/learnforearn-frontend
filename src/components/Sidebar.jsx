@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
   BookOpen, Map, LayoutDashboard, LogOut,
-  Users, ChevronRight, Layers, HelpCircle, MessageSquare, Sword, Code2, Brain, GraduationCap, Flag, Zap
+  Users, ChevronRight, Layers, HelpCircle, MessageSquare, Sword, Code2, GraduationCap, Flag
 } from 'lucide-react'
 
 export default function Sidebar({ open, onClose }) {

@@ -147,7 +147,6 @@ function MissionModal({ mission, subjects, onClose, onSave }) {
               <select className="form-input" value={form.category} onChange={e => set('category', e.target.value)}>
                 <option value="">— Not set —</option>
                 <option value="SUBJECT_PRACTICE">Subject Practice</option>
-                <option value="REAL_WORLD">Real World Projects</option>
                 <option value="ACADEMIC">Academic Projects</option>
                 <option value="ROLE_BASED">Role Based Projects</option>
               </select>
