@@ -1715,7 +1715,7 @@ input, textarea, select { font-family: inherit; }
 .dpl-panel .dpl-portal { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 .dpl-panel .dpl-gate-text { font-size: 0.65rem; letter-spacing: 0.18em; }
 .dpl-panel .dpl-sub { font-size: 0.52rem; }
-.dpl-panel .dpl-rune { font-size: 0.65rem; '--rune-r': 55px; }
+.dpl-panel .dpl-rune { font-size: 0.65rem; --rune-r: 55px; }
 .dpl-panel .dpl-corner { display: none; }
 
 .dpl-root {
