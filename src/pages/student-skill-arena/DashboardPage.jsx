@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
+import { TEST_DELAY_MS, PAGE_MIN_MS } from '../../components/loaders/_config'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import ReportButton from '../../components/ReportButton'
+import SystemAwakeningLoader from '../../components/loaders/SystemAwakeningLoader'
+import DungeonPortalLoader from '../../components/loaders/DungeonPortalLoader'
 import { CheckCircle, LogOut, Search, Brain, Trophy, X, Clock, ChevronLeft, ChevronRight, AlertTriangle, Lock, PlayCircle, Zap, Info, Award, BarChart2, Menu, Sun, Moon } from 'lucide-react'
 import {
   getProgressSummary, getRoadmap, getRoadmapStatus, getBulkSubjectStatus,
@@ -557,7 +560,7 @@ function ConceptInlinePanel({ conceptId, navList, onClose, navigate, startQuiz, 
     ]).then(([c, qs]) => {
       setConcept(c.data)
       if (qs) setQuizStatus(qs.data)
-    }).finally(() => setLoading(false))
+    }).finally(() => setTimeout(() => setLoading(false), TEST_DELAY_MS))
   }, [conceptId])
 
   const navIdx   = navList.findIndex(c => c.id === conceptId)
@@ -568,7 +571,7 @@ function ConceptInlinePanel({ conceptId, navList, onClose, navigate, startQuiz, 
   if (loading) return (
     <div className="sl-concept-inline">
       <div className="flex-center" style={{ flex: 1, height: '100%' }}>
-        <div className="loading-spinner-lg" />
+        <DungeonPortalLoader panel height={280} />
       </div>
     </div>
   )
@@ -831,7 +834,7 @@ function RoadmapPanel({ roadmapId, onClose, onGateClick, navigate, startQuiz }) 
     ]).then(([r, rs]) => {
       setRoadmap(r.data)
       if (rs) setStatus(rs.data)
-    }).finally(() => setLoading(false))
+    }).finally(() => setTimeout(() => setLoading(false), TEST_DELAY_MS))
   }, [roadmapId])
 
   const handleEnroll = async (e) => {
@@ -886,7 +889,7 @@ function RoadmapPanel({ roadmapId, onClose, onGateClick, navigate, startQuiz }) 
       </div>
 
       {loading ? (
-        <div className="flex-center" style={{ flex: 1 }}><div className="loading-spinner-lg" /></div>
+        <div className="flex-center" style={{ flex: 1 }}><DungeonPortalLoader panel height={180} /></div>
       ) : !roadmap ? null : (
         <div className="sl-subject-panel-body">
 
@@ -1057,7 +1060,7 @@ function SubjectPanel({ subjectId, onClose, onSkillClick, selectedConceptId, nav
     ]).then(([s, qs]) => {
       setSubject(s.data)
       if (qs) setQuizStatus(qs.data)
-    }).finally(() => setLoading(false))
+    }).finally(() => setTimeout(() => setLoading(false), TEST_DELAY_MS))
   }, [subjectId])
 
   const pct = subject?.totalConcepts > 0
@@ -1081,7 +1084,7 @@ function SubjectPanel({ subjectId, onClose, onSkillClick, selectedConceptId, nav
       </div>
 
       {loading ? (
-        <div className="flex-center" style={{ flex: 1, minHeight: 120 }}><div className="loading-spinner-lg" /></div>
+        <div className="flex-center" style={{ flex: 1, minHeight: 120 }}><DungeonPortalLoader panel height={120} /></div>
       ) : !subject ? null : (
         <div className={isGrid ? undefined : 'sl-subject-panel-body'} style={isGrid ? { flex: 1, overflowY: 'auto', padding: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' } : undefined}>
 
@@ -1772,7 +1775,7 @@ export default function DashboardPage() {
         syncQuestsFromSummary(s.data, user?.id)
       })
       .catch(() => toast.error('Failed to load status window'))
-      .finally(() => setLoading(false))
+      .finally(() => setTimeout(() => setLoading(false), PAGE_MIN_MS))
     getHunterStats().then(r => setHunterStats(r.data)).catch(() => {})
   }, []) // eslint-disable-line
 
@@ -1789,7 +1792,7 @@ export default function DashboardPage() {
       // Reload gate cards + badge statuses directly (bypasses gatesLoaded guard)
       getSubjects().then(r => {
         setSubjects(r.data)
-        setGatesLoaded(true)
+        setTimeout(() => setGatesLoaded(true), TEST_DELAY_MS)
         const ids = r.data.map(s => s.id)
         if (ids.length > 0) {
           getBulkSubjectStatus(ids)
@@ -1798,7 +1801,7 @@ export default function DashboardPage() {
         }
       }).catch(() => {})
       // Reload roadmap cards with fresh allSubjectsDone
-      getRoadmaps().then(r => { setAllRoadmaps(r.data); setPathsLoaded(true) }).catch(() => {})
+      getRoadmaps().then(r => { setAllRoadmaps(r.data); setTimeout(() => setPathsLoaded(true), TEST_DELAY_MS) }).catch(() => {})
     }
     window.addEventListener('sl:refresh', refresh)
     return () => window.removeEventListener('sl:refresh', refresh)
@@ -1835,7 +1838,7 @@ export default function DashboardPage() {
     if (gatesLoaded) return
     getSubjects().then(r => {
       setSubjects(r.data)
-      setGatesLoaded(true)
+      setTimeout(() => setGatesLoaded(true), TEST_DELAY_MS)
       const ids = r.data.map(s => s.id)
       if (ids.length > 0) {
         getBulkSubjectStatus(ids)
@@ -1847,7 +1850,7 @@ export default function DashboardPage() {
 
   const loadPaths = () => {
     if (pathsLoaded) return
-    getRoadmaps().then(r => { setAllRoadmaps(r.data); setPathsLoaded(true) })
+    getRoadmaps().then(r => { setAllRoadmaps(r.data); setTimeout(() => setPathsLoaded(true), TEST_DELAY_MS) })
   }
 
   // Load roadmaps eagerly so Skill Arena can show active path
@@ -2143,7 +2146,7 @@ export default function DashboardPage() {
             ))}
           </div>
           {!gatesLoaded ? (
-            <div className="flex-center" style={{ height: '200px' }}><div className="loading-spinner-lg" /></div>
+            <div className="flex-center" style={{ height: '200px' }}><DungeonPortalLoader panel height={200} /></div>
           ) : filteredSubjects.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.72rem', letterSpacing: '0.08em' }}>NO GATES MATCH</div>
           ) : (
@@ -2165,7 +2168,7 @@ export default function DashboardPage() {
               placeholder="Scout paths…" value={pathSearch} onChange={e => setPathSearch(e.target.value)} />
           </div>
           {!pathsLoaded ? (
-            <div className="flex-center" style={{ height: '200px' }}><div className="loading-spinner-lg" /></div>
+            <div className="flex-center" style={{ height: '200px' }}><DungeonPortalLoader panel height={200} /></div>
           ) : (
             <div className="sl-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.625rem' }}>
               {filteredRoadmaps.map(r => {
@@ -2250,14 +2253,7 @@ export default function DashboardPage() {
     }
   }
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', flexDirection: 'column' }}>
-      <nav style={{ height: 56, background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 1.5rem' }}>
-        <span style={{ fontFamily: "'Orbitron', sans-serif", fontWeight: 900, fontSize: '1.1rem', color: '#B48AE8', letterSpacing: '0.12em' }}>ARISE</span>
-      </nav>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="loading-spinner-lg" /></div>
-    </div>
-  )
+  if (loading) return <SystemAwakeningLoader subtitle="SKILL ARENA" />
 
   return (
     <div className="sl-dashboard-wrapper">
@@ -2488,7 +2484,9 @@ export default function DashboardPage() {
                   — BADGES —
                 </div>
                 {!hunterStats ? (
-                  <div style={{ display: 'flex', justifyContent: 'center', padding: '0.5rem' }}><div className="loading-spinner" style={{ width: 14, height: 14 }} /></div>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 6, padding: '0.75rem', alignItems: 'center' }}>
+                    {[0,1,2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(155,110,212,0.6)', animation: `hlSectionDot 1s ${i*0.2}s ease-in-out infinite` }} />)}
+                  </div>
                 ) : (hunterStats.badges.length === 0 && (hunterStats.roadmapBadges ?? []).length === 0) ? (
                   <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
                     <div style={{ fontSize: '1rem', marginBottom: '0.2rem' }}>🔒</div>

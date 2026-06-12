@@ -5,6 +5,7 @@ import { ThemeProvider } from './context/ThemeContext'
 import ProtectedRoute from './components/ProtectedRoute'
 
 import LandingPage from './pages/LandingPage'
+import LoaderDemo from './pages/LoaderDemo'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 
@@ -42,6 +43,7 @@ function App() {
         <Routes>
           {/* Landing */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/loader-demo" element={<LoaderDemo />} />
 
           {/* Public */}
           <Route path="/login"    element={<LoginPage />} />

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { TEST_DELAY_MS } from '../components/loaders/_config'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Sun, Moon } from 'lucide-react'
+import SmokeBladeLoader from '../components/loaders/SmokeBladeLoader'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { getMissions } from '../api/api'
@@ -60,7 +62,7 @@ export default function MissionsPage() {
     getMissions()
       .then(r => setMissions(r.data))
       .catch(() => {})
-      .finally(() => setLoading(false))
+      .finally(() => setTimeout(() => setLoading(false), TEST_DELAY_MS))
   }, [])
 
   // Derived options for second dropdown
@@ -423,9 +425,7 @@ export default function MissionsPage() {
       {/* ── Grid ─────────────────────────────────────────────── */}
       <div style={S.container}>
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem 0' }}>
-            <ShurikenSpinner />
-          </div>
+          <SmokeBladeLoader inline />
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem', color: light ? '#6B4820' : '#6B5020',
             fontFamily: "'Share Tech Mono', monospace", letterSpacing: '0.1em' }}>
@@ -620,19 +620,3 @@ function MissionCard({ mission, index, light, onClick }) {
   )
 }
 
-// ── Shuriken Spinner ──────────────────────────────────────────────────────────
-function ShurikenSpinner() {
-  return (
-    <div className="shuriken-spinner" style={{
-      width: 48, height: 48,
-      animation: 'shurikenSpin 0.8s linear infinite',
-    }}>
-      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M24 4 L28 20 L44 24 L28 28 L24 44 L20 28 L4 24 L20 20 Z"
-          fill="#FF7F2A" opacity="0.9"/>
-        <circle cx="24" cy="24" r="4" fill="#FF7F2A"/>
-      </svg>
-    
-    </div>
-  )
-}

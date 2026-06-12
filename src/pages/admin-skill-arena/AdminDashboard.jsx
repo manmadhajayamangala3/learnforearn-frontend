@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
+import { TEST_DELAY_MS } from '../../components/loaders/_config'
 import { useNavigate } from 'react-router-dom'
 import { Users, BookOpen, Layers, Map, TrendingUp, Swords, Code2, HelpCircle, Flag } from 'lucide-react'
 import AppLayout from '../../components/AppLayout'
 import { getAdminStats } from '../../api/api'
 import toast from 'react-hot-toast'
+import AdminSkeleton from '../../components/loaders/AdminSkeleton'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null)
@@ -14,12 +16,12 @@ export default function AdminDashboard() {
     getAdminStats()
       .then(r => setStats(r.data))
       .catch(() => toast.error('Failed to load stats'))
-      .finally(() => setLoading(false))
+      .finally(() => setTimeout(() => setLoading(false), TEST_DELAY_MS))
   }, [])
 
   if (loading) return (
     <AppLayout title="Admin Overview">
-      <div className="flex-center" style={{ height: '60vh' }}><div className="loading-spinner-lg" /></div>
+      <AdminSkeleton rows={5} />
     </AppLayout>
   )
 

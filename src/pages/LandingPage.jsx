@@ -637,13 +637,7 @@ export default function LandingPage() {
                 color: C.text, margin: '0 0 1.25rem',
               }}>
                 Tutorials teach you.<br />
-                <span style={{
-                  background: lt
-                    ? 'linear-gradient(135deg, #7C3500, #B06030)'
-                    : 'linear-gradient(135deg, #FF6B00, #FFB347)',
-                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}>
+                <span className="lp-grad-orange">
                   Missions prove you.
                 </span>
               </h2>
@@ -767,13 +761,7 @@ export default function LandingPage() {
                 color: C.text, margin: '0 0 1.25rem',
               }}>
                 Know the code.<br />
-                <span style={{
-                  background: lt
-                    ? 'linear-gradient(135deg, #0284C7, #0369A1)'
-                    : 'linear-gradient(135deg, #0EA5E9, #38BDF8)',
-                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}>
+                <span className="lp-grad-blue">
                   Crack the interview.
                 </span>
               </h2>

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { TEST_DELAY_MS, PAGE_MIN_MS } from '../components/loaders/_config'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ChevronDown, ChevronUp, Sun, Moon } from 'lucide-react'
+import SmokeBladeLoader from '../components/loaders/SmokeBladeLoader'
 import { getMission } from '../api/api'
 import { useTheme } from '../context/ThemeContext'
 import ReportButton from '../components/ReportButton'
@@ -28,15 +30,10 @@ export default function MissionDetailPage() {
     getMission(id)
       .then(r => setMission(r.data))
       .catch(() => navigate('/missions'))
-      .finally(() => setLoading(false))
+      .finally(() => setTimeout(() => setLoading(false), PAGE_MIN_MS))
   }, [id])
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: 'var(--mission-page-bg)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <ShurikenSpinner />
-    </div>
-  )
+  if (loading) return <SmokeBladeLoader />
 
   if (!mission) return null
 
@@ -492,13 +489,3 @@ export default function MissionDetailPage() {
   )
 }
 
-function ShurikenSpinner() {
-  return (
-    <div style={{ width: 48, height: 48, animation: 'shurikenSpin 0.8s linear infinite' }}>
-      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M24 4 L28 20 L44 24 L28 28 L24 44 L20 28 L4 24 L20 20 Z" fill="#FF7F2A" opacity="0.9"/>
-        <circle cx="24" cy="24" r="4" fill="#FF7F2A"/>
-      </svg>
-    </div>
-  )
-}
