@@ -32,6 +32,7 @@ import AdminReports from './pages/admin-skill-arena/AdminReports'
 import AdminMissions from './pages/admin-skill-arena/AdminMissions'
 import AdminProblems from './pages/admin-skill-arena/AdminProblems'
 import FeedbackNudge from './components/FeedbackNudge'
+import ScrollToTop from './components/ScrollToTop'
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
       <BrowserRouter>
         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
         <FeedbackNudge />
+        <ScrollToTop />
         <Routes>
           {/* Landing */}
           <Route path="/" element={<LandingPage />} />

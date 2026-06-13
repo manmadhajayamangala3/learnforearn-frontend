@@ -145,7 +145,7 @@ export default function TrackPage() {
         borderBottom: '1px solid var(--ps-nav-border)',
         position: 'sticky', top: 0, zIndex: 50,
       }}>
-        <button onClick={() => navigate('/problem-solving')} style={{
+        <button onClick={() => navigate(-1)} style={{
           background: 'none', border: 'none', cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: '0.4rem',
           fontFamily: "'Orbitron', sans-serif", fontWeight: 900,

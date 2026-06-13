@@ -121,7 +121,7 @@ export default function QuizPage() {
         padding: '0 1.25rem', gap: '0.875rem',
       }}>
         <button
-          onClick={() => navigate('/skill-arena/dashboard?view=gates')}
+          onClick={() => navigate(-1)}
           style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--text-muted)', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.68rem', letterSpacing: '0.06em', flexShrink: 0 }}
         >
           <ArrowLeft size={13} /> GATES

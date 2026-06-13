@@ -81,7 +81,7 @@ export default function RoadmapDetailPage() {
         position: 'sticky', top: 0, zIndex: 50,
       }}>
         <button
-          onClick={() => navigate('/skill-arena/dashboard?view=paths')}
+          onClick={() => navigate(-1)}
           style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-muted)', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.72rem', letterSpacing: '0.06em' }}
         >
           <ArrowLeft size={14} /> PATHS

@@ -220,7 +220,7 @@ export default function CareerGuidancePage() {
         backdropFilter: 'blur(12px)',
         borderBottom: `1px solid ${C.border}`,
       }}>
-        <button onClick={() => navigate('/fresher-instructions')} style={{
+        <button onClick={() => navigate(-1)} style={{
           display: 'flex', alignItems: 'center', gap: '0.4rem',
           background: 'none', border: 'none', cursor: 'pointer',
           color: C.sub, fontFamily: "'Share Tech Mono', monospace",
@@ -651,7 +651,7 @@ export default function CareerGuidancePage() {
               ⚔ Start Learning Now
             </button>
             <button
-              onClick={() => navigate('/fresher-instructions')}
+              onClick={() => navigate(-1)}
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.5rem',
                 background: 'none', border: `1px solid rgba(155,110,212,0.35)`,

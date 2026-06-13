@@ -99,7 +99,7 @@ export default function QuizResultPage() {
       }}>
         <button
           style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-muted)', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.72rem', letterSpacing: '0.06em' }}
-          onClick={() => navigate('/skill-arena/dashboard?view=gates')}
+          onClick={() => navigate(-1)}
         >
           <ArrowLeft size={14} /> GATES
         </button>
@@ -271,7 +271,7 @@ export default function QuizResultPage() {
               </button>
             )}
             <button
-              onClick={() => navigate('/skill-arena/dashboard?view=gates')}
+              onClick={() => navigate(-1)}
               style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 8, padding: '0.75rem 1.75rem', cursor: 'pointer', color: 'var(--text-secondary)', fontFamily: "'Rajdhani', sans-serif", fontWeight: 600, fontSize: '0.9375rem', letterSpacing: '0.05em' }}
             >
               ← BACK TO GATES

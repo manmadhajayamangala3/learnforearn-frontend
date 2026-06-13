@@ -94,7 +94,7 @@ export default function MissionDetailPage() {
       {/* ── Top bar ────────────────────────────────────────── */}
       <div style={S.topBar}>
         {/* Back to missions */}
-        <button onClick={() => navigate('/missions')} style={{
+        <button onClick={() => navigate(-1)} style={{
           background: 'none', border: 'none', cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: '0.375rem',
           color: light ? '#8B6040' : '#8B9AB8',
@@ -469,7 +469,7 @@ export default function MissionDetailPage() {
 
         {/* Bottom nav */}
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
-          <button onClick={() => navigate('/missions')} style={{
+          <button onClick={() => navigate(-1)} style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
             background: 'none', border: light ? '1px solid rgba(230,80,0,0.3)' : '1px solid rgba(255,127,42,0.2)',
             borderRadius: 8, padding: '0.625rem 1.5rem', cursor: 'pointer',

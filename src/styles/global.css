@@ -1339,7 +1339,7 @@ input, textarea, select { font-family: inherit; }
   position: relative; z-index: 2;
   display: flex; flex-direction: column; align-items: center; gap: 14px;
 }
-.saw-eye { animation: sawEyeOpen 0.5s 0.1s cubic-bezier(0.3,0,0.5,1) infinite both; }
+.saw-eye { animation: sawEyeOpen 0.5s 0.1s cubic-bezier(0.3,0,0.5,1) forwards both; }
 .saw-chosen {
   font-family: 'Share Tech Mono', monospace;
   font-size: clamp(0.65rem, 2vw, 0.9rem);
@@ -1355,7 +1355,7 @@ input, textarea, select { font-family: inherit; }
   width: 280px; height: 1px;
   background: linear-gradient(90deg, transparent, rgba(155,110,212,0.6), transparent);
   transform-origin: center;
-  animation: sawDivider 0.6s ease infinite;
+  animation: sawDivider 0.6s ease forwards;
 }
 .saw-arise {
   font-family: 'Orbitron', sans-serif;
@@ -1364,13 +1364,13 @@ input, textarea, select { font-family: inherit; }
   color: #fff;
   letter-spacing: 0.3em;
   text-shadow: 0 0 24px rgba(155,110,212,1), 0 0 60px rgba(155,110,212,0.6), 0 0 120px rgba(155,110,212,0.3);
-  animation: sawArise 0.9s cubic-bezier(0.2,0,0.4,1) infinite;
+  animation: sawArise 0.9s cubic-bezier(0.2,0,0.4,1) forwards;
 }
 .saw-sub {
   font-family: 'Share Tech Mono', monospace;
   font-size: 0.65rem; letter-spacing: 0.4em;
   color: rgba(155,110,212,0.5);
-  animation: sawSub 0.9s ease infinite;
+  animation: sawSub 0.9s ease forwards;
 }
 .saw-bar-wrap {
   width: 200px; height: 2px;
@@ -1382,7 +1382,7 @@ input, textarea, select { font-family: inherit; }
   height: 100%;
   background: rgba(155,110,212,0.8);
   box-shadow: 0 0 8px rgba(155,110,212,0.6);
-  animation: sawBar 0.8s ease infinite;
+  animation: sawBar 0.8s ease forwards;
 }
 .saw-glitch {
   position: absolute; width: 120px; height: 40px;
@@ -3219,6 +3219,8 @@ body { font-family: 'Rajdhani', 'Inter', -apple-system, sans-serif; font-size: 1
   .sl-dashboard-grid { grid-template-columns: 1fr; }
   .sl-gates-grid { grid-template-columns: repeat(2, 1fr); }
   .sl-grid-concept { grid-template-columns: 1fr !important; }
+  /* On mobile: hide subject list when concept is open — close button acts as back */
+  .sl-grid-concept .sl-subject-grid-panel { display: none; }
 }
 @media (max-width: 768px) {
   /* Navbar: hamburger LEFT | section name CENTER | avatar RIGHT */
@@ -3591,6 +3593,7 @@ body { font-family: 'Rajdhani', 'Inter', -apple-system, sans-serif; font-size: 1
   /* ─ SL Dashboard grid ─ */
   .sl-dashboard-grid { grid-template-columns: 1fr; }
   .sl-grid-concept    { grid-template-columns: 1fr !important; }
+  .sl-grid-concept .sl-subject-grid-panel { display: none; }
 
   /* ─ Gates grid ─ */
   .sl-gates-grid { grid-template-columns: repeat(2, 1fr); }

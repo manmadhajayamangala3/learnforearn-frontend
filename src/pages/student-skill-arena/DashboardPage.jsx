@@ -549,11 +549,15 @@ function ConceptInlinePanel({ conceptId, navList, onClose, navigate, startQuiz, 
   const tipRef      = useRef(null)
   const mistakesRef = useRef(null)
   const quizRef     = useRef(null)
+  const panelRef    = useRef(null)
 
   const scrollTo = (ref) => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
   useEffect(() => {
     setLoading(true); setTab('simple')
+    // Scroll panel container + window to top when switching concepts
+    panelRef.current?.parentElement?.scrollTo({ top: 0, behavior: 'instant' })
+    window.scrollTo({ top: 0, behavior: 'instant' })
     Promise.all([
       getConcept(conceptId),
       getQuizStatus('concept', conceptId).catch(() => null),
@@ -579,7 +583,7 @@ function ConceptInlinePanel({ conceptId, navList, onClose, navigate, startQuiz, 
   if (!concept) return null
 
   return (
-    <div className="sl-concept-inline">
+    <div className="sl-concept-inline" ref={panelRef}>
       {/* Header */}
       <div className="sl-concept-inline-header">
         <button className="btn btn-ghost btn-sm" style={{ padding: '0.2rem 0.5rem', fontSize: '0.78rem', fontFamily: "'Rajdhani', sans-serif", letterSpacing: '0.04em' }}
@@ -987,7 +991,7 @@ function RoadmapPanel({ roadmapId, onClose, onGateClick, navigate, startQuiz }) 
               return (
                 <div key={s.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   <div
-                    onClick={() => isEnrolled && s.totalConcepts > 0 && onGateClick(s.id)}
+                    onClick={() => s.totalConcepts > 0 && onGateClick(s.id)}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '0.5rem',
                       padding: '0.5rem 0.625rem',
@@ -995,11 +999,11 @@ function RoadmapPanel({ roadmapId, onClose, onGateClick, navigate, startQuiz }) 
                       border: `1px solid ${borderCol}`,
                       borderLeft: `3px solid ${accentCol}`,
                       borderRadius: 'var(--radius-sm)',
-                      cursor: isEnrolled && s.totalConcepts > 0 ? 'pointer' : 'default',
+                      cursor: s.totalConcepts > 0 ? 'pointer' : 'default',
                       opacity: s.totalConcepts > 0 ? 1 : 0.45,
                       transition: 'all 0.15s',
                     }}
-                    onMouseEnter={e => { if (isEnrolled && s.totalConcepts > 0) e.currentTarget.style.borderColor = 'rgba(155,110,212,0.4)' }}
+                    onMouseEnter={e => { if (s.totalConcepts > 0) e.currentTarget.style.borderColor = 'rgba(155,110,212,0.4)' }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = borderCol }}
                   >
                     <div style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Orbitron', sans-serif", fontSize: '0.55rem', fontWeight: 700, background: gateClosed ? 'rgba(74,222,128,0.15)' : 'var(--bg-tertiary)', border: `1.5px solid ${gateClosed ? '#4ADE8055' : 'var(--border)'}`, color: gateClosed ? '#4ADE80' : 'var(--text-muted)' }}>
@@ -1713,7 +1717,7 @@ export default function DashboardPage() {
 
   const [activeView, setActiveView]   = useState(() => searchParams.get('view') || 'arena')
   const [selectedSubjectId, setSelectedSubjectId] = useState(() => searchParams.get('subject') || null)
-  const [selectedConceptId, setSelectedConceptId] = useState(null)
+  const [selectedConceptId, setSelectedConceptId] = useState(() => searchParams.get('concept') || null)
   const [conceptNavList, setConceptNavList] = useState([])
   const [selectedRoadmapId, setSelectedRoadmapId] = useState(null)
 
@@ -1869,7 +1873,6 @@ export default function DashboardPage() {
   const openSubjectPanel = (id) => {
     setSelectedSubjectId(id)
     setSelectedConceptId(null); setConceptNavList([])
-    // keep roadmap panel open so user can still navigate between gates
     const params = activeView === 'arena' ? {} : { view: activeView }
     setSearchParams({ ...params, subject: id })
   }
@@ -1889,13 +1892,24 @@ export default function DashboardPage() {
   const openConcept = (conceptId, navList) => {
     setSelectedConceptId(conceptId)
     setConceptNavList(navList)
+    const params = { ...(activeView !== 'arena' ? { view: activeView } : {}) }
+    if (selectedSubjectId) params.subject = selectedSubjectId
+    params.concept = conceptId
+    setSearchParams(params)
   }
 
   const handleConceptClose = (action, targetId) => {
     if (action === 'prev' || action === 'next') {
       setSelectedConceptId(targetId)
+      const params = { ...(activeView !== 'arena' ? { view: activeView } : {}) }
+      if (selectedSubjectId) params.subject = selectedSubjectId
+      params.concept = targetId
+      setSearchParams(params)
     } else {
       setSelectedConceptId(null); setConceptNavList([])
+      const params = { ...(activeView !== 'arena' ? { view: activeView } : {}) }
+      if (selectedSubjectId) params.subject = selectedSubjectId
+      setSearchParams(params)
     }
   }
 
@@ -2097,21 +2111,6 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ── Next recommended gate (if nothing in progress) ── */}
-          {inProgress.length === 0 && nextGateSp && (
-            <div>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>RECOMMENDED NEXT GATE</div>
-              <div onClick={() => openSubjectPanel(nextGateSp.subjectId)}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.625rem 0.875rem', background: 'var(--bg-secondary)', border: '1px solid rgba(74,222,128,0.2)', borderLeft: '3px solid #4ADE80', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>
-                <span style={{ fontSize: '1.1rem' }}>{nextGateSp.icon}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-primary)' }}>{nextGateSp.title}</div>
-                  <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', color: '#4ADE80', letterSpacing: '0.06em' }}>{nextGateSp.total} skills · Enter to begin</div>
-                </div>
-                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', color: '#4ADE80' }}>→</span>
-              </div>
-            </div>
-          )}
 
           {/* ── Cleared gates summary ── */}
           {cleared.length > 0 && (
