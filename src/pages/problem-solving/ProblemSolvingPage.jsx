@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Sun, Moon, ChevronRight } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
-import ReportButton from '../../components/ReportButton'
 
 const TRACKS = [
   {
@@ -197,7 +196,6 @@ export default function ProblemSolvingPage() {
           ))}
         </div>
       </div>
-      <ReportButton variant="floating" pageTitle="Code GYM — Problem Solving" />
     </div>
   )
 }

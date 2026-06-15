@@ -35,6 +35,15 @@ import AdminProblems from './pages/admin-skill-arena/AdminProblems'
 import AdminWalkIns from './pages/admin-skill-arena/AdminWalkIns'
 import FeedbackNudge from './components/FeedbackNudge'
 import ScrollToTop from './components/ScrollToTop'
+import ReportButton from './components/ReportButton'
+import { useLocation } from 'react-router-dom'
+
+function GlobalReportButton() {
+  const { pathname } = useLocation()
+  const hide = pathname.startsWith('/admin') || pathname === '/login' || pathname === '/register' || pathname === '/loader-demo'
+  if (hide) return null
+  return <ReportButton variant="floating" />
+}
 
 function App() {
   return (
@@ -44,6 +53,7 @@ function App() {
         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
         <FeedbackNudge />
         <ScrollToTop />
+        <GlobalReportButton />
         <Routes>
           {/* Landing */}
           <Route path="/" element={<LandingPage />} />

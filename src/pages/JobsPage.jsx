@@ -9,7 +9,6 @@ import {
 } from 'lucide-react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import ReportButton from '../components/ReportButton'
 import ScrollToTop from '../components/ScrollToTop'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
@@ -172,7 +171,7 @@ function PostModal({ onClose, onSuccess, light }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <div>
             <div style={{ fontFamily: "'Orbitron', sans-serif", fontWeight: 900, fontSize: '0.85rem', color: '#9B6ED4', letterSpacing: '0.06em' }}>POST WALK-IN</div>
-            <div style={{ fontSize: '0.72rem', color: light ? '#94A3B8' : '#475569', marginTop: 2 }}>Share an opportunity with the community</div>
+            <div style={{ fontSize: '0.72rem', color: light ? '#94A3B8' : '#475569', marginTop: 2 }}>Help fellow students find opportunities</div>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}><X size={18} /></button>
         </div>
@@ -207,6 +206,11 @@ function PostModal({ onClose, onSuccess, light }) {
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem', justifyContent: 'flex-end' }}>
+          <div style={{ width: '100%', padding: '0.625rem 0.875rem', borderRadius: 8, background: light ? 'rgba(74,222,128,0.06)' : 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)', marginBottom: '0.25rem' }}>
+            <p style={{ margin: 0, fontSize: '0.75rem', color: light ? '#15803D' : '#4ADE80', lineHeight: 1.6 }}>
+              🤝 <strong>Post only real, verified walk-ins.</strong> Your post helps fellow students get opportunities — inaccurate info wastes their time and effort. Let's build a community that genuinely helps each other.
+            </p>
+          </div>
           <button onClick={onClose} style={{ padding: '0.65rem 1.25rem', borderRadius: 10, background: 'transparent', border: `1px solid ${light ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.1)'}`, color: light ? '#475569' : '#94A3B8', cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
           <button onClick={submit} disabled={saving} style={{ padding: '0.65rem 1.75rem', borderRadius: 10, background: 'linear-gradient(135deg,#7C3AED,#9B6ED4)', border: 'none', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: saving ? 0.7 : 1 }}>
             {saving ? 'Posting…' : 'Post Walk-In'}
@@ -458,6 +462,14 @@ export default function JobsPage() {
               </div>
             )}
 
+            {/* Community note */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: 10, background: light ? 'rgba(155,110,212,0.06)' : 'rgba(155,110,212,0.08)', border: '1px solid rgba(155,110,212,0.18)', marginBottom: '1.25rem' }}>
+              <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>🤝</span>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: light ? '#5B21B6' : '#C4B5FD', lineHeight: 1.65 }}>
+                <strong>This is a community board.</strong> Students post walk-in opportunities to help each other. If you know of a walk-in interview happening near you, post it here — your one post could change someone's career. Please share only accurate and verified information.
+              </p>
+            </div>
+
             {/* Content */}
             {loading ? (
               <div style={{ textAlign: 'center', padding: '4rem', color: sub }}>Loading walk-ins...</div>
@@ -505,7 +517,6 @@ export default function JobsPage() {
         </div>
 
       {showModal && <PostModal onClose={() => setShowModal(false)} onSuccess={() => { setShowModal(false); load() }} light={light} />}
-      <ReportButton variant="floating" pageTitle="Walk-In Jobs" />
       <ScrollToTop />
 
       <style>{`

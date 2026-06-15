@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
-import ReportButton from '../components/ReportButton'
 import '../styles/pages-animations.css'
 import {
   Sun, Moon, X,
@@ -812,7 +811,6 @@ export default function FresherInstructionsPage() {
           .fi-nav-center { display: none !important; }
         }
       `}</style>
-      <ReportButton variant="floating" pageTitle="Fresher Guide" />
     </div>
   )
 }

@@ -5,7 +5,6 @@ import { Sun, Moon, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react'
 import GlitchBreachLoader from '../../components/loaders/GlitchBreachLoader'
 import { useTheme } from '../../context/ThemeContext'
 import { getProblem } from '../../api/api'
-import ReportButton from '../../components/ReportButton'
 
 const LANGS = [
   { key: 'python', label: 'Python' },
@@ -444,7 +443,6 @@ export default function ProblemDetailPage() {
           .ps-io-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
-      <ReportButton variant="floating" pageTitle={`Code GYM — Problem`} />
     </div>
   )
 }

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
 import { Sun, Moon, ArrowLeft, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react'
-import ReportButton from '../components/ReportButton'
 import '../styles/pages-animations.css'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -750,7 +749,6 @@ export default function CareerGuidancePage() {
       }}>
         ◈ ARISE — LEARN THE SKILLS. EARN THE JOB. ◈
       </div>
-      <ReportButton variant="floating" pageTitle="Career Guidance" />
     </div>
   )
 }

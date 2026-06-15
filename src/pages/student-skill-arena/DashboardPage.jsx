@@ -2580,7 +2580,6 @@ export default function DashboardPage() {
       {aboutGate && (
         <AboutGateModal subject={aboutGate} onClose={() => setAboutGate(null)} />
       )}
-      <ReportButton variant="floating" pageTitle="Skill Arena Dashboard" />
     </div>
   )
 }

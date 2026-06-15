@@ -6,7 +6,6 @@ import SmokeBladeLoader from '../components/loaders/SmokeBladeLoader'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { getMissions } from '../api/api'
-import ReportButton from '../components/ReportButton'
 
 const RANK_META = {
   D: { color: '#22C55E', bg: 'rgba(34,197,94,0.12)', label: 'D-RANK', desc: 'Academy Level' },
@@ -451,7 +450,6 @@ export default function MissionsPage() {
           </div>
         )}
       </div>
-      <ReportButton variant="floating" pageTitle="Mission Board" />
     </div>
   )
 }

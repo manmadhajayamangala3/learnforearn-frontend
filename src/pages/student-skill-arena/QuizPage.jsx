@@ -3,7 +3,6 @@ import { TEST_DELAY_MS, PAGE_MIN_MS } from '../../components/loaders/_config'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import SystemAwakeningLoader from '../../components/loaders/SystemAwakeningLoader'
-import ReportButton from '../../components/ReportButton'
 import { startConceptQuiz, startSubjectQuiz, startRoadmapQuiz, submitQuiz } from '../../api/api'
 import { getRank } from '../../utils/slRank'
 import { useAuth } from '../../context/AuthContext'
@@ -110,7 +109,6 @@ export default function QuizPage() {
       flexDirection: 'column',
       fontFamily: "'Rajdhani', sans-serif",
     }}>
-      <ReportButton variant="floating" pageTitle={`Quiz — ${type} / ${refId}`} />
 
       {/* ── Header (fixed 52px) ── */}
       <header style={{

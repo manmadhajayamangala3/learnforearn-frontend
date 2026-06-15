@@ -5,7 +5,6 @@ import { ArrowLeft, ChevronDown, ChevronUp, Sun, Moon } from 'lucide-react'
 import SmokeBladeLoader from '../components/loaders/SmokeBladeLoader'
 import { getMission } from '../api/api'
 import { useTheme } from '../context/ThemeContext'
-import ReportButton from '../components/ReportButton'
 
 const RANK_META = {
   D: { color: '#4ADE80', bg: 'rgba(74,222,128,0.12)',   label: 'D-RANK', desc: 'Academy Level' },
@@ -482,7 +481,6 @@ export default function MissionDetailPage() {
           >
             <ArrowLeft size={14} /> BACK TO MISSION BOARD
           </button>
-          <ReportButton variant="floating" pageTitle={`Mission — ${mission?.title}`} />
         </div>
       </div>
     </div>
