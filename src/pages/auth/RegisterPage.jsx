@@ -76,6 +76,7 @@ export default function RegisterPage() {
   const [otpSent, setOtpSent] = useState(false)
   const [otp, setOtp] = useState('')
   const [emailVerified, setEmailVerified] = useState(false)
+  const [emailError, setEmailError] = useState('')
   const [sendingOtp, setSendingOtp] = useState(false)
   const [verifyingOtp, setVerifyingOtp] = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
@@ -95,6 +96,7 @@ export default function RegisterPage() {
 
   const handleSendOtp = async () => {
     if (!form.email) { toast.error('Enter your email first'); return }
+    setEmailError('')
     setSendingOtp(true)
     try {
       await sendOtp(form.email)
@@ -103,12 +105,16 @@ export default function RegisterPage() {
       startCooldown(60)
       toast.success('OTP sent! Check your inbox.')
     } catch (err) {
+      const status = err.response?.status
+      const msg = err.response?.data?.error || 'Failed to send OTP'
       const retryAfter = err.response?.data?.retryAfter
-      if (retryAfter) {
+      if (status === 409) {
+        setEmailError(msg)  // show inline under email field
+      } else if (retryAfter) {
         startCooldown(retryAfter)
         toast.error(`Wait ${retryAfter}s before resending.`)
       } else {
-        toast.error(err.response?.data?.error || 'Failed to send OTP')
+        toast.error(msg)
       }
     } finally {
       setSendingOtp(false)
@@ -303,10 +309,10 @@ export default function RegisterPage() {
               <input
                 type="email" placeholder="XXXX@gmail.com"
                 value={form.email}
-                onChange={e => { setForm({ ...form, email: e.target.value }); setEmailVerified(false); setOtpSent(false) }}
+                onChange={e => { setForm({ ...form, email: e.target.value }); setEmailVerified(false); setOtpSent(false); setEmailError('') }}
                 onFocus={() => setFocused('email')}
                 onBlur={() => setFocused(null)}
-                style={{ ...inp('email'), flex: 1, borderColor: emailVerified ? 'rgba(74,222,128,0.5)' : undefined }}
+                style={{ ...inp('email'), flex: 1, borderColor: emailVerified ? 'rgba(74,222,128,0.5)' : emailError ? 'rgba(239,68,68,0.5)' : undefined }}
                 disabled={emailVerified}
                 required
               />
@@ -322,6 +328,13 @@ export default function RegisterPage() {
                 </div>
               )}
             </div>
+
+            {/* Email already exists error */}
+            {emailError && (
+              <div style={{ fontSize: '0.775rem', color: '#EF4444', marginTop: '0.3rem' }}>
+                {emailError} <a href="/login" style={{ color: '#B48AE8', fontWeight: 600, textDecoration: 'none' }}>Sign in instead?</a>
+              </div>
+            )}
 
             {/* OTP input */}
             {otpSent && !emailVerified && (
