@@ -79,20 +79,53 @@ export default function RegisterPage() {
   const [emailError, setEmailError] = useState('')
   const [sendingOtp, setSendingOtp] = useState(false)
   const [verifyingOtp, setVerifyingOtp] = useState(false)
-  const [resendCooldown, setResendCooldown] = useState(0)
   const cooldownRef = useRef(null)
 
+  // Restore cooldown from localStorage on mount
+  const getInitialCooldown = () => {
+    const sent = parseInt(localStorage.getItem('otp_sent_at') || '0', 10)
+    if (!sent) return 0
+    const remaining = Math.ceil((sent + 60000 - Date.now()) / 1000)
+    return remaining > 0 ? remaining : 0
+  }
+  const [resendCooldown, setResendCooldown] = useState(getInitialCooldown)
+  const [otpSentForEmail, setOtpSentForEmail] = useState(localStorage.getItem('otp_email') || '')
+
   const startCooldown = (secs = 60) => {
+    localStorage.setItem('otp_sent_at', String(Date.now()))
     setResendCooldown(secs)
+    clearInterval(cooldownRef.current)
     cooldownRef.current = setInterval(() => {
       setResendCooldown(s => {
-        if (s <= 1) { clearInterval(cooldownRef.current); return 0 }
+        if (s <= 1) { clearInterval(cooldownRef.current); localStorage.removeItem('otp_sent_at'); return 0 }
         return s - 1
       })
     }, 1000)
   }
 
-  useEffect(() => () => clearInterval(cooldownRef.current), [])
+  // Start timer on mount if cooldown is active
+  useEffect(() => {
+    const initial = getInitialCooldown()
+    if (initial > 0) {
+      setResendCooldown(initial)
+      cooldownRef.current = setInterval(() => {
+        setResendCooldown(s => {
+          if (s <= 1) { clearInterval(cooldownRef.current); localStorage.removeItem('otp_sent_at'); return 0 }
+          return s - 1
+        })
+      }, 1000)
+    }
+    return () => clearInterval(cooldownRef.current)
+  }, [])
+
+  // Restore otpSent state on mount if email matches
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('otp_email')
+    if (savedEmail && getInitialCooldown() > 0) {
+      setOtpSent(true)
+      setForm(f => ({ ...f, email: savedEmail }))
+    }
+  }, [])
 
   const handleSendOtp = async () => {
     if (!form.email) { toast.error('Enter your email first'); return }
@@ -103,6 +136,7 @@ export default function RegisterPage() {
       setOtpSent(true)
       setOtp('')
       startCooldown(60)
+      localStorage.setItem('otp_email', form.email)
       toast.success('OTP sent! Check your inbox.')
     } catch (err) {
       const status = err.response?.status
@@ -128,6 +162,8 @@ export default function RegisterPage() {
       await verifyOtp(form.email, otp)
       setEmailVerified(true)
       setOtpSent(false)
+      localStorage.removeItem('otp_email')
+      localStorage.removeItem('otp_sent_at')
       toast.success('Email verified successfully!')
     } catch (err) {
       toast.error(err.response?.data?.error || 'Invalid OTP. Try again.')
@@ -309,7 +345,7 @@ export default function RegisterPage() {
               <input
                 type="email" placeholder="XXXX@gmail.com"
                 value={form.email}
-                onChange={e => { setForm({ ...form, email: e.target.value }); setEmailVerified(false); setOtpSent(false); setEmailError('') }}
+                onChange={e => { setForm({ ...form, email: e.target.value }); setEmailVerified(false); setOtpSent(false); setEmailError(''); localStorage.removeItem('otp_email'); localStorage.removeItem('otp_sent_at') }}
                 onFocus={() => setFocused('email')}
                 onBlur={() => setFocused(null)}
                 style={{ ...inp('email'), flex: 1, borderColor: emailVerified ? 'rgba(74,222,128,0.5)' : emailError ? 'rgba(239,68,68,0.5)' : undefined }}
