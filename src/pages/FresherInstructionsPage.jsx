@@ -91,7 +91,21 @@ const SECTIONS = [
     ],
   },
   {
-    id: 7, icon: FolderGit2, color: '#F97316', bg: 'rgba(249,115,22,0.09)',
+    id: 7, icon: Zap, color: '#A855F7', bg: 'rgba(168,85,247,0.09)',
+    title: 'Vibe Coding — What It Is and How to Use It Right',
+    brief: 'The new way to build fast. Powerful when used right, dangerous when used blindly.',
+    content: 'Vibe coding is a term coined by AI researcher Andrej Karpathy in early 2025. The idea: instead of writing every line of code yourself, you describe what you want in plain English, let AI generate it, and iterate by adjusting your description until the result is right. You are directing the AI like a product manager, not writing syntax like a programmer.\n\nThis approach is real and genuinely useful. Startups are using it to build prototypes in hours. Developers are shipping features 3–5x faster. Non-developers are building functional tools they could not have built before.\n\nWHEN VIBE CODING WORKS WELL:\n• Prototyping a new feature quickly to test an idea\n• Building small tools, scripts, or automations\n• Exploring an unfamiliar framework to see how it works\n• Generating boilerplate and standard patterns you already understand\n• Rapid iteration on UI layouts and designs\n\nWHEN IT GOES WRONG:\n• Using it to build your entire fresher project without understanding any of it\n• Skipping the step of reading and understanding the generated code\n• Vibe coding authentication, payment systems, or anything security-critical\n• Building on top of code you cannot explain when something breaks in production\n• Submitting vibe-coded projects to interviews without being able to explain them\n\nTHE RIGHT MINDSET FOR FRESHERS:\nVibe coding is a multiplier — it multiplies whatever skills you already have. With strong fundamentals, it makes you significantly more productive. Without fundamentals, it produces code you cannot maintain, debug, or explain.\n\nUse vibe coding to go faster on things you understand. Not to skip understanding things.\n\nPRACTICAL RULE: Before adding any AI-generated code to a project on your resume, read every file it produced, understand what it does, and be able to explain it in an interview. If you cannot — rewrite it yourself until you can. The portfolio project is for you to learn, not for AI to impress.',
+    keyPoints: [
+      'Vibe coding is legitimate and growing — knowing it is an actual skill advantage',
+      'It multiplies existing skills — not a substitute for having skills',
+      'Always read and understand AI-generated code before using it in your projects',
+      'Security, auth, and payment code should never be vibe coded blindly',
+    ],
+    highlight: 'The best vibe coders are the ones who also understand what the code is doing.',
+    highlightColor: '#A855F7',
+  },
+  {
+    id: 8, icon: FolderGit2, color: '#F97316', bg: 'rgba(249,115,22,0.09)',
     title: 'What Makes a Project Actually Impressive',
     brief: 'Most fresher projects look the same. Here is what makes yours stand out.',
     content: 'The hard truth: most fresher GitHub profiles look identical — to-do apps, weather apps, calculator apps. Interviewers have seen hundreds of these. They are not impressed by the app idea. They are impressed by how you built it and whether you can explain your choices.\n\nWhat makes a project genuinely stand out:\n\n1. It is deployed and accessible — not "works on my machine"\n   Use: Vercel (frontend), Render / Railway (backend), MongoDB Atlas (database)\n\n2. It solves a real problem — even a small one\n   "Track my college assignments with deadlines and reminders" is more interesting than "CRUD todo app"\n\n3. It has real authentication — not fake login with hardcoded passwords\n   JWT, session handling, protected routes\n\n4. You can explain every decision:\n   Why did you use this database? Why this framework? What would you change if you had more time?\n\n5. You added something your own — not just followed a YouTube tutorial line by line\n   One original feature, one improvement, one thing that came from your own thinking\n\n6. The README is clean — setup instructions, tech stack, what it does, screenshots\n\nMinimum target: 2 deployed full-stack projects where you can explain every part. That is worth more than 10 certificates.',
@@ -103,7 +117,7 @@ const SECTIONS = [
     ],
   },
   {
-    id: 8, icon: Brain, color: '#EC4899', bg: 'rgba(236,72,153,0.09)',
+    id: 9, icon: Brain, color: '#EC4899', bg: 'rgba(236,72,153,0.09)',
     title: 'Problem Solving, Technical Depth, and AI Skills',
     brief: 'Three different skill sets — different companies test different ones.',
     content: 'The hiring landscape now has three separate preparation tracks:\n\nTRACK 1 — Problem Solving (DSA)\nFor: Product companies, MAANG, funded startups\nWhat: Arrays, linked lists, trees, graphs, dynamic programming, time/space complexity\nReality: These companies want to know how you think under pressure. A 6–12 month preparation is needed to be competitive. Not for everyone, but highest paying.\n\nTRACK 2 — Technical Depth\nFor: Service companies (TCS, Infosys, Wipro), GCCs, mid-size companies\nWhat: Programming fundamentals, DBMS, OS, networking basics, REST APIs, your projects\nReality: They want someone they can train and deploy. Strong basics + real project experience is enough. This is the most accessible path for most freshers.\n\nTRACK 3 — AI-Augmented Engineering (NEW and growing fast)\nFor: Startups, product companies, AI companies\nWhat: Using Copilot, Claude, GPT-4 as daily development tools. Building with AI APIs. Prompt engineering. Knowing how to review and deploy AI-generated code safely.\nReality: This track did not exist 3 years ago. It is growing the fastest. Freshers who learn this early have a significant advantage.\n\nMost freshers only prepare for Track 2 and ignore 1 and 3. That is fine for service companies. But if you want to future-proof yourself, add at least the basics of Track 3 to your skillset.',
@@ -115,7 +129,7 @@ const SECTIONS = [
     ],
   },
   {
-    id: 9, icon: Target, color: '#22C55E', bg: 'rgba(34,197,94,0.09)',
+    id: 10, icon: Target, color: '#22C55E', bg: 'rgba(34,197,94,0.09)',
     title: 'Which Skills Are Actually Growing',
     brief: 'Not all tech skills are equal right now. Focus on what the market is actually paying for.',
     content: 'Based on current hiring trends (2025–2026), here are the skills with the highest fresher demand:\n\nHIGH DEMAND (learn these):\n• Cloud basics — AWS or Azure fundamentals. Even basic knowledge of EC2, S3, Lambda, and deployment pipelines makes you more hireable.\n• DevOps basics — Docker, basic CI/CD with GitHub Actions. Companies want developers who can ship code, not just write it.\n• AI integration — Using OpenAI, Anthropic, or Gemini APIs to build features. Connecting AI capabilities to real applications.\n• Full-stack JavaScript — React + Node.js + MongoDB is still the fastest path to building complete applications.\n• Python for data/AI — If you are interested in data roles, Python with Pandas, NumPy, and basic ML concepts is valuable.\n• Cybersecurity basics — Every company needs people who understand secure coding, OWASP Top 10, and basic threat awareness.\n\nDECLINING DEMAND (do not over-invest):\n• Manual QA testing without automation skills\n• Basic data entry and reporting roles\n• Simple frontend without any backend knowledge\n\nSAME AS ALWAYS (non-negotiable everywhere):\n• Java or Python fundamentals — one of these is required for most backend roles\n• SQL — database querying is a basic skill for almost every tech role\n• Git and GitHub — if you cannot version control your work, you are not hireable\n\nYou do not need to learn everything. Pick one stack, go deep, add one cloud or AI skill on top.',
@@ -127,7 +141,7 @@ const SECTIONS = [
     ],
   },
   {
-    id: 10, icon: AlertTriangle, color: '#EF4444', bg: 'rgba(239,68,68,0.09)',
+    id: 11, icon: AlertTriangle, color: '#EF4444', bg: 'rgba(239,68,68,0.09)',
     title: 'Mistakes That Are Costing Students Jobs',
     brief: 'These are not small mistakes. These are the exact reasons good students do not get placed.',
     content: 'These mistakes are extremely common — and each one is costing students real opportunities.\n\nMISTAKE 1: Tutorial hell without building\nWatching 200 hours of YouTube tutorials and building zero projects. Tutorials feel productive. They are not. Build something after every tutorial.\n\nMISTAKE 2: Copying projects without understanding\nCloning a GitHub repo, changing the name, putting it on your resume. Interviewers ask "how does your authentication work?" and the answer is silence. This ends interviews immediately.\n\nMISTAKE 3: Using AI as a replacement for thinking\nGenerating entire projects with AI, submitting them, and hoping interviewers do not ask questions. They always ask questions. This backfires 100% of the time.\n\nMISTAKE 4: Learning 10 technologies at surface level\nOne week of React, one week of Angular, one week of Vue. You know none of them properly. Pick one and go deep enough to build real things.\n\nMISTAKE 5: Resume lies\nListing "Machine Learning" and "Cloud" as skills based on watching two YouTube videos. Interviewers can probe this in 30 seconds. A lie on a resume destroys your credibility for the entire interview.\n\nMISTAKE 6: Waiting until placement season to start\nPreparation that starts 2 months before placement is not preparation — it is panic. Real skills take 6–12 months of consistent building.\n\nMISTAKE 7: No deployed projects\nEverything "works on my machine" but nothing is live. Deploy your projects. A live link in your resume is proof of work.',
@@ -139,7 +153,7 @@ const SECTIONS = [
     ],
   },
   {
-    id: 11, icon: Map, color: '#6366F1', bg: 'rgba(99,102,241,0.09)',
+    id: 12, icon: Map, color: '#6366F1', bg: 'rgba(99,102,241,0.09)',
     title: 'The Realistic Path to Getting Placed',
     brief: 'A clear 12-month plan — not motivational fluff, but an actual sequence that works.',
     content: 'This is the honest timeline for a fresher who starts from basics:\n\nMONTHS 1–3: Foundation\n• Pick ONE language: Java (backend), Python (data/AI), or JavaScript (full-stack). Commit fully.\n• Learn programming fundamentals: control flow, functions, OOP, debugging.\n• Complete at least 50 small coding challenges — not theory, actual code.\n• Set up Git and GitHub. Push code from day one.\n\nMONTHS 3–6: Building\n• Learn your tech stack: database, backend framework or frontend framework.\n• Build 1 complete project from scratch — no tutorial copy. Struggle with it.\n• Deploy it. Get it live on a real URL.\n• Start using AI tools (Claude, Copilot) as coding assistants — not as replacements.\n\nMONTHS 6–9: Depth + Interview Prep\n• Build a second, more complex project. Add authentication, real data, a real use case.\n• Start solving DSA problems — 150+ problems minimum for product companies.\n• Practice explaining your projects out loud. Record yourself. It feels uncomfortable. Do it anyway.\n• Learn one cloud or DevOps tool: basic AWS, or Docker, or CI/CD with GitHub Actions.\n\nMONTHS 9–12: Applications\n• Resume must have: 2 deployed projects, GitHub link, tech stack, clear descriptions.\n• Apply broadly — not just big companies. GCCs, startups, mid-size companies.\n• Do mock interviews. Real practice, not just reading interview questions.\n• Follow up. Respond fast. Show up on time. These things matter more than students think.\n\nThis path is hard. It is also the one that works.',
@@ -151,7 +165,7 @@ const SECTIONS = [
     ],
   },
   {
-    id: 12, icon: Rocket, color: '#F59E0B', bg: 'rgba(245,158,11,0.09)',
+    id: 13, icon: Rocket, color: '#F59E0B', bg: 'rgba(245,158,11,0.09)',
     title: 'The Unfiltered Truth — And the Real Opportunity',
     brief: 'The honest picture: harder than it was. Still very much possible. Here is why.',
     content: 'Here is the truth without softening.\n\nTHE HARD PART:\nThe era of bulk hiring at service companies is shrinking. The market you heard about from 2019–2022 seniors is not the market you are entering. AI tools are changing what junior developers do. Competition has increased. Salaries for freshers have not grown proportionally to the effort required.\n\nTHESE ARE FACTS. Do not let anyone tell you the market is the same as before.\n\nTHE REAL OPPORTUNITY:\nAt the same time — India\'s digital economy is expanding. There are 1,700+ GCCs (Global Capability Centers) hiring quality engineers. Startups are building real products. AI companies need engineers who understand AI, not just engineers who fear it. Cybersecurity roles are understaffed. Cloud engineers are in demand. Every company in every industry now needs technology.\n\nThe opportunity is not gone. It has shifted.\n\nWHO IS GETTING PLACED RIGHT NOW:\nNot the students who memorized the most. The ones getting placed can explain their projects clearly. They built and deployed something real. They know their fundamentals well enough to catch AI mistakes. They applied broadly, not just to the top 5 companies. They showed up prepared, communicated honestly, and demonstrated they could learn.\n\nTHE HONEST ADVICE:\nDo not study for the market of 2020. Study for the market of 2026. Learn to work with AI, not against it. Build real things. Deploy them. Go deep on one skill instead of shallow on ten. Apply before you feel ready — you will never feel fully ready.\n\nThis path is harder than it looked from the outside. It is also yours to take.',
@@ -296,7 +310,28 @@ function SectionModal({ section, onClose, light }) {
           {/* Content */}
           <div style={{ marginBottom: '1.25rem' }}>
             {section.content.split('\n').map((line, i) => {
-              if (!line.trim()) return <div key={i} style={{ height: '0.4rem' }} />
+              if (!line.trim()) return <div key={i} style={{ height: '0.5rem' }} />
+              // Detect ALL-CAPS subheading lines: e.g. "MISTAKE 1:", "HIGH DEMAND (learn these):", "THE HARD PART:"
+              const isSubheading = /^[A-Z][A-Z\s\d/()–:•\-]+[:\-—]/.test(line.trim()) && line.trim().length < 80
+              if (isSubheading) {
+                return (
+                  <div key={i} style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                    margin: '0.875rem 0 0.3rem',
+                    padding: '0.2rem 0.7rem 0.2rem 0.5rem',
+                    borderRadius: 6,
+                    background: `${section.color}14`,
+                    border: `1px solid ${section.color}28`,
+                  }}>
+                    <span style={{ width: 4, height: 14, borderRadius: 2, background: section.color, flexShrink: 0, display: 'inline-block' }} />
+                    <span style={{
+                      fontFamily: "'Share Tech Mono', monospace",
+                      fontSize: '0.68rem', letterSpacing: '0.07em',
+                      color: section.color, fontWeight: 700,
+                    }}>{line.trim()}</span>
+                  </div>
+                )
+              }
               return (
                 <p key={i} style={{
                   fontSize: '0.875rem',

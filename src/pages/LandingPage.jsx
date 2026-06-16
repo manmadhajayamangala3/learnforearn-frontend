@@ -72,6 +72,7 @@ const features = [
   { Icon: BookOpen, iconD: '#60A5FA', iconL: '#1D4ED8', label: 'Resume Builder',  status: 'Coming Soon',  statusColorD: '#64748B', statusColorL: '#64748B', statusBg: 'rgba(100,116,139,0.12)', desc: 'Auto-build a proof-of-skills resume from your learning journey and quiz performance.',                              glow: 'rgba(96,165,250,0.07)',  activeBorder: 'rgba(155,110,212,0.18)', isLive: false },
   { Icon: Code2,    iconD: '#0EA5E9', iconL: '#0284C7', label: 'Problem Solving',  status: 'Live',         statusColorD: '#4ADE80', statusColorL: '#15803D', statusBg: 'rgba(74,222,128,0.12)',       desc: 'Five learning tracks — Start Coding, Logic Building, Skill Up, Interview Prep, and Scenario Coding — with solutions in C, Python, Java, and C++.', glow: 'rgba(14,165,233,0.1)', activeBorder: 'rgba(14,165,233,0.25)', isLive: true, href: '/problem-solving' },
   { Icon: Briefcase,iconD: '#4ADE80', iconL: '#15803D', label: 'Walk-In Jobs',    status: 'Live',         statusColorD: '#4ADE80', statusColorL: '#15803D', statusBg: 'rgba(74,222,128,0.12)',       desc: 'Live walk-in interview updates posted by students and community. Find opportunities near you.',              glow: 'rgba(74,222,128,0.12)', activeBorder: 'rgba(74,222,128,0.3)',   isLive: true,  href: '/walk-ins', cta: 'View Walk-Ins' },
+  { Icon: Zap,      iconD: '#00D9FF', iconL: '#0284C7', label: 'AI Lab',          status: 'Live',         statusColorD: '#4ADE80', statusColorL: '#15803D', statusBg: 'rgba(74,222,128,0.12)',       desc: 'Explore every AI tool a developer needs — ChatGPT, Copilot, LangChain, CrewAI, automation, and more. With free tutorials.',  glow: 'rgba(0,217,255,0.1)',   activeBorder: 'rgba(0,217,255,0.35)',  isLive: true,  href: '/ai-lab', cta: 'Explore AI Tools' },
 ]
 
 const steps = [
@@ -85,6 +86,7 @@ const NAV_LINKS = [
   { label: 'Code GYM',    live: true, href: '/problem-solving' },
   { label: 'Resume', live: false },
   { label: 'Walk-Ins', live: true, href: '/walk-ins' },
+  { label: 'AI Lab', live: true, href: '/ai-lab' },
   { label: 'Feedback', live: true, scrollTo: 'feedback' }
 ]
 

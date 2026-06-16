@@ -12,6 +12,8 @@ import RegisterPage from './pages/auth/RegisterPage'
 import MissionsPage from './pages/MissionsPage'
 import JobsPage from './pages/JobsPage'
 import FresherInstructionsPage from './pages/FresherInstructionsPage'
+import AILabPage from './pages/ailab/AILabPage'
+import AIToolPage from './pages/ailab/AIToolPage'
 import CareerGuidancePage from './pages/CareerGuidancePage'
 import MissionDetailPage from './pages/MissionDetailPage'
 import ProblemSolvingPage from './pages/problem-solving/ProblemSolvingPage'
@@ -65,6 +67,8 @@ function App() {
           <Route path="/missions" element={<MissionsPage />} />
           <Route path="/walk-ins" element={<JobsPage />} />
           <Route path="/fresher-instructions" element={<FresherInstructionsPage />} />
+          <Route path="/ai-lab" element={<AILabPage />} />
+          <Route path="/ai-lab/:category/:toolId" element={<AIToolPage />} />
           <Route path="/fresher-instructions/career-guidance" element={<CareerGuidancePage />} />
           <Route path="/problem-solving" element={<ProblemSolvingPage />} />
           <Route path="/problem-solving/start-coding"    element={<ProtectedRoute><TrackPage /></ProtectedRoute>} />
