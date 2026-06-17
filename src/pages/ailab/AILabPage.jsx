@@ -120,20 +120,7 @@ export default function AILabPage() {
             Every AI tool a developer needs — what it is, how it works, free tutorials and a hands-on project for each.
           </p>
 
-          {/* Stats row */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '1.75rem', flexWrap: 'wrap' }}>
-            {[
-              [`${totalTools}`, 'Tools'],
-              [`${freeTools}`, 'Free'],
-              [`${CATEGORIES.length - 1}`, 'Categories'],
-              [`${doneTools}`, 'With deep guides'],
-            ].map(([v, l]) => (
-              <div key={l} style={{ textAlign: 'center' }}>
-                <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '1.3rem', fontWeight: 900, color: CYAN }}>{v}</div>
-                <div style={{ fontSize: '0.6rem', color: muted, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: 2 }}>{l}</div>
-              </div>
-            ))}
-          </div>
+         
 
           {/* CTA */}
           <button onClick={() => setPrimerOpen(true)}
@@ -167,18 +154,6 @@ export default function AILabPage() {
           </div>
         </div>
 
-        {/* Legend */}
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.25rem 1.5rem' }}>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.6rem', color: muted, fontFamily: "'Share Tech Mono', monospace", letterSpacing: '0.06em', marginRight: '0.25rem' }}>TAGS:</span>
-            {Object.entries(TAG_META).map(([key, meta]) => (
-              <span key={key} style={{ fontSize: '0.58rem', padding: '0.18rem 0.5rem', borderRadius: 4, background: meta.bg, color: meta.color, fontFamily: "'Share Tech Mono', monospace" }}>{meta.label}</span>
-            ))}
-            <span style={{ fontSize: '0.58rem', padding: '0.18rem 0.5rem', borderRadius: 4, background: 'rgba(74,222,128,0.1)', color: '#4ADE80', fontFamily: "'Share Tech Mono', monospace" }}>FREE</span>
-            <span style={{ fontSize: '0.58rem', padding: '0.18rem 0.5rem', borderRadius: 4, background: 'rgba(251,146,60,0.1)', color: '#FB923C', fontFamily: "'Share Tech Mono', monospace" }}>PAID</span>
-            <span style={{ fontSize: '0.58rem', padding: '0.18rem 0.5rem', borderRadius: 4, background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', color: muted, fontFamily: "'Share Tech Mono', monospace" }}>🔒 SOON</span>
-          </div>
-        </div>
 
         {/* Grid */}
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.25rem 6rem' }}>
