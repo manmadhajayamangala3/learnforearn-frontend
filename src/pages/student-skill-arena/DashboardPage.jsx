@@ -444,10 +444,12 @@ ${jsBody}
 <script>
 const _out=document.getElementById('output');
 const _log=console.log,_err=console.error,_warn=console.warn;
-console.log=(...a)=>{_out.innerHTML+='<div>'+a.map(x=>typeof x==='object'?JSON.stringify(x,null,2):String(x)).join(' ')+'</div>';_log(...a);};
-console.error=(...a)=>{_out.innerHTML+='<div class="err">'+a.join(' ')+'</div>';_err(...a);};
-console.warn=(...a)=>{_out.innerHTML+='<div style="color:#F59E0B">'+a.join(' ')+'</div>';_warn(...a);};
-window.onerror=(msg)=>{_out.innerHTML+='<div class="err">Error: '+msg+'</div>';return true;};
+const _esc=(s)=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const _fmt=(x)=>typeof x==='object'?_esc(JSON.stringify(x,null,2)):_esc(String(x));
+console.log=(...a)=>{_out.innerHTML+='<div>'+a.map(_fmt).join(' ')+'</div>';_log(...a);};
+console.error=(...a)=>{_out.innerHTML+='<div class="err">'+a.map(_fmt).join(' ')+'</div>';_err(...a);};
+console.warn=(...a)=>{_out.innerHTML+='<div style="color:#F59E0B">'+a.map(_fmt).join(' ')+'</div>';_warn(...a);};
+window.onerror=(msg)=>{_out.innerHTML+='<div class="err">Error: '+_esc(String(msg))+'</div>';return true;};
 ${code}
 </script></body></html>`
   } else if (subjectType === 'react') {
@@ -528,7 +530,8 @@ try {
   const _rootEl = document.getElementById('root');
   ReactDOM.createRoot(_rootEl).render(React.createElement(${rootComponent}));
 } catch(e) {
-  document.getElementById('root').innerHTML = '<div style="color:#EF4444;font-family:monospace;font-size:12px;padding:8px;background:#FEF2F2;border-radius:4px;">Error: ' + e.message + '</div>';
+  const _escMsg = String(e.message).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  document.getElementById('root').innerHTML = '<div style="color:#EF4444;font-family:monospace;font-size:12px;padding:8px;background:#FEF2F2;border-radius:4px;">Error: ' + _escMsg + '</div>';
 }
 <\/script>
 </body></html>`
