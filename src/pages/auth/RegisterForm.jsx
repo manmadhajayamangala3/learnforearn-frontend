@@ -9,42 +9,59 @@ import LoadingOverlay from '../../components/LoadingOverlay'
 import useCyclingText from './hooks/useCyclingText'
 import AuthEscapeButton from './components/AuthEscapeButton'
 import { useAuthForm } from './context/AuthFormContext'
+import useRegisterBotStory from './hooks/useRegisterBotStory'
 
 const REG_MESSAGES = ['Registering...', 'Creating Hunter License...', 'Generating your ID...', 'Setting up arena...']
 
 function getStrength(pw) {
   let s = 0
-  if (pw.length >= 8) s++
-  if (/[A-Z]/.test(pw)) s++
-  if (/[0-9]/.test(pw)) s++
+  if (pw.length >= 8)          s++
+  if (/[A-Z]/.test(pw))        s++
+  if (/[0-9]/.test(pw))        s++
   if (/[^A-Za-z0-9]/.test(pw)) s++
   return s
 }
 
-const strengthLabel = ['', 'Weak', 'Fair', 'Good', 'Strong']
+const strengthLabel  = ['', 'Weak', 'Fair', 'Good', 'Strong']
 const strengthColors = ['', 'weak', 'medium', 'medium', 'strong']
 
 export default function RegisterForm() {
-  const [form, setForm] = useState({ fullName: '', email: '', password: '', confirmPassword: '', collegeName: '' })
-  const [loading, setLoading] = useState(false)
+  const [form, setForm] = useState({
+    fullName: '', email: '', password: '', confirmPassword: '', collegeName: '',
+  })
+  const [loading, setLoading]         = useState(false)
   const [overlayDone, setOverlayDone] = useState(false)
-  const [showPass, setShowPass] = useState(false)
-  const { login } = useAuth()
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const redirectTo = searchParams.get('redirect') || '/skill-arena/dashboard'
-  const loginQs = searchParams.get('redirect') ? `?redirect=${encodeURIComponent(searchParams.get('redirect'))}` : ''
-  const strength = getStrength(form.password)
-  const btnText = useCyclingText(REG_MESSAGES, loading)
-  const { setFocusedField, setPasswordVisible, setFormReady, setFormProgress } = useAuthForm()
+  const [showPass, setShowPass]       = useState(false)
 
-  const [otpSent, setOtpSent] = useState(false)
-  const [otp, setOtp] = useState('')
-  const [emailVerified, setEmailVerified] = useState(false)
-  const [emailError, setEmailError] = useState('')
-  const [sendingOtp, setSendingOtp] = useState(false)
-  const [verifyingOtp, setVerifyingOtp] = useState(false)
-  const cooldownRef = useRef(null)
+  const { login }      = useAuth()
+  const navigate       = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirectTo     = searchParams.get('redirect') || '/skill-arena/dashboard'
+  const loginQs        = searchParams.get('redirect')
+    ? `?redirect=${encodeURIComponent(searchParams.get('redirect'))}`
+    : ''
+
+  const strength = getStrength(form.password)
+  const btnText  = useCyclingText(REG_MESSAGES, loading)
+
+  const {
+    focusedField, setFocusedField,
+    setPasswordVisible,
+    setFormReady, setFormProgress,
+    emitCompanionEvent, dismissCompanion,
+    touchActivity, resetCompanion,
+  } = useAuthForm()
+
+  const emitBeat = emitCompanionEvent
+
+  /* ── OTP state ──────────────────────────────────── */
+  const [otpSent, setOtpSent]               = useState(false)
+  const [otp, setOtp]                       = useState('')
+  const [emailVerified, setEmailVerified]   = useState(false)
+  const [emailError, setEmailError]         = useState('')
+  const [sendingOtp, setSendingOtp]         = useState(false)
+  const [verifyingOtp, setVerifyingOtp]     = useState(false)
+  const cooldownRef                         = useRef(null)
 
   const getInitialCooldown = () => {
     const sent = parseInt(sessionStorage.getItem('otp_sent_at') || '0', 10)
@@ -54,15 +71,19 @@ export default function RegisterForm() {
   }
   const [resendCooldown, setResendCooldown] = useState(getInitialCooldown)
 
-  const nameOk = form.fullName.trim().length >= 2
-  const emailOk = emailVerified
-  const passOk = getStrength(form.password) >= 4
-  const confirmOk = form.password === form.confirmPassword && form.confirmPassword.length > 0
-  const ready = nameOk && emailOk && passOk && confirmOk
+  /* ── bot story ──────────────────────────────────── */
+  useRegisterBotStory(form, emailVerified, otpSent, emitBeat)
 
+  /* ── validation ─────────────────────────────────── */
+  const nameOk    = form.fullName.trim().length >= 2
+  const emailOk   = emailVerified
+  const passOk    = strength >= 4
+  const confirmOk = form.password === form.confirmPassword && form.confirmPassword.length > 0
+  const ready     = nameOk && emailOk && passOk && confirmOk
+
+  /* ── sync context ───────────────────────────────── */
   useEffect(() => {
-    const steps = [nameOk, emailOk, passOk, confirmOk]
-    setFormProgress(steps.filter(Boolean).length / steps.length)
+    setFormProgress([nameOk, emailOk, passOk, confirmOk].filter(Boolean).length / 4)
     setFormReady(ready)
   }, [ready, nameOk, emailOk, passOk, confirmOk, setFormReady, setFormProgress])
 
@@ -71,23 +92,28 @@ export default function RegisterForm() {
     setFormProgress(0)
     setFocusedField(null)
     return () => {
+      resetCompanion()
       setFormReady(false)
       setFormProgress(0)
       setFocusedField(null)
     }
-  }, [setFormReady, setFormProgress, setFocusedField])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  useEffect(() => {
-    setPasswordVisible(showPass)
-  }, [showPass, setPasswordVisible])
+  useEffect(() => { setPasswordVisible(showPass) }, [showPass, setPasswordVisible])
 
+  /* ── cooldown timers ────────────────────────────── */
   const startCooldown = (secs = 60) => {
     sessionStorage.setItem('otp_sent_at', String(Date.now()))
     setResendCooldown(secs)
     clearInterval(cooldownRef.current)
     cooldownRef.current = setInterval(() => {
       setResendCooldown(s => {
-        if (s <= 1) { clearInterval(cooldownRef.current); sessionStorage.removeItem('otp_sent_at'); return 0 }
+        if (s <= 1) {
+          clearInterval(cooldownRef.current)
+          sessionStorage.removeItem('otp_sent_at')
+          return 0
+        }
         return s - 1
       })
     }, 1000)
@@ -115,6 +141,7 @@ export default function RegisterForm() {
     }
   }, [])
 
+  /* ── OTP actions ────────────────────────────────── */
   const handleSendOtp = async () => {
     if (!form.email) { toast.error('Enter your email first'); return }
     setEmailError('')
@@ -127,10 +154,10 @@ export default function RegisterForm() {
       sessionStorage.setItem('otp_email', form.email)
       toast.success('OTP sent! Check your inbox.')
     } catch (err) {
-      const status = err.response?.status
-      const msg = err.response?.data?.error || 'Failed to send OTP'
-      const retryAfter = err.response?.data?.retryAfter
-      if (status === 409) setEmailError(msg)
+      const status      = err.response?.status
+      const msg         = err.response?.data?.error || 'Failed to send OTP'
+      const retryAfter  = err.response?.data?.retryAfter
+      if (status === 409)  setEmailError(msg)
       else if (retryAfter) { startCooldown(retryAfter); toast.error(`Wait ${retryAfter}s before resending.`) }
       else toast.error(msg)
     } finally {
@@ -155,19 +182,26 @@ export default function RegisterForm() {
     }
   }
 
+  /* ── submit ─────────────────────────────────────── */
   const handleSubmit = async e => {
     e.preventDefault()
     if (!ready) return
     setLoading(true)
     setOverlayDone(false)
+    dismissCompanion()
+    emitBeat('LOGIN_PROCESSING')
     try {
       const { fullName, email, password, collegeName } = form
       const { data } = await registerUser({ fullName, email, password, collegeName })
+      dismissCompanion()
+      emitBeat('REG_SUCCESS')
       setOverlayDone(true)
       await new Promise(r => setTimeout(r, 700))
       login(data.token, data.user)
       navigate(redirectTo)
     } catch (err) {
+      dismissCompanion()
+      emitBeat('REG_FAILED')
       toast.error(err.response?.data?.error || 'Registration failed')
     } finally {
       setLoading(false)
@@ -182,19 +216,23 @@ export default function RegisterForm() {
     sessionStorage.removeItem('otp_sent_at')
   }
 
+  /* ── render ─────────────────────────────────────── */
   return (
     <>
       {loading && <LoadingOverlay type="register" completing={overlayDone} />}
 
-      <motion.h1 className="auth-form-title" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-        Create account
+      <motion.h1
+        className="auth-form-title"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        Register your hunter profile
       </motion.h1>
-      <motion.p className="auth-form-sub" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}>
-        Join in under a minute
-      </motion.p>
 
       <form onSubmit={handleSubmit} className="auth-form auth-form--register">
-        <div className="auth-field auth-field--compact">
+
+        {/* Full Name */}
+        <div className={`auth-field auth-field--compact${focusedField === 'fullName' ? ' auth-field--focus' : ''}`}>
           <label className="auth-label" htmlFor="reg-name">Full Name</label>
           <input
             id="reg-name"
@@ -203,13 +241,14 @@ export default function RegisterForm() {
             placeholder="Your full name"
             autoComplete="name"
             value={form.fullName}
-            onChange={e => setForm({ ...form, fullName: e.target.value })}
-            onFocus={() => setFocusedField('fullName')}
-            onBlur={() => setFocusedField(null)}
+            onChange={e => { setForm({ ...form, fullName: e.target.value }); touchActivity() }}
+            onFocus={() => { dismissCompanion(); emitBeat('REG_FOUND_NAME'); setFocusedField('fullName'); touchActivity() }}
+            onBlur={() => setFocusedField(f => f === 'fullName' ? null : f)}
           />
         </div>
 
-        <div className="auth-field auth-field--compact">
+        {/* Email + OTP verify */}
+        <div className={`auth-field auth-field--compact${focusedField === 'email' ? ' auth-field--focus' : ''}`}>
           <label className="auth-label" htmlFor="reg-email">Email</label>
           <div className="auth-inline-row">
             <input
@@ -219,9 +258,9 @@ export default function RegisterForm() {
               placeholder="you@college.edu"
               autoComplete="email"
               value={form.email}
-              onChange={e => { setForm({ ...form, email: e.target.value }); resetEmailState() }}
-              onFocus={() => setFocusedField('email')}
-              onBlur={() => setFocusedField(null)}
+              onChange={e => { setForm({ ...form, email: e.target.value }); resetEmailState(); touchActivity() }}
+              onFocus={() => { dismissCompanion(); emitBeat('REG_FOUND_EMAIL'); setFocusedField('email'); touchActivity() }}
+              onBlur={() => setFocusedField(f => f === 'email' ? null : f)}
               disabled={emailVerified}
             />
             {!emailVerified && (
@@ -254,9 +293,9 @@ export default function RegisterForm() {
                 placeholder="000000"
                 aria-label="Email verification OTP"
                 value={otp}
-                onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                onFocus={() => setFocusedField('otp')}
-                onBlur={() => setFocusedField(null)}
+                onChange={e => { setOtp(e.target.value.replace(/\D/g, '').slice(0, 6)); touchActivity() }}
+                onFocus={() => { dismissCompanion(); emitBeat('REG_OTP_FOCUS'); setFocusedField('otp'); touchActivity() }}
+                onBlur={() => setFocusedField(f => f === 'otp' ? null : f)}
               />
               <button
                 type="button"
@@ -270,8 +309,9 @@ export default function RegisterForm() {
           )}
         </div>
 
+        {/* Password + Confirm (side by side) */}
         <div className="auth-field-row">
-          <div className="auth-field auth-field--compact">
+          <div className={`auth-field auth-field--compact${focusedField === 'password' ? ' auth-field--focus' : ''}`}>
             <label className="auth-label" htmlFor="reg-password">Password</label>
             <div className="auth-pass-wrap">
               <input
@@ -281,9 +321,14 @@ export default function RegisterForm() {
                 placeholder="8+ chars"
                 autoComplete="new-password"
                 value={form.password}
-                onChange={e => setForm({ ...form, password: e.target.value })}
-                onFocus={() => setFocusedField('password')}
-                onBlur={() => setFocusedField(null)}
+                onChange={e => { setForm({ ...form, password: e.target.value }); touchActivity() }}
+                onFocus={() => {
+                  dismissCompanion()
+                  emitBeat('REG_FOUND_PASSWORD')
+                  setFocusedField('password')
+                  touchActivity()
+                }}
+                onBlur={() => setFocusedField(f => f === 'password' ? null : f)}
               />
               <button
                 type="button"
@@ -306,7 +351,7 @@ export default function RegisterForm() {
             )}
           </div>
 
-          <div className="auth-field auth-field--compact">
+          <div className={`auth-field auth-field--compact${focusedField === 'confirm' ? ' auth-field--focus' : ''}`}>
             <label className="auth-label" htmlFor="reg-confirm">Confirm</label>
             <input
               id="reg-confirm"
@@ -315,14 +360,15 @@ export default function RegisterForm() {
               placeholder="Repeat"
               autoComplete="new-password"
               value={form.confirmPassword}
-              onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
-              onFocus={() => setFocusedField('confirm')}
-              onBlur={() => setFocusedField(null)}
+              onChange={e => { setForm({ ...form, confirmPassword: e.target.value }); touchActivity() }}
+              onFocus={() => { setFocusedField('confirm'); touchActivity() }}
+              onBlur={() => setFocusedField(f => f === 'confirm' ? null : f)}
             />
           </div>
         </div>
 
-        <div className="auth-field auth-field--compact">
+        {/* College (optional) */}
+        <div className={`auth-field auth-field--compact${focusedField === 'college' ? ' auth-field--focus' : ''}`}>
           <label className="auth-label" htmlFor="reg-college">
             College <span className="auth-label-opt">(optional)</span>
           </label>
@@ -333,25 +379,23 @@ export default function RegisterForm() {
             placeholder="Your college"
             autoComplete="organization"
             value={form.collegeName}
-            onChange={e => setForm({ ...form, collegeName: e.target.value })}
-            onFocus={() => setFocusedField('college')}
-            onBlur={() => setFocusedField(null)}
+            onChange={e => { setForm({ ...form, collegeName: e.target.value }); touchActivity() }}
+            onFocus={() => { setFocusedField('college'); touchActivity() }}
+            onBlur={() => setFocusedField(f => f === 'college' ? null : f)}
           />
         </div>
 
-        <AuthEscapeButton
-          ready={ready}
-          loading={loading}
-          hint="Complete all required fields"
-        >
+        <AuthEscapeButton ready={ready} loading={loading} hint="Complete all required fields" compact staticDisabled>
           {loading ? btnText : 'Create account'}
         </AuthEscapeButton>
       </form>
 
-      <p className="auth-form-footer">
-        Already have an account?{' '}
-        <Link to={`/login${loginQs}`} className="auth-link" replace>Sign in</Link>
-      </p>
+      <div className="auth-login-bottom">
+        <span className="auth-login-bottom-label">Already a hunter?</span>
+        <div className="auth-login-bottom-actions">
+          <Link to={`/login${loginQs}`} className="auth-link-btn" replace>Sign in</Link>
+        </div>
+      </div>
     </>
   )
 }

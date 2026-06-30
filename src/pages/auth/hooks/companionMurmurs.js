@@ -1,164 +1,403 @@
-export const COMPANION_EVENTS = {
-  PAGE_LOAD: 'PAGE_LOAD',
-  FIELD_LOST: 'FIELD_LOST',
-  FOCUS_EMAIL: 'FOCUS_EMAIL',
-  FOCUS_EMAIL_RETURN: 'FOCUS_EMAIL_RETURN',
-  STARTED_EMAIL: 'STARTED_EMAIL',
-  EMAIL_INVALID: 'EMAIL_INVALID',
-  EMAIL_VALID: 'EMAIL_VALID',
-  FOCUS_PASSWORD: 'FOCUS_PASSWORD',
-  STARTED_PASSWORD: 'STARTED_PASSWORD',
-  FORM_READY: 'FORM_READY',
-  LOGIN_SUCCESS: 'LOGIN_SUCCESS',
-  LOGIN_FAILURE: 'LOGIN_FAILURE',
-  PASSWORD_HIDDEN: 'PASSWORD_HIDDEN',
-  PASSWORD_VISIBLE: 'PASSWORD_VISIBLE',
-  SUBMIT_EMPTY: 'SUBMIT_EMPTY',
-  LONG_IDLE: 'LONG_IDLE',
-  GUEST_CLICK: 'GUEST_CLICK',
-}
+/**
+ * Bot personalities:
+ *  nova  — friendly, optimistic, welcoming
+ *  echo  — curious, observant, overthinks
+ *  pixel — playful, slightly sarcastic, never offensive
+ *
+ * Each line shows for LINE_DURATION_MS then the next bot speaks.
+ * Scenarios are triggered by user actions; interrupts cancel mid-sequence.
+ */
 
-export const SPEAKER_LABELS = {
-  prime: 'Unit-01',
-  byte: 'Byte',
-  glitch: 'Glitch',
-}
+export const LINE_DURATION_MS = 2000
+export const LINE_GAP_MS = 250
 
-const DIALOGUES = {
-  [COMPANION_EVENTS.PAGE_LOAD]: [
-    {
-      mood: 'calm',
-      lines: [
-        { speaker: 'byte', text: 'Oh look. Someone found the login page. Progress.' },
-        { speaker: 'prime', text: 'Welcome only. Now show us credentials.' },
-        { speaker: 'glitch', text: 'Let\'s see how long this takes, no?' },
-      ],
-    },
-  ],
-  [COMPANION_EVENTS.FIELD_LOST]: [
-    {
-      mood: 'calm',
-      lines: [{ speaker: 'glitch', text: 'Can he find the email field… or do we send a map?' }],
-    },
-  ],
-  [COMPANION_EVENTS.FOCUS_EMAIL]: [
-    {
-      mood: 'calm',
-      lines: [{ speaker: 'byte', text: 'Finally! Field located. Very impressive.' }],
-    },
-  ],
-  [COMPANION_EVENTS.FOCUS_EMAIL_RETURN]: [
-    {
-      mood: 'calm',
-      lines: [{ speaker: 'glitch', text: 'Back to email? Password can wait, no?' }],
-    },
-  ],
-  [COMPANION_EVENTS.STARTED_EMAIL]: [
-    {
-      mood: 'calm',
-      lines: [{ speaker: 'prime', text: 'Typing has started… spelling also known, hopefully?' }],
-    },
-  ],
-  [COMPANION_EVENTS.EMAIL_INVALID]: [
-    {
-      mood: 'concerned',
-      lines: [
-        { speaker: 'glitch', text: 'What is this email, no? Where did @ run off to?' },
-        { speaker: 'byte', text: 'Even basics are too much, it seems.' },
-      ],
-    },
-  ],
-  [COMPANION_EVENTS.EMAIL_VALID]: [
-    {
-      mood: 'calm',
-      lines: [{ speaker: 'prime', text: 'Email is fine. Minimum effort achieved only.' }],
-    },
-  ],
-  [COMPANION_EVENTS.FOCUS_PASSWORD]: [
-    {
-      mood: 'nudge',
-      lines: [
-        { speaker: 'byte', text: 'Password time. We\'ll close our eyes, don\'t worry.' },
-        { speaker: 'glitch', text: 'Same here. Privacy is a thing, apparently.' },
-        { speaker: 'prime', text: 'I\'ll peek with one eye only. Just one.' },
-      ],
-    },
-  ],
-  [COMPANION_EVENTS.STARTED_PASSWORD]: [
-    {
-      mood: 'calm',
-      lines: [{ speaker: 'glitch', text: 'Dots appearing… wrong password, full guarantee.' }],
-    },
-  ],
-  [COMPANION_EVENTS.FORM_READY]: [
-    {
-      mood: 'happy',
-      lines: [
-        { speaker: 'byte', text: 'Both fields done. Looks like a miracle, no?' },
-        { speaker: 'glitch', text: 'Will he press sign in… or just enjoy the confidence?' },
-      ],
-    },
-  ],
-  [COMPANION_EVENTS.LOGIN_SUCCESS]: [
-    {
-      mood: 'celebrate',
-      lines: [
-        { speaker: 'prime', text: 'He\'s in. Not bad, actually.' },
-        { speaker: 'byte', text: 'Actual login? Didn\'t see that one coming, no?' },
-      ],
-    },
-  ],
-  [COMPANION_EVENTS.LOGIN_FAILURE]: [
-    {
-      mood: 'concerned',
-      lines: [
-        { speaker: 'glitch', text: 'Wrong password. Fully predictable, only.' },
-        { speaker: 'byte', text: 'One more try… or shall we wait for memory?' },
-      ],
-    },
-  ],
-  [COMPANION_EVENTS.PASSWORD_HIDDEN]: [
-    {
-      mood: 'calm',
-      lines: [{ speaker: 'prime', text: 'Hidden now. Bit late, but okay only.' }],
-    },
-  ],
-  [COMPANION_EVENTS.PASSWORD_VISIBLE]: [
-    {
-      mood: 'nudge',
-      lines: [
-        { speaker: 'glitch', text: 'Showing password on screen? Very bold.' },
-        { speaker: 'byte', text: 'We are all watching, FYI.' },
-      ],
-    },
-  ],
-  [COMPANION_EVENTS.SUBMIT_EMPTY]: [
-    {
-      mood: 'concerned',
-      lines: [
-        { speaker: 'byte', text: 'Sign in on empty form? Confidence level maximum.' },
-        { speaker: 'glitch', text: 'Type something first, boss. Please only.' },
-      ],
-    },
-  ],
-  [COMPANION_EVENTS.LONG_IDLE]: [
-    {
-      mood: 'sleepy',
-      lines: [
-        { speaker: 'byte', text: 'So much time, zero action… fell asleep, no?' },
-        { speaker: 'prime', text: 'We are also bored, honestly.' },
-      ],
-    },
-  ],
-  [COMPANION_EVENTS.GUEST_CLICK]: [
-    {
-      mood: 'calm',
-      lines: [
-        { speaker: 'glitch', text: 'Guest mode? Zero commitment, full choice.' },
-        { speaker: 'byte', text: 'Skipped login entirely. Typical only.' },
-      ],
-    },
-  ],
+export const STORY_BEATS = {
+
+  /* ── Page load ─────────────────────────────────── */
+  GREET: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'nova',  text: 'Hey there. Welcome.' },
+      { speaker: 'echo',  text: 'I wonder who this visitor is.' },
+      { speaker: 'pixel', text: 'Could be a future genius.' },
+      { speaker: 'echo',  text: 'Or somebody starting from zero.' },
+      { speaker: 'nova',  text: 'Everyone starts somewhere.' },
+      { speaker: 'pixel', text: 'I started from version 0.1.' },
+    ],
+  },
+
+  /* ── Idle 6 s ───────────────────────────────────── */
+  IDLE_6S: {
+    mood: 'curious',
+    lines: [
+      { speaker: 'echo',  text: "They haven't moved." },
+      { speaker: 'pixel', text: "Maybe they're thinking." },
+      { speaker: 'nova',  text: "Good decisions take time." },
+      { speaker: 'echo',  text: "Or maybe studying the login form." },
+      { speaker: 'pixel', text: "That's a serious level of analysis." },
+    ],
+  },
+
+  /* ── Idle 12 s ──────────────────────────────────── */
+  IDLE_12S: {
+    mood: 'concerned',
+    lines: [
+      { speaker: 'echo',  text: "Still waiting." },
+      { speaker: 'pixel', text: "Do humans recharge before logging in?" },
+      { speaker: 'nova',  text: "They'll figure it out." },
+      { speaker: 'pixel', text: "I believe in them." },
+    ],
+  },
+
+  /* ── Email field ────────────────────────────────── */
+  FOUND_EMAIL: {
+    mood: 'happy',
+    lines: [
+      { speaker: 'echo',  text: "Movement detected." },
+      { speaker: 'pixel', text: "Aha! They found the email field." },
+      { speaker: 'nova',  text: "Told you." },
+    ],
+  },
+
+  EMAIL_RETURN: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'pixel', text: "Back to email. Interesting choice." },
+      { speaker: 'echo',  text: "Maybe they spotted a typo." },
+    ],
+  },
+
+  TYPING_EMAIL: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'echo',  text: "That looks like progress." },
+      { speaker: 'nova',  text: "They know what they're doing." },
+      { speaker: 'pixel', text: "Good. My earlier theory was wrong." },
+    ],
+  },
+
+  EMAIL_INVALID: {
+    mood: 'concerned',
+    lines: [
+      { speaker: 'echo',  text: "Something doesn't look right." },
+      { speaker: 'pixel', text: "Almost there." },
+      { speaker: 'nova',  text: "A small correction should fix it." },
+    ],
+  },
+
+  EMAIL_VALID: {
+    mood: 'happy',
+    lines: [
+      { speaker: 'nova',  text: "Perfect email format." },
+      { speaker: 'echo',  text: "One step completed." },
+      { speaker: 'pixel', text: "Professional behavior detected." },
+    ],
+  },
+
+  /* ── Password field ─────────────────────────────── */
+  FOCUS_PASSWORD: {
+    mood: 'nudge',
+    lines: [
+      { speaker: 'nova',  text: "Password field ahead." },
+      { speaker: 'echo',  text: "Privacy mode enabled." },
+      { speaker: 'pixel', text: "Wait... can I look?" },
+      { speaker: 'nova',  text: "No." },
+      { speaker: 'pixel', text: "Okay, okay." },
+    ],
+  },
+
+  TYPING_PASSWORD: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'nova',  text: "Looking away." },
+      { speaker: 'echo',  text: "Also looking away." },
+      { speaker: 'pixel', text: "I definitely didn't see anything." },
+    ],
+  },
+
+  PASSWORD_VISIBLE: {
+    mood: 'nudge',
+    lines: [
+      { speaker: 'pixel', text: "Whoa — password visible!" },
+      { speaker: 'echo',  text: "I wasn't looking. Genuinely." },
+      { speaker: 'nova',  text: "Neither was I. Obviously." },
+    ],
+  },
+
+  PASSWORD_HIDDEN: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'echo',  text: "Safe again." },
+    ],
+  },
+
+  /* ── Form ready ─────────────────────────────────── */
+  FORM_VALID: {
+    mood: 'celebrate',
+    lines: [
+      { speaker: 'echo',  text: "Everything looks correct." },
+      { speaker: 'nova',  text: "Ready when they are." },
+      { speaker: 'pixel', text: "This is the exciting part." },
+    ],
+  },
+
+  /* ── Submit states ──────────────────────────────── */
+  SUBMIT_EMPTY: {
+    mood: 'concerned',
+    lines: [
+      { speaker: 'pixel', text: "Hold on... something's missing." },
+      { speaker: 'echo',  text: "Both fields need to be filled." },
+      { speaker: 'nova',  text: "Take your time." },
+    ],
+  },
+
+  LOGIN_PROCESSING: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'nova',  text: "Moment of truth." },
+      { speaker: 'echo',  text: "Checking credentials." },
+      { speaker: 'pixel', text: "No pressure." },
+    ],
+  },
+
+  LOGIN_SUCCESS: {
+    mood: 'celebrate',
+    lines: [
+      { speaker: 'nova',  text: "They made it." },
+      { speaker: 'echo',  text: "Access granted." },
+      { speaker: 'pixel', text: "I knew they'd get in." },
+      { speaker: 'nova',  text: "Let's keep moving forward." },
+    ],
+  },
+
+  LOGIN_FAILED: {
+    mood: 'concerned',
+    lines: [
+      { speaker: 'echo',  text: "Hmm. That didn't work." },
+      { speaker: 'nova',  text: "No worries." },
+      { speaker: 'pixel', text: "Even smart people mistype passwords." },
+      { speaker: 'nova',  text: "Let's try again." },
+    ],
+  },
+
+  /* ── Guest ──────────────────────────────────────── */
+  GUEST_CLICK: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'pixel', text: "Guest mode. Bold and smooth." },
+      { speaker: 'nova',  text: "Either way, welcome." },
+    ],
+  },
+
+  /* ── Long idle ──────────────────────────────────── */
+  LONG_IDLE: {
+    mood: 'sleepy',
+    lines: [
+      { speaker: 'echo',  text: "Still here. Still waiting." },
+      { speaker: 'pixel', text: "Very patient, this one." },
+      { speaker: 'nova',  text: "We'll be here." },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════
+   * REGISTER page beats
+   * Nova  — friendly, optimistic, encouraging
+   * Echo  — curious, observant, overthinks
+   * Pixel — playful, sarcastic, dry humour
+   * ═══════════════════════════════════════════════════ */
+
+  /* ── Page load ── */
+  REG_GREET: {
+    mood: 'happy',
+    lines: [
+      { speaker: 'echo',  text: "Wait. He's really a new visitor." },
+      { speaker: 'pixel', text: "Does he know how to register though?" },
+      { speaker: 'nova',  text: "We'll find out. Let's watch." },
+    ],
+  },
+
+  /* ── 6 s idle — hasn't started ── */
+  REG_IDLE_6S: {
+    mood: 'curious',
+    lines: [
+      { speaker: 'echo',  text: "They haven't touched anything yet." },
+      { speaker: 'pixel', text: "Maybe registration looks intimidating." },
+      { speaker: 'nova',  text: "It's four fields. Not a quest boss." },
+      { speaker: 'pixel', text: "Could be for some people, no?" },
+      { speaker: 'echo',  text: "Fair point actually." },
+    ],
+  },
+
+  /* ── Name field ── */
+  REG_FOUND_NAME: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'echo',  text: "Name field. First move." },
+      { speaker: 'pixel', text: "I wonder what the name will be." },
+      { speaker: 'nova',  text: "Something worth remembering, hopefully." },
+      { speaker: 'pixel', text: "Or just their actual name. Either works." },
+    ],
+  },
+
+  REG_TYPING_NAME: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'pixel', text: "Letters are forming." },
+      { speaker: 'echo',  text: "Character creation in progress." },
+      { speaker: 'nova',  text: "This is always the exciting part." },
+    ],
+  },
+
+  /* ── Email field ── */
+  REG_FOUND_EMAIL: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'nova',  text: "Email section. This is the important part." },
+      { speaker: 'echo',  text: "This is where most people overthink, no?" },
+      { speaker: 'pixel', text: "And then they need to verify it. Extra step." },
+      { speaker: 'echo',  text: "OTP. The step nobody loves but everyone needs." },
+    ],
+  },
+
+  REG_TYPING_EMAIL: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'echo',  text: "That looks like an email address." },
+      { speaker: 'pixel', text: "Hard to tell without the @, honestly." },
+      { speaker: 'nova',  text: "Give them a second." },
+    ],
+  },
+
+  REG_EMAIL_FORMAT_OK: {
+    mood: 'happy',
+    lines: [
+      { speaker: 'nova',  text: "Format looks right. Press Verify now." },
+      { speaker: 'echo',  text: "The Verify button is right there." },
+      { speaker: 'pixel', text: "Just one click between here and the next step." },
+    ],
+  },
+
+  /* ── OTP flow ── */
+  REG_OTP_SENT: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'echo',  text: "OTP sent to inbox." },
+      { speaker: 'nova',  text: "Check your email. It should be there." },
+      { speaker: 'pixel', text: "Six digits. No pressure. Just don't be slow." },
+      { speaker: 'echo',  text: "Very helpful, Pixel." },
+    ],
+  },
+
+  REG_OTP_FOCUS: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'pixel', text: "OTP field located." },
+      { speaker: 'nova',  text: "Type the six digits from your email." },
+      { speaker: 'echo',  text: "If they haven't closed that tab already." },
+      { speaker: 'pixel', text: "That would be very on-brand." },
+    ],
+  },
+
+  REG_TYPING_OTP: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'echo',  text: "Digits are going in." },
+      { speaker: 'pixel', text: "One... two... three..." },
+      { speaker: 'nova',  text: "Almost there." },
+    ],
+  },
+
+  REG_OTP_VERIFIED: {
+    mood: 'celebrate',
+    lines: [
+      { speaker: 'nova',  text: "Email confirmed. Well done." },
+      { speaker: 'echo',  text: "Identity established." },
+      { speaker: 'pixel', text: "We officially believe they exist now." },
+      { speaker: 'nova',  text: "Moving forward." },
+    ],
+  },
+
+  /* ── Password field (pixel peek — same eye-close mechanic as login) ── */
+  REG_FOUND_PASSWORD: {
+    mood: 'nudge',
+    lines: [
+      { speaker: 'nova',  text: "Password time. Make it count." },
+      { speaker: 'echo',  text: "Eyes closed, squad." },
+      { speaker: 'pixel', text: "Wait — just a quick peek?" },
+      { speaker: 'nova',  text: "No." },
+      { speaker: 'pixel', text: "Fine. Closed." },
+    ],
+  },
+
+  REG_TYPING_PASSWORD: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'nova',  text: "Pretending not to watch." },
+      { speaker: 'echo',  text: "Same. Very professionally." },
+      { speaker: 'pixel', text: "Password dots. The eternal mystery." },
+    ],
+  },
+
+  REG_PASS_WEAK: {
+    mood: 'concerned',
+    lines: [
+      { speaker: 'pixel', text: "That password is… optimistic." },
+      { speaker: 'echo',  text: "Strength bar is not happy right now." },
+      { speaker: 'nova',  text: "Uppercase, numbers, symbols. Mix it up." },
+      { speaker: 'pixel', text: "A little effort goes a long way, only." },
+    ],
+  },
+
+  REG_PASS_STRONG: {
+    mood: 'celebrate',
+    lines: [
+      { speaker: 'nova',  text: "Strong password. Respect." },
+      { speaker: 'pixel', text: "S-rank security. Didn't see that coming." },
+      { speaker: 'echo',  text: "Neither did I. Genuinely impressed." },
+    ],
+  },
+
+  /* ── Confirm field ── */
+  REG_CONFIRM_MISMATCH: {
+    mood: 'concerned',
+    lines: [
+      { speaker: 'echo',  text: "Confirm password doesn't match." },
+      { speaker: 'pixel', text: "Classic. So close too." },
+      { speaker: 'nova',  text: "Just one correction. You've got this." },
+    ],
+  },
+
+  /* ── All valid — ready to submit ── */
+  REG_FORM_READY: {
+    mood: 'celebrate',
+    lines: [
+      { speaker: 'echo',  text: "All fields complete." },
+      { speaker: 'nova',  text: "This is the moment." },
+      { speaker: 'pixel', text: "New hunter about to join the arena." },
+      { speaker: 'echo',  text: "Hit the button." },
+    ],
+  },
+
+  /* ── Submit outcomes ── */
+  REG_SUCCESS: {
+    mood: 'celebrate',
+    lines: [
+      { speaker: 'nova',  text: "Account created. Welcome." },
+      { speaker: 'echo',  text: "New hunter registered." },
+      { speaker: 'pixel', text: "They actually finished it. I'm proud." },
+      { speaker: 'nova',  text: "See you in the skill arena." },
+    ],
+  },
+
+  REG_FAILED: {
+    mood: 'concerned',
+    lines: [
+      { speaker: 'echo',  text: "Hmm. That didn't go through." },
+      { speaker: 'nova',  text: "Don't worry. Try again." },
+      { speaker: 'pixel', text: "You were literally one submit away." },
+      { speaker: 'nova',  text: "We'll still be here." },
+    ],
+  },
 }
 
 export function isValidEmail(value) {
@@ -167,34 +406,30 @@ export function isValidEmail(value) {
 
 export function resolveMurmur(event) {
   if (!event?.type) return null
-  const pool = DIALOGUES[event.type]
-  if (!pool?.length) return null
-
-  const dialogue = pool[(event.count || 0) % pool.length]
-  const speakers = [...new Set(dialogue.lines.map(l => l.speaker))]
-
-  const bySpeaker = {}
-  dialogue.lines.forEach(line => {
-    bySpeaker[line.speaker] = line.text
-  })
-
+  const beat = STORY_BEATS[event.type]
+  if (!beat) return null
   return {
     key: `${event.type}-${event.id}`,
-    mood: dialogue.mood,
-    lines: dialogue.lines,
-    bySpeaker,
-    speakers,
-    isGroup: speakers.length >= 2,
+    type: event.type,
+    mood: beat.mood,
+    lines: beat.lines,
+    lineCount: beat.lines.length,
   }
 }
 
-export function getMurmurHideMs(event) {
-  const murmur = resolveMurmur(event)
-  if (!murmur) return 7000
-  return 5500 + murmur.lines.length * 2400
+export function getBeatDurationMs(type) {
+  const beat = STORY_BEATS[type]
+  if (!beat?.lines?.length) return 4000
+  const n = beat.lines.length
+  return n * LINE_DURATION_MS + (n - 1) * LINE_GAP_MS + 300
 }
 
-export function getSpeechForBot(murmur, speaker) {
-  if (!murmur?.bySpeaker) return null
-  return murmur.bySpeaker[speaker] ?? null
+export function getMurmurHideMs(event) {
+  if (!event?.type) return 4000
+  return getBeatDurationMs(event.type)
 }
+
+/** @deprecated — use STORY_BEATS keys directly */
+export const COMPANION_EVENTS = Object.fromEntries(
+  Object.keys(STORY_BEATS).map(k => [k, k]),
+)

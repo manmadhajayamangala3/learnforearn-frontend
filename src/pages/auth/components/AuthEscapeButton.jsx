@@ -13,6 +13,7 @@ export default function AuthEscapeButton({
   onClick,
   hint = 'Fill in the fields first…',
   staticDisabled = false,
+  compact = false,
 }) {
   const wrapRef = useRef(null)
   const offsetRef = useRef({ x: 0, y: 0 })
@@ -75,12 +76,15 @@ export default function AuthEscapeButton({
     onClick?.(e)
   }
 
+  const compactCls = compact ? ' auth-escape-wrap--compact' : ''
+  const btnCompact = compact ? ' auth-btn-primary--compact' : ''
+
   if (staticDisabled) {
     return (
-      <div className="auth-escape-wrap auth-escape-wrap--static">
+      <div className={`auth-escape-wrap auth-escape-wrap--static${compactCls}`}>
         <button
           type={type}
-          className={`${className}${ready ? ' auth-btn-primary--ready' : ' auth-btn-primary--locked'}`}
+          className={`${className}${btnCompact}${ready ? ' auth-btn-primary--ready' : ' auth-btn-primary--locked'}`}
           disabled={loading || !ready}
           onClick={onClick}
         >
@@ -92,7 +96,7 @@ export default function AuthEscapeButton({
   }
 
   return (
-    <div ref={wrapRef} className="auth-escape-wrap">
+    <div ref={wrapRef} className={`auth-escape-wrap${compactCls}`}>
       {!ready && !loading && (
         <motion.span
           className="auth-escape-hint"
@@ -104,7 +108,7 @@ export default function AuthEscapeButton({
       )}
       <motion.button
         type={type}
-        className={`${className}${!ready ? ' auth-btn-primary--flee' : ''}${ready ? ' auth-btn-primary--ready' : ''}`}
+        className={`${className}${btnCompact}${!ready ? ' auth-btn-primary--flee' : ''}${ready ? ' auth-btn-primary--ready' : ''}`}
         disabled={loading}
         onClick={handleClick}
         animate={{ x: offset.x, y: offset.y }}

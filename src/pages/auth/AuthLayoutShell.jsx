@@ -3,41 +3,32 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeft, Moon, Sun, Swords } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
-import AuthNavSwitch from './components/AuthNavSwitch'
 import LoginAnimation from './components/LoginAnimation'
-import RegisterAnimation from './components/RegisterAnimation'
 import { AuthFormProvider } from './context/AuthFormContext'
 import '../../styles/auth-animations.css'
 
 const panelVariants = {
   initial: (dir) => ({ opacity: 0, x: dir > 0 ? 28 : -28, filter: 'blur(4px)' }),
   animate: { opacity: 1, x: 0, filter: 'blur(0px)', transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] } },
-  exit: (dir) => ({ opacity: 0, x: dir > 0 ? -20 : 20, filter: 'blur(4px)', transition: { duration: 0.22 } }),
-}
-
-const sceneVariants = {
-  initial: (dir) => ({ opacity: 0, scale: 0.94, x: dir > 0 ? -40 : 40 }),
-  animate: { opacity: 1, scale: 1, x: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
-  exit: (dir) => ({ opacity: 0, scale: 0.96, x: dir > 0 ? 30 : -30, transition: { duration: 0.28 } }),
+  exit:    (dir) => ({ opacity: 0, x: dir > 0 ? -20 : 20, filter: 'blur(4px)', transition: { duration: 0.22 } }),
 }
 
 export default function AuthLayoutShell() {
   const { pathname } = useLocation()
-  const navigate = useNavigate()
+  const navigate     = useNavigate()
   const { theme, toggleTheme } = useTheme()
   const isRegister = pathname === '/register'
-  const direction = isRegister ? 1 : -1
+  const direction  = isRegister ? 1 : -1
 
   useEffect(() => {
     const html = document.documentElement
     const body = document.body
-    const prevHtml = html.style.overflow
-    const prevBody = body.style.overflow
+    const prev = { html: html.style.overflow, body: body.style.overflow }
     html.style.overflow = 'hidden'
     body.style.overflow = 'hidden'
     return () => {
-      html.style.overflow = prevHtml
-      body.style.overflow = prevBody
+      html.style.overflow = prev.html
+      body.style.overflow = prev.body
     }
   }, [])
 
@@ -45,7 +36,7 @@ export default function AuthLayoutShell() {
     <AuthFormProvider>
       <div className={`auth-page${isRegister ? ' auth-page--register' : ' auth-page--login'}`}>
         <div className="auth-bg-gradient" aria-hidden="true" />
-        <div className="auth-bg-noise" aria-hidden="true" />
+        <div className="auth-bg-noise"    aria-hidden="true" />
 
         <div className="auth-top-actions">
           <button type="button" className="auth-back-btn" onClick={() => navigate('/')}>
@@ -62,65 +53,31 @@ export default function AuthLayoutShell() {
         </div>
 
         <div className="auth-stage">
-          {/* Login: animation left · Register: form left */}
+          {/*
+           * LEFT — bots are always here.
+           * No AnimatePresence wrapper → they never animate out on page switch.
+           */}
           <div className="auth-stage-col auth-stage-col--leading">
-            <AnimatePresence mode="wait" custom={direction}>
-              {isRegister ? (
-                <motion.div
-                  key="form-leading"
-                  className="auth-form-col"
-                  custom={direction}
-                  variants={panelVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  <AuthFormCard navigate={navigate} />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="scene-login"
-                  className="auth-scene-col"
-                  custom={direction}
-                  variants={sceneVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  <LoginAnimation />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <LoginAnimation />
           </div>
 
-          {/* Login: form right · Register: animation right */}
+          {/*
+           * RIGHT — form always here.
+           * AnimatePresence slides the card between /login and /register.
+           */}
           <div className="auth-stage-col auth-stage-col--trailing">
             <AnimatePresence mode="wait" custom={direction}>
-              {isRegister ? (
-                <motion.div
-                  key="scene-register"
-                  className="auth-scene-col"
-                  custom={direction}
-                  variants={sceneVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  <RegisterAnimation />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="form-trailing"
-                  className="auth-form-col"
-                  custom={direction}
-                  variants={panelVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  <AuthFormCard navigate={navigate} />
-                </motion.div>
-              )}
+              <motion.div
+                key={pathname}
+                className="auth-form-col"
+                custom={direction}
+                variants={panelVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                <AuthFormCard navigate={navigate} isLogin={!isRegister} />
+              </motion.div>
             </AnimatePresence>
           </div>
         </div>
@@ -129,21 +86,22 @@ export default function AuthLayoutShell() {
   )
 }
 
-function AuthFormCard({ navigate }) {
-  const { pathname } = useLocation()
-  const direction = pathname === '/register' ? 1 : -1
-  const isLogin = pathname === '/login'
+function AuthFormCard({ navigate, isLogin }) {
+  const tagline = isLogin
+    ? 'Level up. One concept at a time.'
+    : 'Your skill journey starts here.'
 
   return (
-    <div className={`auth-card-wrap${isLogin ? ' auth-card-wrap--login' : ''}`}>
+    <div className={`auth-card-wrap${isLogin ? ' auth-card-wrap--login' : ' auth-card-wrap--register'}`}>
       <motion.div
-        className={`auth-card${isLogin ? ' auth-card--login' : ''}`}
-        initial={{ opacity: 0, y: 24, scale: 0.97 }}
+        className={`auth-card${isLogin ? ' auth-card--login' : ' auth-card--register'}`}
+        initial={{ opacity: 0, y: 20, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ type: 'spring', stiffness: 120, damping: 20, delay: 0.08 }}
+        transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.04 }}
       >
         <div className="auth-card-glow" aria-hidden="true" />
         <div className="auth-card-inner">
+          {/* Brand — same on both pages, no nav tabs */}
           <motion.button
             type="button"
             className="auth-brand-block"
@@ -157,21 +115,10 @@ function AuthFormCard({ navigate }) {
             <div className="auth-brand-title">LearnToEarn</div>
           </motion.button>
 
-          <AuthNavSwitch />
+          <p className="auth-brand-tagline">{tagline}</p>
 
-          <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
-              key={pathname}
-              custom={direction}
-              variants={panelVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className="auth-form-panel"
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          {/* Form outlet */}
+          <Outlet />
         </div>
       </motion.div>
     </div>
