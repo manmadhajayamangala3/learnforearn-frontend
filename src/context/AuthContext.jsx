@@ -16,11 +16,19 @@ export function AuthProvider({ children }) {
   const completeAuthOverlay = () => setAuthOverlay(o => (o ? { ...o, completing: true } : null))
   const hideAuthOverlay = () => setAuthOverlay(null)
 
-  // On mount — call /me with credentials. httpOnly cookie is sent automatically.
+  // On mount — only call /me if we previously stored a session flag.
+  // Anonymous visitors (no flag) skip the call entirely — no 401/403 in console.
   useEffect(() => {
+    if (!localStorage.getItem('has_session')) {
+      setLoading(false)
+      return
+    }
     getMe()
       .then(res => setUser(res.data))
-      .catch(() => setUser(null))
+      .catch(() => {
+        localStorage.removeItem('has_session')
+        setUser(null)
+      })
       .finally(() => setLoading(false))
   }, [])
 
@@ -35,7 +43,7 @@ export function AuthProvider({ children }) {
 
   const login = (_token, userData) => {
     clearUserCache()
-    // Cookie is set by the backend response — no localStorage needed
+    localStorage.setItem('has_session', '1')
     setUser(userData)
   }
 

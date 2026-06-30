@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Mail } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import { loginUser, guestLogin } from '../../api/api'
@@ -137,10 +137,11 @@ export default function LoginForm() {
       login(data.token, data.user)
       if (data.user.role === 'ADMIN') navigate('/admin-skill-arena')
       else navigate(redirectTo)
-    } catch {
+    } catch (err) {
       hideAuthOverlay()
       dismissCompanion()
       emitCompanionEvent('LOGIN_FAILED')
+      toast.error(err.response?.data?.error || 'Login failed. Check your email and password.')
     } finally {
       setLoading(false)
     }
@@ -173,19 +174,26 @@ export default function LoginForm() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.05 }}
       >
-        Sign in to continue your journey
+        Sign in to continue your journey.{' '}
+        <Link to={`/register${registerQs}`} className="auth-link" style={{ fontSize: 'inherit' }}>
+          New here? Sign up free
+        </Link>
       </motion.p>
 
       <form onSubmit={handleSubmit} className="auth-form">
         {/* Email */}
         <div className={`auth-field${focusedField === 'email' ? ' auth-field--focus' : ''}`}>
-          <label className="auth-label" htmlFor="login-email">Email</label>
+          <label className="auth-label auth-label--with-icon" htmlFor="login-email">
+            <Mail size={13} aria-hidden="true" />
+            Email
+          </label>
           <input
             id="login-email"
             type="email"
             className="auth-input"
             placeholder="you@example.com"
             autoComplete="email"
+            required
             value={form.email}
             onChange={e => { setForm({ ...form, email: e.target.value }); touchActivity() }}
             onFocus={handleEmailFocus}
@@ -203,6 +211,7 @@ export default function LoginForm() {
               className="auth-input"
               placeholder="Enter your password"
               autoComplete="current-password"
+              required
               value={form.password}
               onChange={e => { setForm({ ...form, password: e.target.value }); touchActivity() }}
               onFocus={handlePasswordFocus}
@@ -216,6 +225,11 @@ export default function LoginForm() {
             >
               {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
             </button>
+          </div>
+          <div className="auth-field-meta auth-field-meta--end">
+            <Link to="/forgot-password" className="auth-link auth-link--meta">
+              Forgot password?
+            </Link>
           </div>
         </div>
 

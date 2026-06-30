@@ -215,7 +215,7 @@ export default function DashboardPage() {
   // Re-fetch everything when a concept is cleared (dispatched from QuizResultPage)
   useEffect(() => {
     const refresh = () => {
-      clearApiCache('progressSummary', 'hunterStats', 'subjects', 'subject:*', 'concept:*', 'quizStatus:*', 'roadmapStatus:*', 'enrolledRoadmaps')
+      clearApiCache('progressSummary', 'hunterStats', 'subjects', 'subject:*', 'concept:*', 'quizStatus:*', 'roadmapStatus:*')
       getProgressSummary().then(s => {
         setSummary(s.data)
         syncQuestsFromSummary(s.data, user?.id)

@@ -18,7 +18,9 @@ export default function AuthLayoutShell() {
   const navigate     = useNavigate()
   const { theme, toggleTheme } = useTheme()
   const isRegister = pathname === '/register'
+  const isForgot   = pathname === '/forgot-password'
   const direction  = isRegister ? 1 : -1
+  const pageClass  = isRegister ? ' auth-page--register' : isForgot ? ' auth-page--forgot' : ' auth-page--login'
 
   useEffect(() => {
     const html = document.documentElement
@@ -34,7 +36,7 @@ export default function AuthLayoutShell() {
 
   return (
     <AuthFormProvider>
-      <div className={`auth-page${isRegister ? ' auth-page--register' : ' auth-page--login'}`}>
+      <div className={`auth-page${pageClass}`}>
         <div className="auth-bg-gradient" aria-hidden="true" />
         <div className="auth-bg-noise"    aria-hidden="true" />
 

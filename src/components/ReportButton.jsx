@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Flag, X, Send } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
-import api from '../api/api'
+import { submitReport } from '../api/api'
 import toast from 'react-hot-toast'
 
 const TYPES = [
@@ -57,7 +57,7 @@ export default function ReportButton({ pageTitle, variant = 'floating' }) {
     if (!description.trim()) { toast.error('Please describe the issue'); return }
     setSubmit(true)
     try {
-      await api.post('/reports', {
+      await submitReport({
         pageUrl:     location.pathname,
         pageTitle:   resolvedTitle,
         type,

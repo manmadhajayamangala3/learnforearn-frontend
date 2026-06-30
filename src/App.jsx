@@ -18,6 +18,7 @@ const LoaderDemo               = lazy(() => import('./pages/LoaderDemo'))
 const AuthLayoutShell            = lazy(() => import('./pages/auth/AuthLayoutShell'))
 const LoginForm                  = lazy(() => import('./pages/auth/LoginForm'))
 const RegisterForm               = lazy(() => import('./pages/auth/RegisterForm'))
+const ForgotPasswordForm         = lazy(() => import('./pages/auth/ForgotPasswordForm'))
 const NotFoundPage             = lazy(() => import('./pages/NotFoundPage'))
 
 const MissionsPage             = lazy(() => import('./pages/MissionsPage'))
@@ -75,7 +76,7 @@ const AdminWalkIns             = lazy(() => import('./pages/admin-skill-arena/Ad
 
 function GlobalReportButton() {
   const { pathname } = useLocation()
-  const hide = pathname.startsWith('/admin') || pathname === '/login' || pathname === '/register' || pathname === '/loader-demo'
+  const hide = pathname.startsWith('/admin') || pathname === '/login' || pathname === '/register' || pathname === '/forgot-password' || pathname === '/loader-demo'
   if (hide) return null
   return <ReportButton variant="floating" />
 }
@@ -135,8 +136,9 @@ function App() {
             {/* Auth — guests only; logged-in users redirect home or ?redirect= */}
             <Route element={<GuestRoute />}>
               <Route element={<AuthLayoutShell />}>
-                <Route path="/login"    element={<LoginForm />} />
-                <Route path="/register" element={<RegisterForm />} />
+                <Route path="/login"             element={<LoginForm />} />
+                <Route path="/register"          element={<RegisterForm />} />
+                <Route path="/forgot-password"   element={<ForgotPasswordForm />} />
               </Route>
             </Route>
             <Route path="/missions" element={<MissionsPage />} />
