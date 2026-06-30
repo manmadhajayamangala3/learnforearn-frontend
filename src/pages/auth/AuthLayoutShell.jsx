@@ -132,11 +132,12 @@ export default function AuthLayoutShell() {
 function AuthFormCard({ navigate }) {
   const { pathname } = useLocation()
   const direction = pathname === '/register' ? 1 : -1
+  const isLogin = pathname === '/login'
 
   return (
-    <div className="auth-card-wrap">
+    <div className={`auth-card-wrap${isLogin ? ' auth-card-wrap--login' : ''}`}>
       <motion.div
-        className="auth-card"
+        className={`auth-card${isLogin ? ' auth-card--login' : ''}`}
         initial={{ opacity: 0, y: 24, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: 'spring', stiffness: 120, damping: 20, delay: 0.08 }}

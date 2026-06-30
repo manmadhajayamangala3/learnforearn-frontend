@@ -12,6 +12,7 @@ export default function AuthEscapeButton({
   type = 'submit',
   onClick,
   hint = 'Fill in the fields first…',
+  staticDisabled = false,
 }) {
   const wrapRef = useRef(null)
   const offsetRef = useRef({ x: 0, y: 0 })
@@ -72,6 +73,22 @@ export default function AuthEscapeButton({
       return
     }
     onClick?.(e)
+  }
+
+  if (staticDisabled) {
+    return (
+      <div className="auth-escape-wrap auth-escape-wrap--static">
+        <button
+          type={type}
+          className={`${className}${ready ? ' auth-btn-primary--ready' : ' auth-btn-primary--locked'}`}
+          disabled={loading || !ready}
+          onClick={onClick}
+        >
+          {loading && <span className="loading-spinner" style={{ width: 18, height: 18 }} />}
+          {children}
+        </button>
+      </div>
+    )
   }
 
   return (

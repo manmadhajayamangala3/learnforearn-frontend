@@ -1,4 +1,5 @@
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react'
+import { getMurmurHideMs } from '../hooks/companionMurmurs'
 
 const AuthFormContext = createContext(null)
 
@@ -7,6 +8,45 @@ export function AuthFormProvider({ children }) {
   const [passwordVisible, setPasswordVisible] = useState(false)
   const [formReady, setFormReady] = useState(false)
   const [formProgress, setFormProgress] = useState(0)
+  const [companionEvent, setCompanionEvent] = useState(null)
+  const [companionVisible, setCompanionVisible] = useState(false)
+  const [lastActivity, setLastActivity] = useState(() => Date.now())
+  const hideTimerRef = useRef(null)
+
+  const dismissCompanion = useCallback(() => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
+    hideTimerRef.current = null
+    setCompanionVisible(false)
+    setCompanionEvent(null)
+  }, [])
+
+  const emitCompanionEvent = useCallback((type) => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
+
+    setCompanionVisible(true)
+    setCompanionEvent(prev => {
+      const count = prev?.type === type ? (prev.count || 0) + 1 : 0
+      const next = { type, id: Date.now(), count }
+
+      hideTimerRef.current = setTimeout(() => {
+        setCompanionVisible(false)
+        setCompanionEvent(null)
+      }, getMurmurHideMs(next))
+
+      return next
+    })
+  }, [])
+
+  const touchActivity = useCallback(() => {
+    setLastActivity(Date.now())
+  }, [])
+
+  const resetCompanion = useCallback(() => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
+    setCompanionEvent(null)
+    setCompanionVisible(false)
+    setLastActivity(Date.now())
+  }, [])
 
   const value = useMemo(() => ({
     focusedField,
@@ -17,7 +57,26 @@ export function AuthFormProvider({ children }) {
     setFormReady,
     formProgress,
     setFormProgress,
-  }), [focusedField, passwordVisible, formReady, formProgress])
+    companionEvent,
+    companionVisible,
+    emitCompanionEvent,
+    dismissCompanion,
+    lastActivity,
+    touchActivity,
+    resetCompanion,
+  }), [
+    focusedField,
+    passwordVisible,
+    formReady,
+    formProgress,
+    companionEvent,
+    companionVisible,
+    emitCompanionEvent,
+    dismissCompanion,
+    lastActivity,
+    touchActivity,
+    resetCompanion,
+  ])
 
   return (
     <AuthFormContext.Provider value={value}>
