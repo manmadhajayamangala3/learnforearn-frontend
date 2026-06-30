@@ -14,8 +14,9 @@ import ReportButton from './components/ReportButton'
 // Each route loads its chunk only when first visited; subsequent visits use cache
 const LandingPage              = lazy(() => import('./pages/LandingPage'))
 const LoaderDemo               = lazy(() => import('./pages/LoaderDemo'))
-const LoginPage                = lazy(() => import('./pages/auth/LoginPage'))
-const RegisterPage             = lazy(() => import('./pages/auth/RegisterPage'))
+const AuthLayoutShell            = lazy(() => import('./pages/auth/AuthLayoutShell'))
+const LoginForm                  = lazy(() => import('./pages/auth/LoginForm'))
+const RegisterForm               = lazy(() => import('./pages/auth/RegisterForm'))
 const NotFoundPage             = lazy(() => import('./pages/NotFoundPage'))
 
 const MissionsPage             = lazy(() => import('./pages/MissionsPage'))
@@ -131,8 +132,10 @@ function App() {
             <Route path="/loader-demo" element={<LoaderDemo />} />
 
             {/* Public */}
-            <Route path="/login"    element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route element={<AuthLayoutShell />}>
+              <Route path="/login"    element={<LoginForm />} />
+              <Route path="/register" element={<RegisterForm />} />
+            </Route>
             <Route path="/missions" element={<MissionsPage />} />
             <Route path="/walk-ins" element={<JobsPage />} />
             <Route path="/fresher-instructions" element={<FresherInstructionsPage />} />
