@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { getMurmurHideMs } from '../hooks/companionMurmurs'
 
 const AuthFormContext = createContext(null)
@@ -45,6 +45,10 @@ export function AuthFormProvider({ children }) {
     setCompanionEvent(null)
     setCompanionVisible(false)
     setLastActivity(Date.now())
+  }, [])
+
+  useEffect(() => () => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
   }, [])
 
   const value = useMemo(() => ({

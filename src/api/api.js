@@ -4,12 +4,23 @@ const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 
 const api = axios.create({ baseURL: BASE_URL, withCredentials: true })
 
+const AUTH_PUBLIC_PATHS = ['/login', '/register', '/forgot-password']
+
+/** Preserve guest device + theme when clearing session (matches AuthContext logout). */
+function clearBrowserSessionPreservingPrefs() {
+  const guestDeviceId = localStorage.getItem('guest_device_id')
+  const theme = localStorage.getItem('theme')
+  localStorage.clear()
+  if (guestDeviceId) localStorage.setItem('guest_device_id', guestDeviceId)
+  if (theme) localStorage.setItem('theme', theme)
+}
+
 api.interceptors.response.use(
   res => res,
   err => {
-    if (err.response?.status === 401 && !['/login', '/register', '/forgot-password'].includes(window.location.pathname)) {
+    if (err.response?.status === 401 && !AUTH_PUBLIC_PATHS.includes(window.location.pathname)) {
       clearUserCache()
-      localStorage.clear()
+      clearBrowserSessionPreservingPrefs()
       window.location.href = '/login'
     }
     return Promise.reject(err)
@@ -87,8 +98,6 @@ export const getSubject       = (id)        => withCache(`subject:${id}`,     2*
 export const getConcept       = (id)        => withCache(`concept:${id}`,     2*60_000, () => api.get(`/concepts/${id}`))
 
 // ─── PROGRESS ────────────────────────────────
-export const completeConcept    = (id)      => api.post(`/progress/concept/${id}/complete`)
-export const uncompleteConcept  = (id)      => api.delete(`/progress/concept/${id}/uncomplete`)
 export const getProgressSummary = ()        => withCache('progressSummary',   60_000,   () => api.get('/progress/summary'))
 export const getHunterStats     = ()        => withCache('hunterStats',        60_000,   () => api.get('/progress/hunter-stats'))
 

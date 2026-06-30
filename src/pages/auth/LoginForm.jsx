@@ -105,7 +105,7 @@ export default function LoginForm() {
       navigate(redirectTo)
     } catch {
       hideAuthOverlay()
-      toast.error('Could not start guest session. Try again.')
+      toast.error('Guest mode is unavailable right now. Please try again in a moment.')
     } finally {
       setGuestLoading(false)
     }
@@ -141,7 +141,7 @@ export default function LoginForm() {
       hideAuthOverlay()
       dismissCompanion()
       emitCompanionEvent('LOGIN_FAILED')
-      toast.error(err.response?.data?.error || 'Login failed. Check your email and password.')
+      toast.error(err.response?.data?.error || 'That email or password did not match. Double-check and try again.')
     } finally {
       setLoading(false)
     }

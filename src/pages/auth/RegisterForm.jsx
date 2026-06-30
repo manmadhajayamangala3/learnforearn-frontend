@@ -134,7 +134,7 @@ export default function RegisterForm() {
 
   /* ── OTP actions ────────────────────────────────── */
   const handleSendOtp = async () => {
-    if (!form.email) { toast.error('Enter your email first'); return }
+    if (!form.email) { toast.error('Please enter your email address first.'); return }
     setEmailError('')
     setSendingOtp(true)
     try {
@@ -143,13 +143,13 @@ export default function RegisterForm() {
       setOtp('')
       startCooldown(60)
       sessionStorage.setItem('otp_email', form.email)
-      toast.success('OTP sent! Check your inbox.')
+      toast.success('We sent a 6-digit code to your inbox.')
     } catch (err) {
       const status      = err.response?.status
       const msg         = err.response?.data?.error || 'Failed to send OTP'
       const retryAfter  = err.response?.data?.retryAfter
       if (status === 409)  setEmailError(msg)
-      else if (retryAfter) { startCooldown(retryAfter); toast.error(`Wait ${retryAfter}s before resending.`) }
+      else if (retryAfter) { startCooldown(retryAfter); toast.error(`Almost there — wait ${retryAfter}s before requesting another code.`) }
       else toast.error(msg)
     } finally {
       setSendingOtp(false)
@@ -165,9 +165,9 @@ export default function RegisterForm() {
       setOtpSent(false)
       sessionStorage.removeItem('otp_email')
       sessionStorage.removeItem('otp_sent_at')
-      toast.success('Email verified successfully!')
+      toast.success('Your email is verified. You can finish signing up.')
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Invalid OTP. Try again.')
+      toast.error(err.response?.data?.error || 'That code did not work. Check your email and try again.')
     } finally {
       setVerifyingOtp(false)
     }
@@ -201,7 +201,7 @@ export default function RegisterForm() {
       hideAuthOverlay()
       dismissCompanion()
       emitBeat('REG_FAILED')
-      toast.error(err.response?.data?.error || 'Registration failed')
+      toast.error(err.response?.data?.error || 'We could not create your account. Please try again.')
     } finally {
       setLoading(false)
     }

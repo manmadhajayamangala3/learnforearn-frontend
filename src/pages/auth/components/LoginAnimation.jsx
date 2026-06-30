@@ -184,7 +184,7 @@ export default function LoginAnimation() {
   useEffect(() => {
     const t = companionEvent?.type
     // Both login and register have a password-privacy beat
-    if (t !== 'FOCUS_PASSWORD' && t !== 'REG_FOUND_PASSWORD') return
+    if (t !== 'FOCUS_PASSWORD' && t !== 'REG_FOUND_PASSWORD' && t !== 'FP_FOUND_PASSWORD') return
     // New password-focus event — (re)start timer; no cleanup return so the
     // timer ref persists even after the companion auto-hides.
     clearTimeout(pixelTimerRef.current)

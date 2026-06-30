@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { getMe, clearUserCache } from '../api/api'
+import { logApiError } from '../utils/devLog'
 import api from '../api/api'
 import LoadingOverlay from '../components/LoadingOverlay'
 
@@ -35,7 +36,7 @@ export function AuthProvider({ children }) {
   // Listen for sl:refresh — re-fetch /me to get latest xp/level/rank
   useEffect(() => {
     const refresh = () => {
-      getMe().then(res => setUser(res.data)).catch(() => {})
+      getMe().then(res => setUser(res.data)).catch(err => logApiError('auth-refresh', err))
     }
     window.addEventListener('sl:refresh', refresh)
     return () => window.removeEventListener('sl:refresh', refresh)

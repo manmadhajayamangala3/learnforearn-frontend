@@ -398,6 +398,181 @@ export const STORY_BEATS = {
       { speaker: 'nova',  text: "We'll still be here." },
     ],
   },
+
+  /* ═══════════════════════════════════════════════════
+   * FORGOT PASSWORD page beats
+   * Playful teasing about forgetting — real-world recovery flow
+   * ═══════════════════════════════════════════════════ */
+
+  FP_GREET: {
+    mood: 'nudge',
+    lines: [
+      { speaker: 'pixel', text: "Wait. They forgot their password?" },
+      { speaker: 'echo',  text: "How does that even happen in 2026?" },
+      { speaker: 'pixel', text: "Are we really that… never mind." },
+      { speaker: 'nova',  text: "Hey. It happens. Let's fix it together." },
+      { speaker: 'echo',  text: "Fine. Recovery mode activated." },
+    ],
+  },
+
+  FP_IDLE_6S: {
+    mood: 'curious',
+    lines: [
+      { speaker: 'echo',  text: "Still staring at the email field." },
+      { speaker: 'pixel', text: "Maybe they're trying to remember which email they used." },
+      { speaker: 'nova',  text: "Take your time. Wrong email won't help." },
+      { speaker: 'pixel', text: "College email? Personal? The plot thickens." },
+    ],
+  },
+
+  FP_TYPING_EMAIL: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'echo',  text: "Email incoming. Good sign." },
+      { speaker: 'pixel', text: "Hope they remember this one correctly." },
+      { speaker: 'nova',  text: "Almost there — we'll send a code next." },
+    ],
+  },
+
+  FP_EMAIL_VALID: {
+    mood: 'happy',
+    lines: [
+      { speaker: 'nova',  text: "Format looks good. Hit Send OTP." },
+      { speaker: 'pixel', text: "Assuming this is the account they forgot…" },
+      { speaker: 'echo',  text: "One click away from redemption." },
+    ],
+  },
+
+  FP_EMAIL_NOT_FOUND: {
+    mood: 'concerned',
+    lines: [
+      { speaker: 'echo',  text: "That email isn't registered here." },
+      { speaker: 'pixel', text: "Wrong inbox or wrong platform?" },
+      { speaker: 'nova',  text: "Double-check the email or create an account." },
+    ],
+  },
+
+  FP_OTP_SENT: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'nova',  text: "Code sent. Check your inbox." },
+      { speaker: 'pixel', text: "Also check spam. Humans love hiding OTPs there." },
+      { speaker: 'echo',  text: "Six digits. Don't type with cold hands." },
+      { speaker: 'nova',  text: "We'll verify it's really you." },
+    ],
+  },
+
+  FP_TYPING_OTP: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'echo',  text: "Digits going in." },
+      { speaker: 'pixel', text: "No peeking at my screen, Echo." },
+      { speaker: 'echo',  text: "I wasn't looking. Officially." },
+    ],
+  },
+
+  FP_OTP_FAILED: {
+    mood: 'concerned',
+    lines: [
+      { speaker: 'pixel', text: "That code didn't work." },
+      { speaker: 'echo',  text: "Typo? Expired? Classic combo." },
+      { speaker: 'nova',  text: "Try again or resend a fresh code." },
+    ],
+  },
+
+  FP_OTP_VERIFIED: {
+    mood: 'celebrate',
+    lines: [
+      { speaker: 'nova',  text: "Identity confirmed. You are you." },
+      { speaker: 'echo',  text: "Access to reset granted." },
+      { speaker: 'pixel', text: "Okay fine. You're not *that* dumb." },
+      { speaker: 'nova',  text: "Now pick a password you'll remember this time." },
+    ],
+  },
+
+  FP_NEW_PASS_GREET: {
+    mood: 'nudge',
+    lines: [
+      { speaker: 'pixel', text: "New password time. Write it somewhere safe." },
+      { speaker: 'echo',  text: "Not on a sticky note under the keyboard." },
+      { speaker: 'nova',  text: "Please remember it once and for all." },
+      { speaker: 'pixel', text: "We believe in you. Barely." },
+    ],
+  },
+
+  FP_FOUND_PASSWORD: {
+    mood: 'nudge',
+    lines: [
+      { speaker: 'nova',  text: "Eyes closed, team." },
+      { speaker: 'echo',  text: "Privacy mode on." },
+      { speaker: 'pixel', text: "Just one tiny peek—" },
+      { speaker: 'nova',  text: "No." },
+      { speaker: 'pixel', text: "Okay, okay." },
+    ],
+  },
+
+  FP_TYPING_PASSWORD: {
+    mood: 'calm',
+    lines: [
+      { speaker: 'nova',  text: "Not watching. Promise." },
+      { speaker: 'echo',  text: "Strength meter is judging quietly." },
+      { speaker: 'pixel', text: "Make it something you'll recall in a week." },
+    ],
+  },
+
+  FP_PASS_WEAK: {
+    mood: 'concerned',
+    lines: [
+      { speaker: 'pixel', text: "That password forgot to be strong." },
+      { speaker: 'echo',  text: "You'll forget this one too at this rate." },
+      { speaker: 'nova',  text: "Uppercase, number, symbol — mix them in." },
+    ],
+  },
+
+  FP_PASS_STRONG: {
+    mood: 'celebrate',
+    lines: [
+      { speaker: 'nova',  text: "Solid password. Save it somewhere safe." },
+      { speaker: 'pixel', text: "Finally. Something worth remembering." },
+      { speaker: 'echo',  text: "Don't lose it again, please." },
+    ],
+  },
+
+  FP_CONFIRM_MISMATCH: {
+    mood: 'concerned',
+    lines: [
+      { speaker: 'echo',  text: "Confirm field doesn't match." },
+      { speaker: 'pixel', text: "So close. Copy-paste exists for a reason." },
+      { speaker: 'nova',  text: "One fix and you're done." },
+    ],
+  },
+
+  FP_FORM_READY: {
+    mood: 'celebrate',
+    lines: [
+      { speaker: 'echo',  text: "All checks passed." },
+      { speaker: 'nova',  text: "Reset it. Then log in like a pro." },
+      { speaker: 'pixel', text: "And maybe save the password this time?" },
+    ],
+  },
+
+  FP_RESET_SUCCESS: {
+    mood: 'celebrate',
+    lines: [
+      { speaker: 'nova',  text: "Password updated. Welcome back." },
+      { speaker: 'echo',  text: "Recovery complete." },
+      { speaker: 'pixel', text: "Remember it. We're not doing this every week." },
+    ],
+  },
+
+  FP_RESET_FAILED: {
+    mood: 'concerned',
+    lines: [
+      { speaker: 'echo',  text: "Reset didn't go through." },
+      { speaker: 'nova',  text: "Try once more — you're almost there." },
+      { speaker: 'pixel', text: "The password gods are testing you." },
+    ],
+  },
 }
 
 export function isValidEmail(value) {

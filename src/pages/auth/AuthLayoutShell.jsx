@@ -89,9 +89,13 @@ export default function AuthLayoutShell() {
 }
 
 function AuthFormCard({ navigate, isLogin }) {
-  const tagline = isLogin
-    ? 'Level up. One concept at a time.'
-    : 'Your skill journey starts here.'
+  const { pathname } = useLocation()
+  const isForgot = pathname === '/forgot-password'
+  const tagline = isForgot
+    ? 'We will help you get back in.'
+    : isLogin
+      ? 'Level up. One concept at a time.'
+      : 'Your skill journey starts here.'
 
   return (
     <div className={`auth-card-wrap${isLogin ? ' auth-card-wrap--login' : ' auth-card-wrap--register'}`}>

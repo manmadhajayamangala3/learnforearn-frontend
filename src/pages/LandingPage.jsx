@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { guestLogin, getPublicStats } from '../api/api'
+import { logApiError } from '../utils/devLog'
+import LandingFeedbackSection from '../components/LandingFeedbackSection'
 import toast from 'react-hot-toast'
 import '../styles/landing-animations.css'
 import {
@@ -199,7 +201,7 @@ export default function LandingPage() {
           paths:    String(roadmapCount),
         })
       })
-      .catch(() => {})
+      .catch(err => logApiError('public-stats', err))
   }, [])
 
   const handleEnter = () => navigate(user ? '/skill-arena/dashboard' : '/login?redirect=/skill-arena/dashboard')
@@ -1231,6 +1233,8 @@ export default function LandingPage() {
       </section>
 
       <div className="lp-glow-divider" />
+
+      <LandingFeedbackSection />
 
       {/* ── Final CTA ──────────────────────────────────────── */}
       <section style={{ padding: '5rem 1.5rem 7rem' }}>

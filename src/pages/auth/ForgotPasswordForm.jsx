@@ -4,6 +4,8 @@ import { motion } from 'framer-motion'
 import { Mail, Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { forgotPassword, verifyForgotPasswordOtp, resetPassword } from '../../api/api'
+import { useAuthForm } from './context/AuthFormContext'
+import useForgotPasswordBotStory from './hooks/useForgotPasswordBotStory'
 import {
   getPasswordStrength,
   isPasswordValid,
@@ -40,6 +42,46 @@ export default function ForgotPasswordForm() {
   const [resetting, setResetting] = useState(false)
 
   const cooldownRef = useRef(null)
+  const redirectTimerRef = useRef(null)
+  const passwordFocusedRef = useRef(false)
+
+  const {
+    setFocusedField,
+    setPasswordVisible,
+    setFormProgress,
+    emitCompanionEvent,
+    dismissCompanion,
+    touchActivity,
+    resetCompanion,
+  } = useAuthForm()
+
+  useForgotPasswordBotStory(
+    email,
+    otpSent,
+    emailVerified,
+    password,
+    confirmPassword,
+    emitCompanionEvent,
+  )
+
+  const hasEmail = email.trim().length > 0
+  const strength = getPasswordStrength(password)
+  const passOk = isPasswordValid(password)
+  const confirmOk = password === confirmPassword && confirmPassword.length > 0
+  const ready = emailVerified && passOk && confirmOk
+
+  useEffect(() => {
+    setFormProgress(
+      emailVerified
+        ? (Number(passOk) + Number(confirmOk)) / 2
+        : (Number(hasEmail) + Number(otpSent)) / 2,
+    )
+  }, [emailVerified, passOk, confirmOk, otpSent, hasEmail, setFormProgress])
+
+  useEffect(() => () => resetCompanion(), [])
+
+  useEffect(() => { setPasswordVisible(showPass) }, [showPass, setPasswordVisible])
+
   const getInitialCooldown = () => {
     const sent = parseInt(sessionStorage.getItem('fp_otp_sent_at') || '0', 10)
     if (!sent) return 0
@@ -47,11 +89,6 @@ export default function ForgotPasswordForm() {
     return remaining > 0 ? remaining : 0
   }
   const [resendCooldown, setResendCooldown] = useState(getInitialCooldown)
-
-  const strength = getPasswordStrength(password)
-  const passOk = isPasswordValid(password)
-  const confirmOk = password === confirmPassword && confirmPassword.length > 0
-  const ready = emailVerified && passOk && confirmOk
 
   const startCooldown = (secs = 60) => {
     sessionStorage.setItem('fp_otp_sent_at', String(Date.now()))
@@ -84,7 +121,10 @@ export default function ForgotPasswordForm() {
         })
       }, 1000)
     }
-    return () => clearInterval(cooldownRef.current)
+    return () => {
+      clearInterval(cooldownRef.current)
+      clearTimeout(redirectTimerRef.current)
+    }
   }, [])
 
   useEffect(() => {
@@ -98,7 +138,7 @@ export default function ForgotPasswordForm() {
   const handleSendOtp = async () => {
     const normalized = email.trim().toLowerCase()
     if (!normalized) {
-      toast.error('Enter your email first')
+      toast.error('Please enter your email address first.')
       return
     }
     setEmailError('')
@@ -110,15 +150,18 @@ export default function ForgotPasswordForm() {
       setOtp('')
       startCooldown(60)
       sessionStorage.setItem('fp_otp_email', normalized)
-      toast.success('OTP sent! Check your inbox.')
+      toast.success('We sent a 6-digit code to your inbox.')
     } catch (err) {
       const status = err.response?.status
       const msg = getApiError(err, 'Failed to send OTP')
       const retryAfter = err.response?.data?.retryAfter
-      if (status === 404) setEmailError(msg)
+      if (status === 404) {
+        setEmailError(msg)
+        emitCompanionEvent('FP_EMAIL_NOT_FOUND')
+      }
       else if (retryAfter) {
         startCooldown(retryAfter)
-        toast.error(`Wait ${retryAfter}s before resending.`)
+        toast.error(`Almost there — wait ${retryAfter}s before requesting another code.`)
       } else toast.error(msg)
     } finally {
       setSendingOtp(false)
@@ -134,9 +177,10 @@ export default function ForgotPasswordForm() {
       setOtpSent(false)
       sessionStorage.removeItem('fp_otp_email')
       sessionStorage.removeItem('fp_otp_sent_at')
-      toast.success('Email verified. Set your new password.')
+      toast.success('Email verified. Choose a new password below.')
     } catch (err) {
-      toast.error(getApiError(err, 'Invalid OTP. Try again.'))
+      emitCompanionEvent('FP_OTP_FAILED')
+      toast.error(getApiError(err, 'That code did not work. Check your email and try again.'))
     } finally {
       setVerifyingOtp(false)
     }
@@ -154,10 +198,12 @@ export default function ForgotPasswordForm() {
     setResetting(true)
     try {
       await resetPassword(email.trim().toLowerCase(), password)
-      toast.success('Password updated! Redirecting to login…')
-      setTimeout(() => navigate('/login', { replace: true }), 1200)
+      emitCompanionEvent('FP_RESET_SUCCESS')
+      toast.success('Password updated. Taking you to sign in…')
+      redirectTimerRef.current = setTimeout(() => navigate('/login', { replace: true }), 1200)
     } catch (err) {
-      toast.error(getApiError(err, 'Could not reset password. Try again.'))
+      emitCompanionEvent('FP_RESET_FAILED')
+      toast.error(getApiError(err, 'We could not update your password. Please try again.'))
     } finally {
       setResetting(false)
     }
@@ -212,6 +258,7 @@ export default function ForgotPasswordForm() {
             autoComplete="email"
             required
             value={email}
+            onFocus={() => { dismissCompanion(); setFocusedField('email'); touchActivity() }}
             onChange={e => { setEmail(e.target.value); resetEmailState() }}
           />
           <button
@@ -236,7 +283,11 @@ export default function ForgotPasswordForm() {
               aria-busy={verifyingOtp}
               value={otp}
               disabled={verifyingOtp}
-              onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onChange={e => {
+                const v = e.target.value.replace(/\D/g, '').slice(0, 6)
+                setOtp(v)
+                if (v.length === 1) emitCompanionEvent('FP_TYPING_OTP')
+              }}
             />
             {verifyingOtp && <span className="auth-otp-verifying">Verifying…</span>}
           </div>
@@ -256,6 +307,15 @@ export default function ForgotPasswordForm() {
                 placeholder="8+ chars, upper, number, symbol"
                 autoComplete="new-password"
                 value={password}
+                onFocus={() => {
+                  dismissCompanion()
+                  setFocusedField('password')
+                  touchActivity()
+                  if (!passwordFocusedRef.current) {
+                    passwordFocusedRef.current = true
+                    emitCompanionEvent('FP_FOUND_PASSWORD')
+                  }
+                }}
                 onChange={e => setPassword(e.target.value)}
               />
               <button
