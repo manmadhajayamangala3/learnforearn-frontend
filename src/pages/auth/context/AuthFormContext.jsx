@@ -6,7 +6,6 @@ const AuthFormContext = createContext(null)
 export function AuthFormProvider({ children }) {
   const [focusedField, setFocusedField] = useState(null)
   const [passwordVisible, setPasswordVisible] = useState(false)
-  const [formReady, setFormReady] = useState(false)
   const [formProgress, setFormProgress] = useState(0)
   const [companionEvent, setCompanionEvent] = useState(null)
   const [companionVisible, setCompanionVisible] = useState(false)
@@ -53,8 +52,6 @@ export function AuthFormProvider({ children }) {
     setFocusedField,
     passwordVisible,
     setPasswordVisible,
-    formReady,
-    setFormReady,
     formProgress,
     setFormProgress,
     companionEvent,
@@ -67,7 +64,6 @@ export function AuthFormProvider({ children }) {
   }), [
     focusedField,
     passwordVisible,
-    formReady,
     formProgress,
     companionEvent,
     companionVisible,

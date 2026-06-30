@@ -10,6 +10,11 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [logoutOverlay, setLogoutOverlay] = useState(false)
   const [logoutDone, setLogoutDone] = useState(false)
+  const [authOverlay, setAuthOverlay] = useState(null) // { type, completing }
+
+  const showAuthOverlay = (type) => setAuthOverlay({ type, completing: false })
+  const completeAuthOverlay = () => setAuthOverlay(o => (o ? { ...o, completing: true } : null))
+  const hideAuthOverlay = () => setAuthOverlay(null)
 
   // On mount — call /me with credentials. httpOnly cookie is sent automatically.
   useEffect(() => {
@@ -51,7 +56,11 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, loading }}>
+    <AuthContext.Provider value={{
+      user, login, logout, isAuthenticated: !!user, loading,
+      showAuthOverlay, completeAuthOverlay, hideAuthOverlay,
+    }}>
+      {authOverlay && <LoadingOverlay type={authOverlay.type} completing={authOverlay.completing} />}
       {logoutOverlay && <LoadingOverlay type="logout" completing={logoutDone} />}
       {children}
     </AuthContext.Provider>

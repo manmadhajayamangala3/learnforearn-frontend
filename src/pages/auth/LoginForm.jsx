@@ -5,26 +5,17 @@ import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import { loginUser, guestLogin } from '../../api/api'
 import toast from 'react-hot-toast'
-import LoadingOverlay from '../../components/LoadingOverlay'
-import useCyclingText from './hooks/useCyclingText'
-import AuthEscapeButton from './components/AuthEscapeButton'
+import AuthSubmitButton from './components/AuthSubmitButton'
 import { useAuthForm } from './context/AuthFormContext'
 import useLoginBotStory from './hooks/useLoginBotStory'
-
-const BTN_MESSAGES = {
-  login: ['Verifying credentials...', 'Loading profile...', 'Syncing records...', 'Almost there...'],
-  guest: ['Issuing guest license...', 'Generating Hunter ID...', 'Preparing access...', 'Almost there...'],
-}
 
 export default function LoginForm() {
   const [form, setForm]           = useState({ email: '', password: '' })
   const [loading, setLoading]     = useState(false)
   const [guestLoading, setGuestLoading] = useState(false)
-  const [overlayType, setOverlayType]   = useState(null)
-  const [overlayDone, setOverlayDone]   = useState(false)
   const [showPass, setShowPass]   = useState(false)
 
-  const { login }          = useAuth()
+  const { login, showAuthOverlay, completeAuthOverlay, hideAuthOverlay } = useAuth()
   const navigate           = useNavigate()
   const [searchParams]     = useSearchParams()
   const redirectTo         = searchParams.get('redirect') || '/'
@@ -36,23 +27,18 @@ export default function LoginForm() {
   const {
     focusedField, setFocusedField,
     setPasswordVisible,
-    setFormReady, setFormProgress,
+    setFormProgress,
     emitCompanionEvent, dismissCompanion,
     touchActivity, resetCompanion,
     lastActivity,
   } = useAuthForm()
 
-  const emitBeat = emitCompanionEvent
-
   const { cancelRankTimer } = useLoginBotStory(
     form,
-    emitBeat,
+    emitCompanionEvent,
     lastActivity,
     emailFocusedOnceRef,
   )
-
-  const loginBtnText = useCyclingText(BTN_MESSAGES.login, loading)
-  const guestBtnText = useCyclingText(BTN_MESSAGES.guest, guestLoading)
 
   const emailOk = form.email.trim().length > 0 && form.email.includes('@')
   const passOk  = form.password.length > 0
@@ -60,14 +46,12 @@ export default function LoginForm() {
 
   /* reset form state on mount only; cleanup on unmount */
   useEffect(() => {
-    setFormReady(false)
     setFormProgress(0)
     setFocusedField(null)
     prevFieldRef.current        = null
     emailFocusedOnceRef.current = false
     return () => {
       resetCompanion()
-      setFormReady(false)
       setFormProgress(0)
       setFocusedField(null)
     }
@@ -75,9 +59,8 @@ export default function LoginForm() {
   }, [])
 
   useEffect(() => {
-    setFormReady(ready)
     setFormProgress((Number(emailOk) + Number(passOk)) / 2)
-  }, [ready, emailOk, passOk, setFormReady, setFormProgress])
+  }, [emailOk, passOk, setFormProgress])
 
   useEffect(() => { setPasswordVisible(showPass) }, [showPass, setPasswordVisible])
 
@@ -89,10 +72,10 @@ export default function LoginForm() {
     touchActivity()
 
     if (prevFieldRef.current === 'password') {
-      emitBeat('EMAIL_RETURN')
+      emitCompanionEvent('EMAIL_RETURN')
     } else if (!emailFocusedOnceRef.current) {
       emailFocusedOnceRef.current = true
-      emitBeat('FOUND_EMAIL')
+      emitCompanionEvent('FOUND_EMAIL')
     }
     prevFieldRef.current = 'email'
   }
@@ -101,27 +84,27 @@ export default function LoginForm() {
     dismissCompanion()
     setFocusedField('password')
     touchActivity()
-    emitBeat('FOCUS_PASSWORD')
+    emitCompanionEvent('FOCUS_PASSWORD')
     prevFieldRef.current = 'password'
   }
 
   /* ── guest ────────────────────────────────────────────────────── */
   const handleGuest = async () => {
     dismissCompanion()
-    emitBeat('GUEST_CLICK')
+    emitCompanionEvent('GUEST_CLICK')
     setGuestLoading(true)
-    setOverlayType('guest')
-    setOverlayDone(false)
+    showAuthOverlay('guest')
     try {
       const storedGuestId = localStorage.getItem('guest_device_id')
       const { data } = await guestLogin(storedGuestId)
       localStorage.setItem('guest_device_id', data.user.id)
-      setOverlayDone(true)
+      completeAuthOverlay()
       await new Promise(r => setTimeout(r, 600))
+      hideAuthOverlay()
       login(data.token, data.user)
       navigate(redirectTo)
     } catch {
-      setOverlayType(null)
+      hideAuthOverlay()
       toast.error('Could not start guest session. Try again.')
     } finally {
       setGuestLoading(false)
@@ -135,29 +118,29 @@ export default function LoginForm() {
 
     if (!ready) {
       dismissCompanion()
-      emitBeat('SUBMIT_EMPTY')
+      emitCompanionEvent('SUBMIT_EMPTY')
       return
     }
 
     setLoading(true)
-    setOverlayType('login')
-    setOverlayDone(false)
+    showAuthOverlay('login')
     dismissCompanion()
-    emitBeat('LOGIN_PROCESSING')
+    emitCompanionEvent('LOGIN_PROCESSING')
 
     try {
       const { data } = await loginUser(form)
       dismissCompanion()
-      emitBeat('LOGIN_SUCCESS')
-      setOverlayDone(true)
+      emitCompanionEvent('LOGIN_SUCCESS')
+      completeAuthOverlay()
       await new Promise(r => setTimeout(r, 900))
+      hideAuthOverlay()
       login(data.token, data.user)
       if (data.user.role === 'ADMIN') navigate('/admin-skill-arena')
       else navigate(redirectTo)
     } catch {
-      setOverlayType(null)
+      hideAuthOverlay()
       dismissCompanion()
-      emitBeat('LOGIN_FAILED')
+      emitCompanionEvent('LOGIN_FAILED')
     } finally {
       setLoading(false)
     }
@@ -168,7 +151,7 @@ export default function LoginForm() {
     setShowPass(prev => {
       const next = !prev
       dismissCompanion()
-      emitBeat(next ? 'PASSWORD_VISIBLE' : 'PASSWORD_HIDDEN')
+      emitCompanionEvent(next ? 'PASSWORD_VISIBLE' : 'PASSWORD_HIDDEN')
       return next
     })
     touchActivity()
@@ -177,8 +160,6 @@ export default function LoginForm() {
   /* ── render ───────────────────────────────────────────────────── */
   return (
     <>
-      {overlayType && <LoadingOverlay type={overlayType} completing={overlayDone} />}
-
       <motion.h1
         className="auth-form-title"
         initial={{ opacity: 0, y: 12 }}
@@ -238,9 +219,9 @@ export default function LoginForm() {
           </div>
         </div>
 
-        <AuthEscapeButton ready={ready} loading={loading} staticDisabled compact>
-          {loading ? loginBtnText : 'Sign in'}
-        </AuthEscapeButton>
+        <AuthSubmitButton ready={ready} loading={loading} compact>
+          Sign in
+        </AuthSubmitButton>
       </form>
 
       <div className="auth-login-bottom">
@@ -261,7 +242,7 @@ export default function LoginForm() {
             disabled={guestLoading}
           >
             {guestLoading && <span className="loading-spinner" style={{ width: 14, height: 14 }} />}
-            {guestLoading ? guestBtnText : 'Guest login'}
+            Guest login
           </button>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import GuestRoute from './components/GuestRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 import FeedbackNudge from './components/FeedbackNudge'
 import ScrollToTop from './components/ScrollToTop'
@@ -94,8 +95,8 @@ function usePrefetchRoutes() {
   useEffect(() => {
     const run = () => {
       import('./pages/LandingPage')
-      import('./pages/auth/LoginPage')
-      import('./pages/auth/RegisterPage')
+      import('./pages/auth/LoginForm')
+      import('./pages/auth/RegisterForm')
       import('./pages/MissionsPage')
       import('./pages/JobsPage')
       import('./pages/ailab/AILabPage')
@@ -131,10 +132,12 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/loader-demo" element={<LoaderDemo />} />
 
-            {/* Public */}
-            <Route element={<AuthLayoutShell />}>
-              <Route path="/login"    element={<LoginForm />} />
-              <Route path="/register" element={<RegisterForm />} />
+            {/* Auth — guests only; logged-in users redirect home or ?redirect= */}
+            <Route element={<GuestRoute />}>
+              <Route element={<AuthLayoutShell />}>
+                <Route path="/login"    element={<LoginForm />} />
+                <Route path="/register" element={<RegisterForm />} />
+              </Route>
             </Route>
             <Route path="/missions" element={<MissionsPage />} />
             <Route path="/walk-ins" element={<JobsPage />} />

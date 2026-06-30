@@ -129,8 +129,6 @@
   --rank-e: #6B7FA3;
 }
 
-/* Auth page left panel always stays dark */
-[data-theme="light"] .ap-left { background: #090E1C !important; }
 /* Mobile section title hardcoded color */
 [data-theme="light"] .sl-mob-section-title { color: var(--text-secondary); }
 
@@ -3243,17 +3241,6 @@ body { font-family: 'Rajdhani', 'Inter', -apple-system, sans-serif; font-size: 1
 
   /* Hide desktop exit buttons inside drawer on mobile — mobile has them in avatar sheet */
   .sl-drawer-exit-footer { display: none !important; }
-
-  /* ── Auth pages (Login / Register) ── */
-  .ap-left        { display: none !important; }
-  .ap-mobile-logo { display: flex !important; }
-  .ap-right {
-    width: 100% !important;
-    padding: 2.5rem 1.5rem !important;
-    justify-content: flex-start !important;
-    min-height: 100vh;
-    overflow-y: auto;
-  }
 
   /* ── Landing page mobile fixes ── */
   .lp-navbar    { padding: 0 1rem !important; }

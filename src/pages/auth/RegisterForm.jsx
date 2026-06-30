@@ -5,13 +5,9 @@ import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import { registerUser, sendOtp, verifyOtp } from '../../api/api'
 import toast from 'react-hot-toast'
-import LoadingOverlay from '../../components/LoadingOverlay'
-import useCyclingText from './hooks/useCyclingText'
-import AuthEscapeButton from './components/AuthEscapeButton'
+import AuthSubmitButton from './components/AuthSubmitButton'
 import { useAuthForm } from './context/AuthFormContext'
 import useRegisterBotStory from './hooks/useRegisterBotStory'
-
-const REG_MESSAGES = ['Registering...', 'Creating Hunter License...', 'Generating your ID...', 'Setting up arena...']
 
 function getStrength(pw) {
   let s = 0
@@ -30,10 +26,9 @@ export default function RegisterForm() {
     fullName: '', email: '', password: '', confirmPassword: '', collegeName: '',
   })
   const [loading, setLoading]         = useState(false)
-  const [overlayDone, setOverlayDone] = useState(false)
   const [showPass, setShowPass]       = useState(false)
 
-  const { login }      = useAuth()
+  const { login, showAuthOverlay, completeAuthOverlay, hideAuthOverlay } = useAuth()
   const navigate       = useNavigate()
   const [searchParams] = useSearchParams()
   const redirectTo     = searchParams.get('redirect') || '/skill-arena/dashboard'
@@ -42,12 +37,11 @@ export default function RegisterForm() {
     : ''
 
   const strength = getStrength(form.password)
-  const btnText  = useCyclingText(REG_MESSAGES, loading)
 
   const {
     focusedField, setFocusedField,
     setPasswordVisible,
-    setFormReady, setFormProgress,
+    setFormProgress,
     emitCompanionEvent, dismissCompanion,
     touchActivity, resetCompanion,
   } = useAuthForm()
@@ -84,16 +78,13 @@ export default function RegisterForm() {
   /* ── sync context ───────────────────────────────── */
   useEffect(() => {
     setFormProgress([nameOk, emailOk, passOk, confirmOk].filter(Boolean).length / 4)
-    setFormReady(ready)
-  }, [ready, nameOk, emailOk, passOk, confirmOk, setFormReady, setFormProgress])
+  }, [nameOk, emailOk, passOk, confirmOk, setFormProgress])
 
   useEffect(() => {
-    setFormReady(false)
     setFormProgress(0)
     setFocusedField(null)
     return () => {
       resetCompanion()
-      setFormReady(false)
       setFormProgress(0)
       setFocusedField(null)
     }
@@ -165,11 +156,11 @@ export default function RegisterForm() {
     }
   }
 
-  const handleVerifyOtp = async () => {
-    if (otp.length !== 6) { toast.error('Enter the 6-digit OTP'); return }
+  const handleVerifyOtp = async (code = otp) => {
+    if (code.length !== 6) return
     setVerifyingOtp(true)
     try {
-      await verifyOtp(form.email, otp)
+      await verifyOtp(form.email, code)
       setEmailVerified(true)
       setOtpSent(false)
       sessionStorage.removeItem('otp_email')
@@ -182,12 +173,18 @@ export default function RegisterForm() {
     }
   }
 
+  useEffect(() => {
+    if (otp.length !== 6 || !otpSent || emailVerified || verifyingOtp) return
+    handleVerifyOtp(otp)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [otp, otpSent, emailVerified])
+
   /* ── submit ─────────────────────────────────────── */
   const handleSubmit = async e => {
     e.preventDefault()
     if (!ready) return
     setLoading(true)
-    setOverlayDone(false)
+    showAuthOverlay('register')
     dismissCompanion()
     emitBeat('LOGIN_PROCESSING')
     try {
@@ -195,11 +192,13 @@ export default function RegisterForm() {
       const { data } = await registerUser({ fullName, email, password, collegeName })
       dismissCompanion()
       emitBeat('REG_SUCCESS')
-      setOverlayDone(true)
+      completeAuthOverlay()
       await new Promise(r => setTimeout(r, 700))
+      hideAuthOverlay()
       login(data.token, data.user)
       navigate(redirectTo)
     } catch (err) {
+      hideAuthOverlay()
       dismissCompanion()
       emitBeat('REG_FAILED')
       toast.error(err.response?.data?.error || 'Registration failed')
@@ -219,8 +218,6 @@ export default function RegisterForm() {
   /* ── render ─────────────────────────────────────── */
   return (
     <>
-      {loading && <LoadingOverlay type="register" completing={overlayDone} />}
-
       <motion.h1
         className="auth-form-title"
         initial={{ opacity: 0, y: 12 }}
@@ -284,7 +281,7 @@ export default function RegisterForm() {
             </div>
           )}
           {otpSent && !emailVerified && (
-            <div className="auth-otp-row">
+            <div className="auth-otp-row auth-otp-row--auto">
               <input
                 type="text"
                 inputMode="numeric"
@@ -292,19 +289,16 @@ export default function RegisterForm() {
                 className="auth-input auth-input--compact auth-input--otp"
                 placeholder="000000"
                 aria-label="Email verification OTP"
+                aria-busy={verifyingOtp}
                 value={otp}
+                disabled={verifyingOtp}
                 onChange={e => { setOtp(e.target.value.replace(/\D/g, '').slice(0, 6)); touchActivity() }}
                 onFocus={() => { dismissCompanion(); emitBeat('REG_OTP_FOCUS'); setFocusedField('otp'); touchActivity() }}
                 onBlur={() => setFocusedField(f => f === 'otp' ? null : f)}
               />
-              <button
-                type="button"
-                onClick={handleVerifyOtp}
-                disabled={verifyingOtp || otp.length !== 6}
-                className="auth-btn-otp auth-btn-otp--compact auth-btn-otp--confirm"
-              >
-                {verifyingOtp ? '…' : 'OK'}
-              </button>
+              {verifyingOtp && (
+                <span className="auth-otp-verifying">Verifying…</span>
+              )}
             </div>
           )}
         </div>
@@ -385,9 +379,9 @@ export default function RegisterForm() {
           />
         </div>
 
-        <AuthEscapeButton ready={ready} loading={loading} hint="Complete all required fields" compact staticDisabled>
-          {loading ? btnText : 'Create account'}
-        </AuthEscapeButton>
+        <AuthSubmitButton ready={ready} loading={loading} compact>
+          Create account
+        </AuthSubmitButton>
       </form>
 
       <div className="auth-login-bottom">

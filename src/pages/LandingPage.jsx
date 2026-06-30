@@ -101,7 +101,7 @@ const PROOF_POINTS = [
 ]
 
 export default function LandingPage() {
-  const { user, login, logout } = useAuth()
+  const { user, login, logout, showAuthOverlay, completeAuthOverlay, hideAuthOverlay } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const C = theme === 'light' ? LIGHT_C : DARK_C
   const lt = theme === 'light'
@@ -206,13 +206,18 @@ export default function LandingPage() {
 
   const handleGuest = async () => {
     setGuestLoading(true)
+    showAuthOverlay('guest')
     try {
       const storedGuestId = localStorage.getItem('guest_device_id')
       const { data } = await guestLogin(storedGuestId)
       localStorage.setItem('guest_device_id', data.user.id)
+      completeAuthOverlay()
+      await new Promise(r => setTimeout(r, 600))
+      hideAuthOverlay()
       login(data.token, data.user)
       navigate('/')
     } catch {
+      hideAuthOverlay()
       toast.error('Could not start guest session. Try again.')
     } finally {
       setGuestLoading(false)
@@ -308,9 +313,9 @@ export default function LandingPage() {
           ) : (
             <>
               <Link to="/login?redirect=/" style={ghostBtn}>Sign In</Link>
-              <button onClick={handleEnter} style={{ ...primaryBtn, padding: '0.5rem 1.25rem', fontSize: '0.875rem' }}>
-                Get Started Free <ChevronRight size={14} />
-              </button>
+              <Link to="/register" style={{ ...primaryBtn, padding: '0.5rem 1.25rem', fontSize: '0.875rem' }}>
+                Sign up <ChevronRight size={14} />
+              </Link>
             </>
           )}
         </div>
@@ -363,10 +368,11 @@ export default function LandingPage() {
                 </>
               ) : (
                 <>
-                  <button onClick={() => { handleEnter(); setMobileMenuOpen(false) }}
-                    style={{ ...primaryBtn, width: '100%', justifyContent: 'center', padding: '0.875rem' }}>
-                    <Swords size={16} /> Get Started Free
-                  </button>
+                  <Link to="/register"
+                    style={{ ...primaryBtn, width: '100%', justifyContent: 'center', padding: '0.875rem', textAlign: 'center' }}
+                    onClick={() => setMobileMenuOpen(false)}>
+                    <Swords size={16} /> Sign up
+                  </Link>
                   <Link to="/login?redirect=/"
                     style={{ ...ghostBtn, width: '100%', justifyContent: 'center', padding: '0.75rem', textAlign: 'center' }}
                     onClick={() => setMobileMenuOpen(false)}>
