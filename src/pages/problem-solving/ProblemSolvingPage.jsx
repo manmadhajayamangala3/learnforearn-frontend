@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Sun, Moon, ChevronRight } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useTheme } from '../../context/ThemeContext'
 
 const TRACKS = [
@@ -90,20 +91,30 @@ export default function ProblemSolvingPage() {
       </div>
 
       <div className="ps-tracks-wrap">
-        <div className="ps-tracks-header">
+        <motion.div
+          className="ps-tracks-header"
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        >
           <h1 className="ps-tracks-title">WHERE DO YOU START?</h1>
           <p className="ps-tracks-subtitle">
             Five tracks. One goal — write code that works and gets you hired.
           </p>
-        </div>
+        </motion.div>
 
         <div className="ps-tracks-grid">
-          {TRACKS.map(t => (
-            <button
+          {TRACKS.map((t, i) => (
+            <motion.button
               key={t.key}
               type="button"
               onClick={() => navigate(`/problem-solving/${t.key}`)}
               className="ps-track-card"
+              initial={{ opacity: 0, y: 26 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 + i * 0.07, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ y: -6 }}
+              whileTap={{ scale: 0.98 }}
               style={{
                 '--track-color': t.color,
                 '--track-bg': t.bg,
@@ -118,7 +129,7 @@ export default function ProblemSolvingPage() {
               <div className="ps-track-card__enter">
                 ENTER <ChevronRight size={13} />
               </div>
-            </button>
+            </motion.button>
           ))}
         </div>
       </div>
