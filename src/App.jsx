@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react'
 import PageTransitionLoader from './components/loaders/PageTransitionLoader'
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigationType } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation, useNavigationType } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
@@ -181,29 +181,33 @@ function App() {
             <Route path="/walk-ins" element={<JobsPage />} />
             <Route path="/fresher-instructions" element={<FresherInstructionsPage />} />
             <Route path="/ai-lab" element={<AILabPage />} />
-            <Route path="/ai-lab/:category/:toolId" element={<AIToolPage />} />
+            {/* AI tool detail — requires login */}
+            <Route path="/ai-lab/:category/:toolId" element={<ProtectedRoute><AIToolPage /></ProtectedRoute>} />
             <Route path="/fresher-instructions/career-guidance" element={<CareerGuidancePage />} />
             <Route path="/deployment" element={<DeploymentGuidePage />} />
-            <Route path="/deployment/react"            element={<ReactDeployPage />} />
-            <Route path="/deployment/django"           element={<DjangoDeployPage />} />
-            <Route path="/deployment/html-static"      element={<HtmlStaticDeployPage />} />
-            <Route path="/deployment/django-fullstack" element={<DjangoFullstackDeployPage />} />
-            <Route path="/deployment/springboot"       element={<SpringBootDeployPage />} />
-            <Route path="/deployment/nodejs"           element={<NodeJsDeployPage />} />
-            <Route path="/deployment/mern"             element={<MernDeployPage />} />
-            <Route path="/deployment/nextjs"           element={<NextJsDeployPage />} />
-            <Route path="/deployment/fastapi"          element={<FastApiDeployPage />} />
-            <Route path="/deployment/flask"            element={<FlaskDeployPage />} />
-            <Route path="/deployment/mongodb-atlas"    element={<MongoAtlasPage />} />
-            <Route path="/deployment/neon-postgres"    element={<NeonPostgresPage />} />
-            <Route path="/deployment/supabase"         element={<SupabaseDeployPage />} />
-            <Route path="/deployment/render-postgres"  element={<RenderPostgresPage />} />
-            <Route path="/deployment/streamlit"          element={<StreamlitDeployPage />} />
-            <Route path="/deployment/chatbot-deploy"   element={<ChatbotDeployPage />} />
-            <Route path="/deployment/nlp-demo"         element={<NlpDemoPage />} />
-            <Route path="/deployment/image-ai"         element={<ImageAiPage />} />
-            <Route path="/deployment/rag-app"             element={<RagAppPage />} />
-            <Route path="/deployment/heavy-model-deploy" element={<HeavyModelPage />} />
+            {/* Deployment guide detail pages — list is public, each guide requires login */}
+            <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
+              <Route path="/deployment/react"            element={<ReactDeployPage />} />
+              <Route path="/deployment/django"           element={<DjangoDeployPage />} />
+              <Route path="/deployment/html-static"      element={<HtmlStaticDeployPage />} />
+              <Route path="/deployment/django-fullstack" element={<DjangoFullstackDeployPage />} />
+              <Route path="/deployment/springboot"       element={<SpringBootDeployPage />} />
+              <Route path="/deployment/nodejs"           element={<NodeJsDeployPage />} />
+              <Route path="/deployment/mern"             element={<MernDeployPage />} />
+              <Route path="/deployment/nextjs"           element={<NextJsDeployPage />} />
+              <Route path="/deployment/fastapi"          element={<FastApiDeployPage />} />
+              <Route path="/deployment/flask"            element={<FlaskDeployPage />} />
+              <Route path="/deployment/mongodb-atlas"    element={<MongoAtlasPage />} />
+              <Route path="/deployment/neon-postgres"    element={<NeonPostgresPage />} />
+              <Route path="/deployment/supabase"         element={<SupabaseDeployPage />} />
+              <Route path="/deployment/render-postgres"  element={<RenderPostgresPage />} />
+              <Route path="/deployment/streamlit"          element={<StreamlitDeployPage />} />
+              <Route path="/deployment/chatbot-deploy"   element={<ChatbotDeployPage />} />
+              <Route path="/deployment/nlp-demo"         element={<NlpDemoPage />} />
+              <Route path="/deployment/image-ai"         element={<ImageAiPage />} />
+              <Route path="/deployment/rag-app"             element={<RagAppPage />} />
+              <Route path="/deployment/heavy-model-deploy" element={<HeavyModelPage />} />
+            </Route>
             <Route path="/problem-solving" element={<ProblemSolvingPage />} />
             <Route path="/problem-solving/start-coding"    element={<ProtectedRoute><TrackPage /></ProtectedRoute>} />
             <Route path="/problem-solving/logic-building"  element={<ProtectedRoute><TrackPage /></ProtectedRoute>} />

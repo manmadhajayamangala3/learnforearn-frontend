@@ -1,5 +1,6 @@
 import { useState, useRef, Suspense, lazy } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import { Sun, Moon, ArrowLeft, Search, ChevronRight, Lock, Zap } from 'lucide-react'
 import ScrollToTop from '../../components/ScrollToTop'
@@ -61,6 +62,7 @@ const CAT_META = {
 
 export default function AILabPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const dark = theme !== 'light'
   const [activeCategory, setActiveCategory] = useState('all')
@@ -91,7 +93,11 @@ export default function AILabPage() {
   const grouped = CATEGORIES.filter(c => c.id !== 'all').map(cat => ({
     ...cat, tools: filtered.filter(t => t.category === cat.id),
   })).filter(g => g.tools.length > 0)
-  const goToTool = t => navigate(`/ai-lab/${t.category}/${t.id}`)
+  const goToTool = t => {
+    const path = `/ai-lab/${t.category}/${t.id}`
+    if (!user) { navigate(`/login?redirect=${encodeURIComponent(path)}`); return }
+    navigate(path)
+  }
 
   return (
     <div className="ailab-page">
