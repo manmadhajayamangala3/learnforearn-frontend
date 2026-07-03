@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { TEST_DELAY_MS } from '../components/loaders/_config'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Sun, Moon, Search, X, SlidersHorizontal } from 'lucide-react'
+import { Sun, Moon, Search, X, SlidersHorizontal, ChevronDown } from 'lucide-react'
 import { motion } from 'framer-motion'
 import SmokeBladeLoader from '../components/loaders/SmokeBladeLoader'
 import { useAuth } from '../context/AuthContext'
@@ -209,61 +209,48 @@ export default function MissionsPage() {
         </div>
       </section>
 
-      {/* ── Briefing tabs — pick your mission type ─────────────────────── */}
-      <div className="mb-briefings">
-        {BRIEFINGS.map((b, i) => (
-          <motion.button
-            key={b.key}
-            type="button"
-            onClick={() => handleCategoryChange(b.key)}
-            className={`mb-briefing${category === b.key ? ' mb-briefing--active' : ''}`}
-            style={{ '--brief-color': b.color }}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.3 + i * 0.06, ease: EASE }}
-            whileTap={{ scale: 0.97 }}
-          >
-            <span className="mb-briefing__icon">{b.icon}</span>
-            <span className="mb-briefing__text">
-              <span className="mb-briefing__title">{b.title}</span>
-              <span className="mb-briefing__line">{b.line}</span>
-            </span>
-          </motion.button>
-        ))}
-      </div>
+      {/* ── Filter toolbar — type + sub-filter + search, one row ───────── */}
+      <div className="mb-toolbar">
+        <div className="mb-toolbar__bar">
+          <span className="mb-toolbar__icon" aria-hidden="true"><SlidersHorizontal size={15} /></span>
 
-      {/* ── Refine bar — chips (subjects/roles) + search ───────────────── */}
-      <div className="mb-refine">
-        <div className="mb-refine__bar">
-          <span className="mb-refine__label">
-            <SlidersHorizontal size={13} />
-            <span className="mb-refine__label-text">Filter</span>
-          </span>
+          <label className="mb-select">
+            <span className="mb-select__label">Type</span>
+            <div className="mb-select__control">
+              <select
+                value={category}
+                onChange={e => handleCategoryChange(e.target.value)}
+                className="mb-select__input"
+              >
+                {BRIEFINGS.map(b => (
+                  <option key={b.key} value={b.key}>{b.title}</option>
+                ))}
+              </select>
+              <ChevronDown size={15} className="mb-select__chev" />
+            </div>
+          </label>
 
           {chipOptions.length > 0 && (
-            <div className="mb-chips">
-              <button
-                type="button"
-                onClick={() => setSubFilter('')}
-                className={`mb-chip${subFilter === '' ? ' mb-chip--active' : ''}`}
-              >
-                All {category === 'subject' ? 'Subjects' : 'Roles'}
-              </button>
-              {chipOptions.map(opt => (
-                <button
-                  key={opt}
-                  type="button"
-                  onClick={() => setSubFilter(opt)}
-                  className={`mb-chip${subFilter === opt ? ' mb-chip--active' : ''}`}
+            <label className="mb-select">
+              <span className="mb-select__label">{category === 'subject' ? 'Subject' : 'Role'}</span>
+              <div className="mb-select__control">
+                <select
+                  value={subFilter}
+                  onChange={e => setSubFilter(e.target.value)}
+                  className="mb-select__input"
                 >
-                  {opt}
-                </button>
-              ))}
-            </div>
+                  <option value="">All {category === 'subject' ? 'Subjects' : 'Roles'}</option>
+                  {chipOptions.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+                <ChevronDown size={15} className="mb-select__chev" />
+              </div>
+            </label>
           )}
 
           <div className="mb-search">
-            <Search size={13} className="mb-search__icon" />
+            <Search size={15} className="mb-search__icon" />
             <input
               type="text"
               value={filter}
@@ -273,12 +260,12 @@ export default function MissionsPage() {
             />
             {filter && (
               <button type="button" onClick={() => setFilter('')} className="mb-search__clear" aria-label="Clear search">
-                <X size={12} />
+                <X size={13} />
               </button>
             )}
           </div>
 
-          <span className="mb-refine__count">
+          <span className="mb-count">
             <strong>{filtered.length}</strong> mission{filtered.length !== 1 ? 's' : ''}
           </span>
         </div>
