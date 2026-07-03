@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { TEST_DELAY_MS, PAGE_MIN_MS } from '../../components/loaders/_config'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import SystemAwakeningLoader from '../../components/loaders/SystemAwakeningLoader'
@@ -15,7 +15,7 @@ import { getRank } from '../../utils/slRank'
 import toast from 'react-hot-toast'
 import { logApiError } from '../../utils/devLog'
 import {
-  NAV_ITEMS, DAILY_QUESTS, GATE_FILTERS,
+  NAV_ITEMS, DAILY_QUESTS,
   computeStats, subjectGateRank, loadQuestState, saveQuestState,
 } from './dashboard/dashboardUtils'
 
@@ -80,11 +80,40 @@ export default function DashboardPage() {
   const [quizStatuses, setQuizStatuses] = useState({})
   const [gatesLoaded, setGatesLoaded] = useState(false)
   const [gateSearch, setGateSearch]   = useState('')
-  const [gateFilter, setGateFilter]   = useState('All')
 
   const [allRoadmaps, setAllRoadmaps] = useState([])
   const [pathsLoaded, setPathsLoaded] = useState(false)
   const [pathSearch, setPathSearch]   = useState('')
+
+  const lastScrollY = useRef(0)
+  const navHiddenRef = useRef(false)
+
+  // Auto-hide navbar on page scroll (reappears when scrolling up).
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY
+      const last = lastScrollY.current
+      let nav = navHiddenRef.current
+      if (y < 60) nav = false
+      else if (y > last + 6) nav = true
+      else if (y < last - 6) nav = false
+      if (nav !== navHiddenRef.current) {
+        navHiddenRef.current = nav
+        document.documentElement.classList.toggle('nav-hidden', nav)
+      }
+      lastScrollY.current = y
+    }
+
+    navHiddenRef.current = false
+    lastScrollY.current = 0
+    document.documentElement.classList.remove('nav-hidden')
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      document.documentElement.classList.remove('nav-hidden')
+    }
+  }, [loading, activeView, selectedConceptId])
 
   // Sync q1 quest from server (source of truth, works across devices)
   const syncQuestsFromSummary = (summaryData, uid) => {
@@ -215,7 +244,7 @@ export default function DashboardPage() {
 
   const switchView = (view) => {
     setActiveView(view)
-    setGateSearch(''); setGateFilter('All'); setPathSearch('')
+    setGateSearch(''); setPathSearch('')
     setSelectedSubjectId(null); setSelectedConceptId(null); setConceptNavList([])
     setSelectedRoadmapId(null)
     setSearchParams(view === 'arena' ? {} : { view })
@@ -274,14 +303,9 @@ export default function DashboardPage() {
   const doneCount      = DAILY_QUESTS.filter(q => quests[q.id]).length
   const earnedXp       = DAILY_QUESTS.filter(q => quests[q.id]).reduce((s, q) => s + q.xp, 0)
 
-  const filteredSubjects = subjects.filter(s => {
-    const sp = s.totalConcepts > 0 ? Math.round((s.completedCount / s.totalConcepts) * 100) : 0
-    if (!s.title.toLowerCase().includes(gateSearch.toLowerCase())) return false
-    if (gateFilter === 'Cleared')     return quizStatuses[s.id]?.hasBadge ?? false
-    if (gateFilter === 'Active Hunt') return sp > 0 && !(quizStatuses[s.id]?.hasBadge)
-    if (gateFilter === 'Not Started') return sp === 0
-    return true
-  })
+  const filteredSubjects = subjects.filter(s =>
+    s.title.toLowerCase().includes(gateSearch.toLowerCase())
+  )
 
   const filteredRoadmaps = allRoadmaps.filter(r =>
     r.title.toLowerCase().includes(pathSearch.toLowerCase()) ||
@@ -474,12 +498,6 @@ export default function DashboardPage() {
             <input className="form-input dash-search-input"
               placeholder="Scout gates…" value={gateSearch} onChange={e => setGateSearch(e.target.value)} />
           </div>
-          <div className="dash-filter-chips">
-            {GATE_FILTERS.map(f => (
-              <button key={f} className={`filter-chip dash-filter-chip${gateFilter === f ? ' active' : ''}`}
-                onClick={() => setGateFilter(f)}>{f}</button>
-            ))}
-          </div>
           {!gatesLoaded ? (
             <div className="flex-center dash-flex-center-fill--h200"><DungeonPortalLoader panel height={200} /></div>
           ) : filteredSubjects.length === 0 ? (
@@ -663,7 +681,8 @@ export default function DashboardPage() {
           {NAV_ITEMS.map(item => (
             <button key={item.label} className={`sl-nav-link${activeView === item.view ? ' active' : ''}`}
               onClick={() => item.href ? navigate(item.href) : switchView(item.view)}>
-              {item.label}
+              <span className="sl-nav-link__label">{item.label}</span>
+              {item.sub && <span className="sl-nav-link__sub">{item.sub}</span>}
             </button>
           ))}
         </div>
@@ -715,7 +734,10 @@ export default function DashboardPage() {
                 <span className="dash-mob-nav-item__icon">
                   {item.view === 'arena' ? '⚔️' : item.view === 'gates' ? '🚪' : item.view === 'paths' ? '🗺️' : '💻'}
                 </span>
-                <span className="dash-flex-spacer">{item.label}</span>
+                <span className="dash-flex-spacer dash-mob-nav-item__text">
+                  <span className="dash-mob-nav-item__label">{item.label}</span>
+                  {item.sub && <span className="dash-mob-nav-item__sub">{item.sub}</span>}
+                </span>
                 {activeView === item.view && (
                   <span className="dash-mob-nav-item__now">NOW</span>
                 )}
@@ -731,12 +753,12 @@ export default function DashboardPage() {
           <span className="sl-alert-tag">[ SYSTEM ]</span>
           <span className="sl-alert-msg">
             {selectedConceptId
-              ? <>Skill detail loaded — complete the Skill trial to master this skill.</>
+              ? <>Skill detail loaded — complete the Skill trial <span className="sl-alert-plain">(quiz)</span> to master this skill.</>
               : activeView === 'gates'
-              ? <>Scout mode active — <strong>{filteredSubjects.length} gates</strong> detected.</>
+              ? <>Scout mode active — <strong>{filteredSubjects.length} gates</strong> <span className="sl-alert-plain">(subjects)</span> detected.</>
               : activeView === 'paths'
-              ? <>Hunter path registry — <strong>{allRoadmaps.length} paths</strong> available.</>
-              : <>Welcome, Hunter <strong>{user?.fullName?.split(' ')[0]}</strong>. Choose a dungeon gate to begin.</>}
+              ? <>Hunter path registry — <strong>{allRoadmaps.length} paths</strong> <span className="sl-alert-plain">(career roadmaps)</span> available.</>
+              : <>Welcome, Hunter <strong>{user?.fullName?.split(' ')[0]}</strong>. Choose a dungeon gate <span className="sl-alert-plain">(subject)</span> to begin.</>}
           </span>
         </div>
 
