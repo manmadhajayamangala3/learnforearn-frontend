@@ -2400,13 +2400,36 @@
   to { transform: translateX(-50%); }
 }
 
-/* Method */
+/* Method — the training loop */
 .gym-method {
-  padding: clamp(3rem, 8vw, 5rem) 0 clamp(1.5rem, 4vw, 2.5rem);
+  position: relative;
+  overflow: hidden;
+  padding: clamp(3rem, 8vw, 5rem) 0 clamp(2.5rem, 6vw, 4rem);
+}
+
+.gym-method__bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.gym-method__beam {
+  position: absolute;
+  top: -10%;
+  left: 50%;
+  width: min(760px, 90vw);
+  height: 360px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center,
+    color-mix(in srgb, var(--ps-accent) 16%, transparent),
+    transparent 70%);
+  filter: blur(30px);
+  opacity: 0.7;
 }
 
 .gym-method__wrap {
-  max-width: 1040px;
+  position: relative;
+  max-width: 1080px;
   margin: 0 auto;
   padding: 0 clamp(1rem, 4vw, 1.5rem);
 }
@@ -2441,68 +2464,199 @@
   color: var(--ps-muted);
 }
 
-.gym-method__steps {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: clamp(1rem, 2.5vw, 1.5rem);
+/* One-line summary of the loop: Think → Build → Debug → Improve */
+.gym-loop__flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem 0.4rem;
+  margin: 0 0 clamp(2rem, 5vw, 2.75rem);
 }
 
-.gym-method__connector {
-  position: absolute;
-  top: 24px;
-  left: 12%;
-  right: 12%;
-  height: 2px;
-  background: var(--ps-card-border);
+.gym-loop__flow-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
-.gym-method__connector-fill {
-  display: block;
-  height: 100%;
-  transform-origin: left center;
-  background: linear-gradient(90deg,
-    color-mix(in srgb, var(--ps-accent) 70%, transparent),
-    color-mix(in srgb, var(--ps-accent) 20%, transparent));
-}
-
-.gym-method__step {
-  position: relative;
-  z-index: 1;
-  padding: 1.15rem 1.1rem;
-  border-radius: 14px;
-  border: 1px solid var(--ps-card-border);
-  background: var(--ps-card-bg);
-}
-
-.gym-method__num {
-  display: inline-grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  margin-bottom: 0.7rem;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--ps-accent) 45%, var(--ps-card-border));
-  background: var(--ps-bg);
+.gym-loop__flow-word {
   font-family: 'Orbitron', sans-serif;
   font-weight: 800;
-  font-size: 0.72rem;
-  color: var(--ps-accent);
+  font-size: clamp(0.82rem, 2.4vw, 1.05rem);
+  letter-spacing: 0.06em;
+  color: var(--step-color);
+  padding: 0.28rem 0.85rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--step-color) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--step-color) 34%, transparent);
 }
 
-.gym-method__step-title {
-  margin: 0 0 0.35rem;
+.gym-loop__flow-arrow {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 1rem;
+  color: var(--ps-muted);
+  opacity: 0.7;
+}
+
+/* Loop track — 4 nodes joined by arrows, each in its own accent colour */
+.gym-loop {
+  position: relative;
+}
+
+.gym-loop__track {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(1.25rem, 3vw, 2rem);
+}
+
+.gym-loop__node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.9rem 1.15rem 1.4rem;
+  border-radius: 18px;
+  border: 1px solid var(--ps-card-border);
+  background:
+    radial-gradient(ellipse 130% 80% at 50% 0%, color-mix(in srgb, var(--step-color) 13%, transparent), transparent 68%),
+    var(--ps-card-bg);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.gym-loop__node:hover {
+  transform: translateY(-8px);
+  border-color: color-mix(in srgb, var(--step-color) 55%, transparent);
+  box-shadow: 0 22px 46px -24px color-mix(in srgb, var(--step-color) 85%, transparent);
+}
+
+/* Top accent bar in the step colour — inset so it never clips the card corners */
+.gym-loop__accent {
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 16px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--step-color) 40%, transparent),
+    var(--step-color),
+    color-mix(in srgb, var(--step-color) 40%, transparent));
+}
+
+/* Number badge overlapping the top-left edge */
+.gym-loop__num {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.8rem;
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 0.4rem;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--step-color) 14%, var(--ps-bg));
+  border: 1px solid color-mix(in srgb, var(--step-color) 40%, transparent);
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 800;
+  font-size: 0.66rem;
+  color: var(--step-color);
+}
+
+/* Glowing icon ring — the eye-catching centrepiece of each card */
+.gym-loop__ring {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin: 0.4rem 0 1rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%,
+    color-mix(in srgb, var(--step-color) 32%, transparent),
+    color-mix(in srgb, var(--step-color) 8%, transparent));
+  border: 1.5px solid color-mix(in srgb, var(--step-color) 55%, transparent);
+  box-shadow: 0 0 22px -4px color-mix(in srgb, var(--step-color) 65%, transparent),
+              inset 0 0 12px color-mix(in srgb, var(--step-color) 20%, transparent);
+}
+
+.gym-loop__glyph {
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.gym-loop__title {
+  margin: 0 0 0.45rem;
   font-family: 'Orbitron', sans-serif;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   letter-spacing: 0.02em;
+  color: var(--text-primary);
 }
 
-.gym-method__step-text {
+.gym-loop__text {
   margin: 0;
   font-size: 0.82rem;
   line-height: 1.55;
   color: var(--ps-muted);
+}
+
+/* Arrow between nodes — sits in the gap on the right side of each node */
+.gym-loop__arrow {
+  position: absolute;
+  top: 50%;
+  right: clamp(-1.5rem, -2vw, -1rem);
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--step-color);
+  background: var(--ps-bg);
+  border: 1px solid color-mix(in srgb, var(--step-color) 45%, var(--ps-card-border));
+  box-shadow: 0 0 14px -4px color-mix(in srgb, var(--step-color) 70%, transparent);
+  z-index: 2;
+}
+
+/* Loop-back return channel — the flow drops from node 4, runs back, rises into node 1 */
+.gym-loop__return {
+  position: relative;
+  margin: 1.4rem 10% 0;
+  height: 42px;
+  border: 1.5px dashed color-mix(in srgb, var(--ps-accent) 42%, transparent);
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+}
+
+/* Up-pointing tip on the left — arriving back at step 01 */
+.gym-loop__return-tip {
+  position: absolute;
+  top: -7px;
+  left: -6px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 8px solid color-mix(in srgb, var(--ps-accent) 60%, transparent);
+}
+
+.gym-loop__return-label {
+  position: absolute;
+  left: 50%;
+  bottom: -0.75rem;
+  transform: translateX(-50%);
+  padding: 0.25rem 0.85rem;
+  border-radius: 999px;
+  background: var(--ps-bg);
+  border: 1px solid color-mix(in srgb, var(--ps-accent) 40%, transparent);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  color: var(--ps-accent);
+  white-space: nowrap;
+  box-shadow: 0 0 20px -6px color-mix(in srgb, var(--ps-accent) 60%, transparent);
 }
 
 /* Gates — Solo Leveling "System" rank cards (3-column grid) */
@@ -2751,12 +2905,15 @@
 
 @media (max-width: 900px) {
   .gym-gates__grid { grid-template-columns: repeat(2, 1fr); }
-  .gym-method__steps { grid-template-columns: repeat(2, 1fr); }
-  .gym-method__connector { display: none; }
+  .gym-loop__track { grid-template-columns: repeat(2, 1fr); gap: 2rem 1.5rem; }
+  /* Only the arrow between the two columns is meaningful now — hide the rest */
+  .gym-loop__arrow { display: none; }
+  .gym-loop__return { margin: 1.4rem 20% 0; }
 }
 
 @media (max-width: 560px) {
   .gym-gates__grid { grid-template-columns: 1fr; }
-  .gym-method__steps { grid-template-columns: 1fr; }
+  .gym-loop__track { grid-template-columns: 1fr; gap: 1.5rem; }
+  .gym-loop__return { display: none; }
 }
 

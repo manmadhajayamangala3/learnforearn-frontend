@@ -30,6 +30,11 @@ export default function LandingFooter() {
           </span>
         ))}
       </div>
+      <div className="lp-footer__legal">
+        <span className="lp-footer__legal-link" onClick={() => navigate('/about')}>About</span>
+        <span className="lp-footer__legal-link" onClick={() => navigate('/terms')}>Terms of Service</span>
+        <span className="lp-footer__legal-link" onClick={() => navigate('/privacy')}>Privacy Policy</span>
+      </div>
     </footer>
   )
 }

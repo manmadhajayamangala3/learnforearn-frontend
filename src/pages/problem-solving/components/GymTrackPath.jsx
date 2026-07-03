@@ -12,10 +12,10 @@ const TICKER = [
 ]
 
 const METHOD = [
-  { n: '01', title: 'Read it right', text: 'Understand what is really being asked and spot the edge cases before you touch the keyboard.' },
-  { n: '02', title: 'Write it badly', text: 'Get any working version on screen. Ugly and slow beats blank and perfect — every single time.' },
-  { n: '03', title: 'Run & break it', text: 'Test it, watch it fail, read the error, fix it. That loop is where the real learning lives.' },
-  { n: '04', title: 'Level up', text: 'Optimise it, name the pattern you just used, then carry it into the next rep.' },
+  { n: '01', icon: '🧠', short: 'Think', color: '#60A5FA', title: 'Think before coding', text: 'Read the problem slowly. Be clear on what is being asked and picture the tricky cases before you write a single line.' },
+  { n: '02', icon: '💻', short: 'Build', color: '#4ADE80', title: 'Build a working solution', text: 'Get a version that runs — even if it is slow or messy. A working answer beats a perfect plan you never finish.' },
+  { n: '03', icon: '🐛', short: 'Debug', color: '#F59E0B', title: 'Debug and validate', text: 'Run it, try different inputs, read the errors, and fix them one by one until every case passes.' },
+  { n: '04', icon: '🚀', short: 'Improve', color: '#9B6ED4', title: 'Improve and optimize', text: 'Make it cleaner and faster, name the pattern you just used, and carry that lesson into the next challenge.' },
 ]
 
 const GATES = [
@@ -157,11 +157,10 @@ function GymGates() {
         >
           <p className="gym-gates__eyebrow">⟡ SIX GATES · ONE PATH</p>
           <h2 id="gym-gates-title" className="gym-gates__headline">
-            Where are you today?
+          Choose your training ground. Each one teaches something different.
           </h2>
           <p className="gym-gates__sub">
-            Pick the gate that matches your level. Each one teaches something different —
-            from your first program to real problems you can solve end to end.
+          Each level targets a different skill, helping you build coding strength, problem-solving speed, and development confidence.
           </p>
         </motion.header>
 
@@ -194,6 +193,10 @@ function GymTicker() {
 function GymMethod() {
   return (
     <section className="gym-method" aria-labelledby="gym-method-title">
+      <div className="gym-method__bg" aria-hidden="true">
+        <div className="gym-method__beam" />
+      </div>
+
       <div className="gym-method__wrap">
         <motion.header
           className="gym-method__head"
@@ -202,40 +205,74 @@ function GymMethod() {
           viewport={{ once: true, amount: 0.6 }}
           transition={{ duration: 0.5, ease: EASE }}
         >
-          <p className="gym-method__eyebrow">HOW THE GYM WORKS</p>
+          <p className="gym-method__eyebrow">◈ THE TRAINING LOOP</p>
           <h2 id="gym-method-title" className="gym-method__headline">
-            Four moves. Repeat until it clicks.
+            Four steps. Practice them on every challenge.
           </h2>
           <p className="gym-method__sub">
-            No lectures, no endless theory. Just the loop that turns beginners into people who ship code.
+            Forget perfection. Focus on progress. Repeat the cycle often enough,
+            and solving problems becomes second nature.
           </p>
         </motion.header>
 
-        <div className="gym-method__steps">
-          <div className="gym-method__connector" aria-hidden="true">
-            <motion.span
-              className="gym-method__connector-fill"
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{ duration: 1.1, ease: EASE }}
-            />
+        <motion.div
+          className="gym-loop__flow"
+          aria-hidden="true"
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.6 }}
+          transition={{ duration: 0.5, ease: EASE }}
+        >
+          {METHOD.map((step, i) => (
+            <span className="gym-loop__flow-item" key={step.n}>
+              <span className="gym-loop__flow-word" style={{ '--step-color': step.color }}>
+                {step.short}
+              </span>
+              {i < METHOD.length - 1 && <span className="gym-loop__flow-arrow">→</span>}
+            </span>
+          ))}
+        </motion.div>
+
+        <div className="gym-loop">
+          <div className="gym-loop__track">
+            {METHOD.map((step, i) => (
+              <motion.article
+                className="gym-loop__node"
+                key={step.n}
+                style={{ '--step-color': step.color }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{ duration: 0.5, delay: i * 0.12, ease: EASE }}
+              >
+                <span className="gym-loop__accent" aria-hidden="true" />
+                <span className="gym-loop__num">{step.n}</span>
+                <span className="gym-loop__ring" aria-hidden="true">
+                  <span className="gym-loop__glyph">{step.icon}</span>
+                </span>
+                <h3 className="gym-loop__title">{step.title}</h3>
+                <p className="gym-loop__text">{step.text}</p>
+
+                {i < METHOD.length - 1 && (
+                  <span className="gym-loop__arrow" aria-hidden="true">
+                    <ChevronRight size={18} />
+                  </span>
+                )}
+              </motion.article>
+            ))}
           </div>
 
-          {METHOD.map((step, i) => (
-            <motion.article
-              className="gym-method__step"
-              key={step.n}
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
-              transition={{ duration: 0.5, delay: i * 0.12, ease: EASE }}
-            >
-              <span className="gym-method__num">{step.n}</span>
-              <h3 className="gym-method__step-title">{step.title}</h3>
-              <p className="gym-method__step-text">{step.text}</p>
-            </motion.article>
-          ))}
+          <motion.div
+            className="gym-loop__return"
+            aria-hidden="true"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.6, delay: 0.5, ease: EASE }}
+          >
+            <span className="gym-loop__return-tip" />
+            <span className="gym-loop__return-label">↻ next problem — start again from step 01</span>
+          </motion.div>
         </div>
       </div>
     </section>
