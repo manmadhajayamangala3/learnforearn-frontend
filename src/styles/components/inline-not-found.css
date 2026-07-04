@@ -1,0 +1,51 @@
+.inline-not-found {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-primary);
+  font-family: 'Rajdhani', sans-serif;
+  background: var(--bg-primary);
+}
+
+.inline-not-found--panel {
+  min-height: min(420px, 60vh);
+  height: 100%;
+  background: transparent;
+}
+
+.inline-not-found__icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.inline-not-found__message {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.inline-not-found__btn {
+  margin-top: 0.25rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--nf-accent);
+  color: #000;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.inline-not-found__btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
