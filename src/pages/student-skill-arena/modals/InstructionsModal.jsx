@@ -48,7 +48,7 @@ export default function InstructionsModal({ intent, onClose, onConfirm }) {
       <div className="dash-instructions-modal" style={{ '--accent': meta.color }}>
         <div className="dash-instructions-modal__header">
           <span className="dash-instructions-modal__tag">[ {meta.label} PROTOCOL ]</span>
-          <button onClick={onClose} className="dash-instructions-modal__close"><X size={15} /></button>
+          <button type="button" aria-label="Close" onClick={onClose} className="dash-instructions-modal__close"><X size={15} /></button>
         </div>
 
         <div className="dash-instructions-modal__body">

@@ -51,7 +51,7 @@ export default function AboutRoadmapModal({ roadmap: r, onClose }) {
               )}
             </div>
           </div>
-          <button onClick={onClose} className="dash-icon-btn"><X size={16} /></button>
+          <button type="button" aria-label="Close" onClick={onClose} className="dash-icon-btn"><X size={16} /></button>
         </div>
 
         <div className="dash-about-modal__body">

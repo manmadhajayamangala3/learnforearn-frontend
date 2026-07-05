@@ -67,7 +67,7 @@ export default function HunterProfileDrawer({ user, rank, xp, onClose, onLogout 
       <div className="dash-hunter-drawer">
         <div className="dash-hunter-drawer__header">
           <span className="dash-hunter-drawer__title">[ HUNTER INSTRUCTIONS ]</span>
-          <button onClick={onClose} className="dash-icon-btn"><X size={16} /></button>
+          <button type="button" aria-label="Close" onClick={onClose} className="dash-icon-btn"><X size={16} /></button>
         </div>
 
         <div className="dash-hunter-drawer__body">
