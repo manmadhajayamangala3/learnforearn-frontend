@@ -7,7 +7,7 @@ import { ChevronLeft, AlertTriangle, Trophy, Brain, CheckCircle, Clock } from 'l
 import toast from 'react-hot-toast'
 import ConceptVideo from './ConceptVideo'
 import LivePreview from './LivePreview'
-import InlineNotFound from '../../../components/InlineNotFound'
+import SectionNotFoundPanel from '../../../components/SectionNotFoundPanel'
 import { isMongoId } from '../../../utils/mongoId'
 
 export default function ConceptInlinePanel({ conceptId, navList, onClose, startQuiz, subjectTitle = '' }) {
@@ -76,13 +76,9 @@ export default function ConceptInlinePanel({ conceptId, navList, onClose, startQ
 
   if (notFound) {
     return (
-      <InlineNotFound
-        panel
-        message="Skill not found"
-        backLabel="Back to Gates"
-        onBack={onClose}
-        accent="#9B6ED4"
-      />
+      <div className="sl-concept-inline">
+        <SectionNotFoundPanel variant="arena-skill" onBack={onClose} />
+      </div>
     )
   }
 

@@ -4,7 +4,7 @@ import DungeonPortalLoader from '../../../components/loaders/DungeonPortalLoader
 import ProgressBar from '../../../components/ProgressBar'
 import { getSubject, getQuizStatus } from '../../../api/api'
 import { Search, Trophy, Lock, CheckCircle, Clock } from 'lucide-react'
-import InlineNotFound from '../../../components/InlineNotFound'
+import SectionNotFoundPanel from '../../../components/SectionNotFoundPanel'
 import { isMongoId } from '../../../utils/mongoId'
 
 const RANK_COLORS = { S:'#EF4444', A:'#F59E0B', B:'#9B6ED4', C:'#60A5FA', D:'#4ADE80', E:'#888888' }
@@ -62,13 +62,7 @@ export default function SubjectPanel({ subjectId, onClose, onSkillClick, selecte
       {loading ? (
         <div className="flex-center dash-flex-center-fill"><DungeonPortalLoader panel height={120} /></div>
       ) : notFound ? (
-        <InlineNotFound
-          panel
-          message="Gate not found"
-          backLabel="Close"
-          onBack={onClose}
-          accent="#9B6ED4"
-        />
+        <SectionNotFoundPanel variant="arena-gate" onBack={onClose} fill />
       ) : !subject ? null : (
         <div className={bodyClass}>
           <div className="sl-panel-subject-meta">

@@ -9,7 +9,7 @@ import {
 import { motion } from 'framer-motion'
 import SmokeBladeLoader from '../components/loaders/SmokeBladeLoader'
 import EnterArenaButton from '../components/EnterArenaButton'
-import InlineNotFound from '../components/InlineNotFound'
+import SectionNotFoundPage from '../components/SectionNotFoundPage'
 import { isMongoId } from '../utils/mongoId'
 import { getMission } from '../api/api'
 import { useTheme } from '../context/ThemeContext'
@@ -57,16 +57,7 @@ export default function MissionDetailPage() {
   }, [id])
 
   if (loading) return <SmokeBladeLoader />
-  if (notFound) {
-    return (
-      <InlineNotFound
-        message="Mission not found"
-        backLabel="Back to Missions"
-        onBack={() => navigate('/missions')}
-        accent="#F97316"
-      />
-    )
-  }
+  if (notFound) return <SectionNotFoundPage variant="missions" />
   if (!mission) return null
 
   const m = RANK_META[mission.rank] || RANK_META['D']

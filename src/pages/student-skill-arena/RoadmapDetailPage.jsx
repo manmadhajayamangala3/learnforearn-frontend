@@ -3,7 +3,7 @@ import { PAGE_MIN_MS } from '../../components/loaders/_config'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, CheckCircle, PlayCircle, Trophy, Zap, Lock } from 'lucide-react'
 import SystemAwakeningLoader from '../../components/loaders/SystemAwakeningLoader'
-import InlineNotFound from '../../components/InlineNotFound'
+import SectionNotFoundPage from '../../components/SectionNotFoundPage'
 import { isMongoId } from '../../utils/mongoId'
 import { getRoadmap, enrollRoadmap, getRoadmapStatus } from '../../api/api'
 import { getRank } from '../../utils/slRank'
@@ -72,16 +72,7 @@ export default function RoadmapDetailPage() {
   // ── Loading ──────────────────────────────────────────
   if (loading) return <SystemAwakeningLoader subtitle="LOADING ROADMAP" />
 
-  if (notFound) {
-    return (
-      <InlineNotFound
-        message="Hunter path not found"
-        backLabel="Back to Skill Arena"
-        onBack={() => navigate('/skill-arena/dashboard?view=paths')}
-        accent="#9B6ED4"
-      />
-    )
-  }
+  if (notFound) return <SectionNotFoundPage variant="hunter-path" />
 
   if (!roadmap) return null
 
