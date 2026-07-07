@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { User as UserIcon, Shield, Copy, Check, ExternalLink, Save, Bookmark } from 'lucide-react'
+import { User as UserIcon, Shield, Copy, Check, ExternalLink, Save, AtSign } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { updateProfile } from '../api/api'
 import { getApiError } from '../utils/apiError'
-import FeatureTopBar from '../components/FeatureTopBar'
+import Navbar from '../components/navbars/Navbar'
 import toast from 'react-hot-toast'
 
 const AVATAR_COLORS = [
@@ -12,6 +12,7 @@ const AVATAR_COLORS = [
   '#D97706', '#16A34A', '#0891B2', '#2563EB', '#475569',
 ]
 const BIO_MAX = 300
+const USERNAME_RE = /^[a-z0-9_]{3,20}$/
 
 function initials(name = '') {
   return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('') || '?'
@@ -22,6 +23,7 @@ export default function MyProfilePage() {
   const [form, setForm] = useState({ fullName: '', username: '', bio: '', avatarColor: '#4F46E5' })
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [usernameError, setUsernameError] = useState('')
   const mountedRef = useRef(true)
 
   useEffect(() => {
@@ -43,23 +45,37 @@ export default function MyProfilePage() {
   const isGuest = user?.role === 'GUEST'
   const profileUrl = form.username ? `${window.location.origin}/u/${form.username}` : ''
 
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+  const set = (k, v) => {
+    setForm(f => ({ ...f, [k]: v }))
+    if (k === 'username') setUsernameError('')
+  }
 
   const save = async (e) => {
     e.preventDefault()
     if (saving) return
+
+    const username = form.username.trim().toLowerCase()
+    if (!USERNAME_RE.test(username)) {
+      setUsernameError('Username must be 3–20 characters: lowercase letters, numbers or underscore.')
+      return
+    }
+
+    setUsernameError('')
     setSaving(true)
     try {
-      await updateProfile({
+      const { data } = await updateProfile({
         fullName: form.fullName,
-        username: form.username,
+        username,
         bio: form.bio,
         avatarColor: form.avatarColor,
       })
+      if (data?.username) set('username', data.username)
       toast.success('Profile updated')
       window.dispatchEvent(new Event('sl:refresh'))
     } catch (err) {
-      toast.error(getApiError(err, 'We could not save your changes. Please review the fields and try again.'))
+      const msg = getApiError(err, 'We could not save your changes. Please review the fields and try again.')
+      if (/username/i.test(msg)) setUsernameError(msg)
+      else toast.error(msg)
     } finally {
       if (mountedRef.current) setSaving(false)
     }
@@ -75,7 +91,7 @@ export default function MyProfilePage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
-      <FeatureTopBar />
+      <Navbar sticky showBack />
 
       <div className="feat-page">
         <div className="feat-page-header">
@@ -88,7 +104,7 @@ export default function MyProfilePage() {
             Guest accounts cannot be customised. <Link to="/register" style={{ color: 'var(--accent-light)' }}>Create a free account</Link> to unlock your profile.
           </div>
         ) : (
-          <form onSubmit={save}>
+          <form id="profile-form" onSubmit={save}>
             {/* Live preview */}
             <div className="feat-profile-hero" style={{ marginBottom: 18 }}>
               <div className="feat-profile-avatar" style={{ background: form.avatarColor || '#4F46E5' }}>
@@ -114,10 +130,17 @@ export default function MyProfilePage() {
 
               <div className="feat-field">
                 <label htmlFor="s-username">Username</label>
-                <input id="s-username" className="feat-search-input" style={{ border: '1px solid var(--border)', borderRadius: 9, padding: '9px 12px', width: '100%' }}
-                  value={form.username} maxLength={20}
-                  onChange={e => set('username', e.target.value.toLowerCase())} />
-                <div className="feat-field-hint">3–20 characters: lowercase letters, numbers or underscore. This forms your public profile link.</div>
+                <div className="feat-input-affix">
+                  <AtSign size={14} className="feat-input-affix__icon" />
+                  <input id="s-username"
+                    className={`feat-affix-input${usernameError ? ' has-error' : ''}`}
+                    value={form.username} maxLength={20}
+                    autoComplete="off" spellCheck={false}
+                    onChange={e => set('username', e.target.value.toLowerCase().replace(/\s+/g, ''))} />
+                </div>
+                {usernameError
+                  ? <div className="feat-field-error">{usernameError}</div>
+                  : <div className="feat-field-hint">Created from your email — change it to anything unique. 3–20 characters: lowercase letters, numbers or underscore.</div>}
               </div>
 
               <div className="feat-field">
@@ -142,14 +165,26 @@ export default function MyProfilePage() {
                 </div>
               </div>
 
-              <button type="submit" className="feat-bookmark-btn is-saved" disabled={saving}>
-                <Save size={15} /> {saving ? 'Saving…' : 'Save changes'}
-              </button>
+              <div className="feat-section-actions">
+                <button type="submit" className="feat-save-btn" disabled={saving}>
+                  <Save size={15} /> {saving ? 'Saving…' : 'Save changes'}
+                </button>
+              </div>
+            </div>
+
+            {/* Account — email is fixed and cannot be changed */}
+            <div className="feat-section">
+              <h2 className="feat-section-title"><Shield size={16} /> Account</h2>
+              <div className="feat-field" style={{ marginBottom: 0 }}>
+                <label htmlFor="s-email">Email</label>
+                <input id="s-email" className="feat-affix-input is-readonly" value={user?.email || ''} readOnly disabled />
+                <div className="feat-field-hint">Your email is used to sign in and can’t be changed here.</div>
+              </div>
             </div>
 
             {/* Public profile sharing */}
             <div className="feat-section">
-              <h2 className="feat-section-title"><Shield size={16} /> Public profile</h2>
+              <h2 className="feat-section-title"><ExternalLink size={16} /> Public profile</h2>
               <p className="feat-field-hint" style={{ marginBottom: 12 }}>
                 Anyone with your link can view your safe public info (name, username, bio, rank and badges).
                 Your email and private data are never shared.
@@ -165,18 +200,6 @@ export default function MyProfilePage() {
                   </a>
                 </div>
               )}
-            </div>
-
-            {/* Account */}
-            <div className="feat-section">
-              <h2 className="feat-section-title"><UserIcon size={16} /> Account</h2>
-              <div className="feat-field">
-                <label>Email</label>
-                <div className="feat-field-hint" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{user?.email}</div>
-              </div>
-              <Link to="/bookmarks" className="feat-bookmark-btn" style={{ textDecoration: 'none' }}>
-                <Bookmark size={14} /> My Bookmarks
-              </Link>
             </div>
           </form>
         )}

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useTheme } from '../context/ThemeContext'
+import Navbar from '../components/navbars/Navbar'
 import {
   MapPin, Clock, Plus, X, Search,
-  ChevronDown, ChevronUp, Sun, Moon, ChevronLeft,
+  ChevronDown, ChevronUp,
   Filter, RefreshCw, Calendar, Layers
 } from 'lucide-react'
 import { getWalkIns, postWalkIn, removeWalkIn } from '../api/api'
@@ -243,9 +243,7 @@ export function JobsComingSoon() {
 
 export default function JobsPage() {
   const { user } = useAuth()
-  const { theme: th, toggleTheme: tog } = useTheme()
   const navigate = useNavigate()
-  const light = th === 'light'
 
   const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(true)
@@ -368,26 +366,7 @@ export default function JobsPage() {
 
   return (
     <div className="jobs-page">
-      <div className="jobs-nav">
-        <div className="jobs-nav__inner">
-          <button type="button" onClick={() => navigate(-1)} className="jobs-nav__back">
-            <ChevronLeft size={14} /> Jobs
-          </button>
-          <div className="jobs-nav__spacer" />
-          <div className="jobs-nav__actions">
-            <button
-              type="button"
-              onClick={() => setMobileFilter(m => !m)}
-              className={`jobs-filter-btn${activeFilterCount > 0 ? ' is-active' : ''}`}
-            >
-              <Filter size={12} /> {activeFilterCount > 0 ? activeFilterCount : ''}
-            </button>
-            <button type="button" onClick={tog} className="jobs-theme-btn" aria-label="Toggle theme">
-              {light ? <Moon size={13} /> : <Sun size={13} />}
-            </button>
-          </div>
-        </div>
-      </div>
+      <Navbar sticky showBack />
 
       <div className="jobs-body">
         <aside className="jobs-sidebar">
@@ -403,15 +382,24 @@ export default function JobsPage() {
                 {loading ? 'Loading…' : `${filtered.length} active walk-in${filtered.length !== 1 ? 's' : ''}${activeFilterCount > 0 ? ' (filtered)' : ''} across India`}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                if (!user) { navigate('/login?redirect=/walk-ins') } else { setShowModal(true) }
-              }}
-              className="jobs-post-btn"
-            >
-              <Plus size={15} /> Post Walk-In
-            </button>
+            <div className="jobs-header__actions">
+              <button
+                type="button"
+                onClick={() => setMobileFilter(m => !m)}
+                className={`jobs-filter-btn${activeFilterCount > 0 ? ' is-active' : ''}`}
+              >
+                <Filter size={12} /> Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!user) { navigate('/login?redirect=/walk-ins') } else { setShowModal(true) }
+                }}
+                className="jobs-post-btn"
+              >
+                <Plus size={15} /> Post Walk-In
+              </button>
+            </div>
           </div>
 
           {mobileFilter && (

@@ -406,23 +406,33 @@
 .lp-punch-title {
   font-family: 'Orbitron', 'Rajdhani', sans-serif;
   font-weight: 900;
-  line-height: 1.05;
+  line-height: 1.08;
   letter-spacing: -0.02em;
-  margin: 0 0 1.3rem;
-  max-width: 1100px;
-  font-size: clamp(1.9rem, 5.2vw, 4.1rem);
+  margin: 0 0 1.4rem;
+  max-width: 1040px;
+  font-size: clamp(1.8rem, 4.8vw, 3.7rem);
   text-shadow: 0 4px 40px rgba(0,0,0,0.6);
 }
-.lp-punch-line { display: block; color: #F1F5FF; }
-.lp-punch-grad {
-  background: linear-gradient(90deg, #9B6ED4, #60A5FA, #4ADE80, #9B6ED4);
-  background-size: 220% auto;
+.lp-punch-line { display: block; color: #F5F7FF; }
+/* Second line reads as the "so what" — slightly lighter weight + muted so the
+   highlighted phrase carries the meaning. */
+.lp-punch-line--sub {
+  color: rgba(226,232,240,0.82);
+  margin-top: 0.35rem;
+  font-size: 0.92em;
+}
+/* The core intent: the people who USE AI win. Static accent + underline, no
+   looping color animation. */
+.lp-punch-key {
+  background: linear-gradient(92deg, #A78BFA, #60A5FA);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: lpGradShift 4s linear infinite;
+  text-decoration: underline;
+  text-decoration-color: rgba(96,165,250,0.5);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 8px;
 }
-@keyframes lpGradShift { to { background-position: 220% center; } }
 
 .lp-punch-quote {
   position: relative;
@@ -465,7 +475,15 @@
     linear-gradient(to bottom, rgba(238,240,248,0.5) 0%, transparent 22%, transparent 55%, rgba(238,240,248,0.9) 100%);
 }
 [data-theme="light"] .lp-punch-line { color: #16182e; }
+[data-theme="light"] .lp-punch-line--sub { color: rgba(40,42,70,0.82); }
 [data-theme="light"] .lp-punch-title { text-shadow: 0 4px 30px rgba(120,110,180,0.25); }
+[data-theme="light"] .lp-punch-key {
+  background: linear-gradient(92deg, #7C5DBB, #1D4ED8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-decoration-color: rgba(29,78,216,0.4);
+}
 [data-theme="light"] .lp-punch-quote { color: rgba(40,42,70,0.75); text-shadow: none; }
 [data-theme="light"] .lp-punch-quote strong { color: #16182e; }
 [data-theme="light"] .lp-punch-desc {
@@ -498,10 +516,5 @@
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .lp-hero-robot__static,
-  .lp-hero-robot__spinner,
-  .lp-punch-grad { animation: none; }
-  .lp-punch-grad {
-    -webkit-text-fill-color: initial;
-    color: #9B6ED4;
-  }
+  .lp-hero-robot__spinner { animation: none; }
 }

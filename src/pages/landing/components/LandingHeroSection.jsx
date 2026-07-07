@@ -72,7 +72,9 @@ export default function LandingHeroSection() {
           className="lp-punch-title"
         >
           <span className="lp-punch-line">AI won't replace humans.</span>
-          <span className="lp-punch-line lp-punch-grad">Humans who use AI efficiently will replace those who don't.</span>
+          <span className="lp-punch-line lp-punch-line--sub">
+            Human who <span className="lp-punch-key">use AI efficiently</span> will.
+          </span>
         </motion.h1>
 
         <motion.p

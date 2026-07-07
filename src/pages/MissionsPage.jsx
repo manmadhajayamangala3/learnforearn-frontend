@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
 import { TEST_DELAY_MS } from '../components/loaders/_config'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Sun, Moon, Search, X, SlidersHorizontal, ChevronDown } from 'lucide-react'
+import { Search, X, SlidersHorizontal, ChevronDown } from 'lucide-react'
 import { motion } from 'framer-motion'
 import SmokeBladeLoader from '../components/loaders/SmokeBladeLoader'
-import BrandNavButton from '../components/BrandNavButton'
-import EnterArenaButton from '../components/EnterArenaButton'
+import Navbar from '../components/navbars/Navbar'
 import { useAuth } from '../context/AuthContext'
-import { useTheme } from '../context/ThemeContext'
 import { getMissions } from '../api/api'
 import toast from 'react-hot-toast'
 import { getApiError } from '../utils/apiError'
@@ -62,8 +60,6 @@ export default function MissionsPage() {
   const [category, setCategory]   = useState('')
   const [subFilter, setSubFilter] = useState('')
   const { user }                  = useAuth()
-  const { theme, toggleTheme }    = useTheme()
-  const light                     = theme === 'light'
   const navigate                  = useNavigate()
   const [searchParams]            = useSearchParams()
 
@@ -131,22 +127,7 @@ export default function MissionsPage() {
   return (
     <div className="missions-page">
 
-      <div className="missions-nav">
-        <BrandNavButton onClick={() => navigate('/')} />
-
-        <div className="missions-nav__actions">
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="missions-nav__theme"
-            aria-label={light ? 'Switch to dark mode' : 'Switch to light mode'}
-          >
-            {light ? <Moon size={14} /> : <Sun size={14} />}
-          </button>
-
-          <EnterArenaButton />
-        </div>
-      </div>
+      <Navbar sticky showBack />
 
       {/* ── Hero — copy left, connected value nodes right (full-width) ─── */}
       <section className="mb-hero mb-hero--split">

@@ -1,7 +1,7 @@
 import LandingFeedbackSection from '../../components/LandingFeedbackSection'
 import useLandingPage from './hooks/useLandingPage'
 import { LandingPageProvider } from './context/LandingPageContext'
-import LandingNavbar from './components/LandingNavbar'
+import Navbar from '../../components/navbars/Navbar'
 import LandingHeroSection from './components/LandingHeroSection'
 import LandingAboutSection from './components/LandingAboutSection'
 import LandingFreshersSection from './components/LandingFreshersSection'
@@ -22,7 +22,7 @@ export default function LandingPage() {
   return (
     <LandingPageProvider value={landing}>
       <div className="lp-page">
-        <LandingNavbar />
+        <Navbar />
         <LandingHeroSection />
         <LandingAboutSection />
         <LandingGlowDivider />
