@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/navbars/Navbar'
@@ -291,6 +291,25 @@ export default function JobsPage() {
   const todayJobs = filtered.filter(j => daysUntil(j.walkInDate) === 0)
   const upcomingJobs = filtered.filter(j => daysUntil(j.walkInDate) > 0)
 
+  // The search lives in a sticky sidebar, so after scrolling the list a search
+  // can filter results that are now above the fold. Enter exits the field and —
+  // only if the results have scrolled out of view above — scrolls back up to
+  // them. Searching from the top (results already visible) doesn't move.
+  const resultsRef = useRef(null)
+  const handleSearchEnter = (e) => {
+    if (!(e.key === 'Enter' || e.keyCode === 13) || search.trim() === '') return
+    e.preventDefault()
+    e.currentTarget.blur()
+    const el = resultsRef.current
+    if (!el) return
+    const NAV_OFFSET = 80 // sticky navbar band
+    const rectTop = el.getBoundingClientRect().top
+    if (rectTop < NAV_OFFSET) {
+      const top = rectTop + window.scrollY - NAV_OFFSET
+      window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' })
+    }
+  }
+
   const sidebarJsx = (
     <div className="jobs-filters">
       {activeFilterCount > 0 && (
@@ -308,6 +327,7 @@ export default function JobsPage() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
+            onKeyDown={handleSearchEnter}
             placeholder="Company, role or skill..."
             className="jobs-search-input"
           />
@@ -374,7 +394,7 @@ export default function JobsPage() {
           {sidebarJsx}
         </aside>
 
-        <main className="jobs-main">
+        <main className="jobs-main" ref={resultsRef}>
           <div className="jobs-header">
             <div>
               <h1 className="jobs-header__title">Walk-In Interviews</h1>

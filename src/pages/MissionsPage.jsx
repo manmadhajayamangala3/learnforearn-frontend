@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext'
 import { getMissions } from '../api/api'
 import toast from 'react-hot-toast'
 import { getApiError } from '../utils/apiError'
+import blurOnEnter from '../utils/blurOnEnter'
 
 const EASE = [0.16, 1, 0.3, 1]
 
@@ -228,6 +229,7 @@ export default function MissionsPage() {
               type="text"
               value={filter}
               onChange={e => setFilter(e.target.value)}
+              onKeyDown={blurOnEnter}
               placeholder="Search title, subject, tech…"
               className="mb-search__input"
             />

@@ -7,6 +7,7 @@ import Navbar from '../../components/navbars/Navbar'
 import BookmarkButton from '../../components/BookmarkButton'
 import { CATEGORIES, TOOLS } from './aiLabData'
 import { motion, AnimatePresence, useScroll, useTransform, useInView } from 'framer-motion'
+import blurOnEnter from '../../utils/blurOnEnter'
 
 const Spline = lazy(() => import('@splinetool/react-spline'))
 
@@ -280,6 +281,7 @@ export default function AILabPage() {
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
+              onKeyDown={blurOnEnter}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
               placeholder="Search tools, categories, tags..."

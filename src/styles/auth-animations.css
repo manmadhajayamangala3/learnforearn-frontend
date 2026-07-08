@@ -1877,6 +1877,31 @@
     max-height: none;
   }
 
+  /* The bot conversation lives inside .auth-stage (z-index:10), which is BELOW
+     the fixed navbar (z-index:100) — so the upward speech bubbles were clipped
+     behind the bar no matter what internal z-index they had. Lift the whole
+     stage above the navbar so the message renders OVER it. The navbar already
+     auto-hides on scroll-down (html.nav-hidden), so the form never overlaps it
+     while scrolling. */
+  .auth-stage {
+    z-index: 101;
+  }
+
+  /* Keep the hamburger drawer working: it must sit above the now-lifted stage. */
+  .auth-page .lp-mobile-overlay {
+    z-index: 108;
+  }
+
+  .auth-page .lp-mobile-drawer {
+    z-index: 109;
+  }
+
+  /* Auth scrolls its own .auth-page container (body is already locked), so
+     freeze it while the hamburger drawer is open to stop background scroll. */
+  html.lp-drawer-open .auth-page {
+    overflow: hidden;
+  }
+
   .auth-scene--login .login-scene-center {
     transform: scale(0.72);
     transform-origin: center center;

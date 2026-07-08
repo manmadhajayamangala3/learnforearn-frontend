@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Swords, Ghost, Menu, X as XIcon, Sun, Moon, ChevronRight, Search } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import { NAV_LINKS } from '../../pages/landing/landingData'
 import { LandingProfileDropdown } from '../../pages/landing/components/LandingProfileMenu'
 import { openGlobalSearch } from '../GlobalSearchOverlay'
+import useBodyLock from '../../hooks/useBodyLock'
 
 /**
  * Global site navbar — same look everywhere (landing + top-level feature pages).
@@ -30,6 +31,28 @@ export default function Navbar({ sticky = false }) {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [guestLoading, setGuestLoading] = useState(false)
+
+  // Lock the page behind the mobile drawer so the background can't scroll while
+  // the hamburger menu is open. Mobile-only — the drawer never opens on desktop.
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches,
+  )
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 900px)')
+    const sync = () => setIsMobile(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+  useBodyLock(mobileMenuOpen && isMobile)
+  // Some pages (e.g. auth) scroll an inner container instead of the body, so a
+  // body lock alone won't freeze them. Flag <html> so CSS can stop those too.
+  useEffect(() => {
+    if (!(mobileMenuOpen && isMobile)) return
+    const root = document.documentElement
+    root.classList.add('lp-drawer-open')
+    return () => root.classList.remove('lp-drawer-open')
+  }, [mobileMenuOpen, isMobile])
 
   const handleEnter = () =>
     navigate(user ? '/skill-arena/dashboard' : '/login?redirect=/skill-arena/dashboard')

@@ -309,6 +309,24 @@ export default function DeploymentGuidePage() {
     stationRefs.current[key]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
+  // Enter exits the search field, and — only if the user has scrolled past the
+  // first result — scrolls up to it so filtered results at the top aren't
+  // missed. If the first result is already at/below the fold (e.g. searching
+  // from the top), nothing scrolls.
+  const handleSearchEnter = (e) => {
+    if (!(e.key === 'Enter' || e.keyCode === 13) || search.trim() === '') return
+    e.preventDefault()
+    e.currentTarget.blur()
+    const firstKey = stationsWithStacks[0]?.key
+      || (visiblePlatforms.length > 0 ? 'platforms' : null)
+    const el = firstKey ? stationRefs.current[firstKey] : null
+    // ~navbar (64px) + station rail height — the results sit below this band.
+    const RAIL_OFFSET = 130
+    if (el && el.getBoundingClientRect().top < RAIL_OFFSET) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   const openGuide = (route) => {
     if (!user) { navigate(`/login?redirect=${encodeURIComponent(route)}`); return }
     navigate(route)
@@ -362,6 +380,7 @@ export default function DeploymentGuidePage() {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
+              onKeyDown={handleSearchEnter}
               placeholder='Search — "react", "django", "chatbot", "mongodb"…'
               className="deploy-rail__search-input"
             />
