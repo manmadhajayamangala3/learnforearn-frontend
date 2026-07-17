@@ -371,7 +371,7 @@
   .mpx-hero__meta { gap: 5px 10px; }
 }
 
-/* ── GitHub connect ── */
+.mpx-card--social { scroll-margin-top: 88px; }
 .mpx-github-connected__row { min-height: 44px; padding-right: 12px; }
 .mpx-github-connected__handle {
   flex: 1; min-width: 0; padding: 0 9px; font-weight: 700; font-size: 0.92rem;

@@ -271,10 +271,12 @@ export const removeBookmarkById = (id)          => api.delete(`/bookmarks/${id}`
 export const getPublicProfile = (username) => api.get(`/public/profile/${encodeURIComponent(username)}`)
 export const updateProfile    = (data)     => api.put('/profile/me', data)
 export const checkUsername    = (username) => api.get('/profile/check-username', { params: { username } })
-/** Fetch GitHub authorize URL via session cookie, then redirect (works on localhost + prod). */
-export const getGitHubConnectUrl = () => api.get('/profile/github/connect-url')
+/** Fetch GitHub authorize URL; pass current SPA origin so prod always redirects back correctly. */
+export const getGitHubConnectUrl = (returnTo = typeof window !== 'undefined' ? window.location.origin : '') =>
+  api.get('/profile/github/connect-url', { params: returnTo ? { returnTo } : {} })
 export const connectGitHub = async () => {
-  const { data } = await getGitHubConnectUrl()
+  const returnTo = window.location.origin
+  const { data } = await getGitHubConnectUrl(returnTo)
   if (data?.url) window.location.href = data.url
   else throw new Error('GitHub connect URL missing')
 }

@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
-import { updateProfile, checkUsername, listResumes, connectGitHub, disconnectGitHub } from '../api/api'
+import { updateProfile, checkUsername, listResumes, connectGitHub, disconnectGitHub, clearUserCache } from '../api/api'
 import { getApiError } from '../utils/apiError'
 import { getRank } from '../utils/slRank'
 import Navbar from '../components/navbars/Navbar'
@@ -116,6 +116,7 @@ export default function MyProfilePage() {
   const mountedRef = useRef(true)
   const initializedRef = useRef(false)
   const originalUsernameRef = useRef('')
+  const socialLinksRef = useRef(null)
 
   useEffect(() => {
     mountedRef.current = true
@@ -176,35 +177,55 @@ export default function MyProfilePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resumes, resumesLoaded])
 
-  // OAuth return from GitHub (backend redirects to /myprofile?github=…).
+  // OAuth return from GitHub (backend redirects to /myprofile?github=…#social-links).
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const gh = params.get('github')
-    if (!gh) return
+    const shouldScroll = gh || window.location.hash === '#social-links'
+
     if (gh === 'connected') {
+      clearUserCache()
       toast.success('GitHub connected — your profile link is verified.')
       window.dispatchEvent(new Event('sl:refresh'))
     } else if (gh === 'error') {
       const reason = params.get('reason') || 'failed'
       toast.error(GITHUB_ERRORS[reason] || GITHUB_ERRORS.failed)
     }
-    params.delete('github')
-    params.delete('reason')
-    const qs = params.toString()
-    window.history.replaceState({}, '', window.location.pathname + (qs ? `?${qs}` : ''))
-  }, [])
 
-  // After OAuth connect, /me refresh brings githubUrl — sync into the form once.
+    if (gh) {
+      params.delete('github')
+      params.delete('reason')
+      const qs = params.toString()
+      const hash = shouldScroll ? '#social-links' : ''
+      window.history.replaceState({}, '', window.location.pathname + (qs ? `?${qs}` : '') + hash)
+    }
+
+    if (shouldScroll) {
+      const t = setTimeout(() => {
+        socialLinksRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+      }, 120)
+      return () => clearTimeout(t)
+    }
+  }, [reduce])
+
+  // Keep GitHub UI in sync with /me after connect, disconnect, or sl:refresh.
   useEffect(() => {
-    if (!initializedRef.current || !user?.githubConnected) return
-    setForm(f => {
-      const url = user.githubUrl || ''
-      if (f.githubUrl === url) return f
-      const next = { ...f, githubUrl: url }
+    if (!initializedRef.current || !user) return
+    if (user.githubConnected) {
+      setForm(f => {
+        const url = user.githubUrl || ''
+        if (f.githubUrl === url) return f
+        const next = { ...f, githubUrl: url }
+        setBaseline(snapshot(next))
+        return next
+      })
+    } else if (form.githubUrl) {
+      const next = { ...form, githubUrl: '' }
+      setForm(next)
       setBaseline(snapshot(next))
-      return next
-    })
-  }, [user?.githubConnected, user?.githubUrl])
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.githubConnected, user?.githubUrl, user?.githubLogin])
 
   const isGuest = user?.role === 'GUEST'
   const githubConnected = !!user?.githubConnected
@@ -649,7 +670,7 @@ export default function MyProfilePage() {
         </motion.section>
 
         {/* ── Social links ── */}
-        <motion.section className="mpx-card" {...rise(0.15)}>
+        <motion.section id="social-links" ref={socialLinksRef} className="mpx-card mpx-card--social" {...rise(0.15)}>
           <div className="mpx-card__head">
             <h2 className="mpx-card__title"><Globe size={17} /> Social links</h2>
             <p className="mpx-card__sub">Optional — shown to visitors and recruiters.</p>
