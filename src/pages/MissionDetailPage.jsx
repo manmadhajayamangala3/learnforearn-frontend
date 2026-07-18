@@ -19,6 +19,7 @@ import { normalizeGitHubRepoUrl } from '../utils/githubRepoUrl'
 import { isLooseHttpUrl, normalizeHttpUrl } from '../utils/normalizeHttpUrl'
 import { saveOnEnter } from '../utils/saveOnEnter'
 import { removeLinkConfirmOptions } from '../utils/confirmRemoveLink'
+import { safeExternalUrl } from '../utils/safeExternalUrl'
 import { useConfirm } from '../context/ConfirmContext'
 import BookmarkButton from '../components/BookmarkButton'
 import LinkVerifyModal from '../components/LinkVerifyModal'
@@ -798,13 +799,13 @@ export default function MissionDetailPage() {
 
               {(submission?.repoUrl || submission?.deployUrl) && (
                 <div className="md-submit__links md-submit__links--inline">
-                  {submission?.repoUrl && (
-                    <a href={submission.repoUrl} target="_blank" rel="noopener noreferrer" className="md-submit__link">
+                  {submission?.repoUrl && safeExternalUrl(submission.repoUrl) && (
+                    <a href={safeExternalUrl(submission.repoUrl)} target="_blank" rel="noopener noreferrer" className="md-submit__link">
                       <Github size={16} /> <span>Repository</span> <ExternalLink size={13} className="md-submit__ext" />
                     </a>
                   )}
-                  {submission?.deployUrl && (
-                    <a href={submission.deployUrl} target="_blank" rel="noopener noreferrer" className="md-submit__link md-submit__link--live">
+                  {submission?.deployUrl && safeExternalUrl(submission.deployUrl) && (
+                    <a href={safeExternalUrl(submission.deployUrl)} target="_blank" rel="noopener noreferrer" className="md-submit__link md-submit__link--live">
                       <Globe size={16} /> <span>Live demo</span> <ExternalLink size={13} className="md-submit__ext" />
                     </a>
                   )}

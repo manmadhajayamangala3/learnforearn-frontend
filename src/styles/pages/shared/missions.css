@@ -1162,15 +1162,6 @@
   overflow: visible;
 }
 
-/* Top accent bar for extra emphasis */
-.md-submit::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--rank-color), color-mix(in srgb, var(--rank-color) 30%, transparent));
-}
-
 .md-submit__head { margin-bottom: 1.4rem; }
 
 .md-submit__eyebrow {

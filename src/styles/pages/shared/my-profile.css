@@ -404,6 +404,38 @@
 
 .mpx-field-remove:disabled { opacity: 0.45; cursor: not-allowed; }
 
+.mpx-field-remove svg:not(.mpx-spin) {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+.mpx-field-view {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 0 14px;
+  min-height: 2.65rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color .16s ease, border-color .16s ease, background .16s ease;
+}
+
+.mpx-field-view:hover {
+  color: var(--accent-light, var(--accent));
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
 .mpx-field-save {
   display: inline-flex;
   align-items: center;
@@ -475,6 +507,7 @@
   .mpx-field-row .mpx-inputwrap--flex { flex: 1 1 100%; width: 100%; }
   .mpx-field-row .mpx-field-actions { flex: 1 1 100%; width: 100%; }
   .mpx-field-row .mpx-field-remove,
+  .mpx-field-row .mpx-field-view,
   .mpx-field-row .mpx-field-save { flex: 1 1 0; min-width: 0; min-height: 2.65rem; }
 
   /* Visibility: icon + label + toggle stay on row 1; Share/View drop to a

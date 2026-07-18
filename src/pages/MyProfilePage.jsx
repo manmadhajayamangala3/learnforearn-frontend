@@ -17,6 +17,7 @@ import { getLinkVerificationResults, isLinkVerificationError } from '../utils/li
 import { linkedinUrlState, LINKEDIN_URL_HINT } from '../utils/linkedinUrl'
 import { normalizeHttpUrl, isLooseHttpUrl } from '../utils/normalizeHttpUrl'
 import { saveOnEnter } from '../utils/saveOnEnter'
+import { safeExternalUrl } from '../utils/safeExternalUrl'
 import { disconnectGitHubConfirmOptions, removeLinkConfirmOptions } from '../utils/confirmRemoveLink'
 import { useConfirm } from '../context/ConfirmContext'
 import { getRank } from '../utils/slRank'
@@ -931,7 +932,7 @@ export default function MyProfilePage() {
                   <button type="button" className="mpx-share__btn" onClick={copyLink}>
                     {copied ? <Check size={13} /> : <Share2 size={13} />} {copied ? 'Copied' : 'Share link'}
                   </button>
-                  <a className="mpx-share__btn" href={profileUrl} target="_blank" rel="noreferrer">
+                  <a className="mpx-share__btn" href={profileUrl} target="_blank" rel="noopener noreferrer">
                     <ExternalLink size={13} /> View
                   </a>
                 </div>
@@ -1193,8 +1194,8 @@ export default function MyProfilePage() {
                   <span className="mpx-github-badge">Verified</span>
                 </div>
                 <div className="mpx-github-connected__actions">
-                  {user?.githubUrl && (
-                    <a className="mpx-github-btn mpx-github-btn--ghost" href={user.githubUrl} target="_blank" rel="noopener noreferrer">
+                  {user?.githubUrl && safeExternalUrl(user.githubUrl) && (
+                    <a className="mpx-github-btn mpx-github-btn--ghost" href={safeExternalUrl(user.githubUrl)} target="_blank" rel="noopener noreferrer">
                       <ExternalLink size={14} aria-hidden="true" /> View profile
                     </a>
                   )}
@@ -1247,6 +1248,16 @@ export default function MyProfilePage() {
                     </span>
                   </div>
                   <div className="mpx-field-actions">
+                    {savedUrl && safeExternalUrl(savedUrl) && (
+                      <a
+                        className="mpx-field-view"
+                        href={safeExternalUrl(savedUrl)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink size={14} aria-hidden="true" /> View
+                      </a>
+                    )}
                     {savedUrl && (
                       <button
                         type="button"
@@ -1334,7 +1345,7 @@ export default function MyProfilePage() {
                             onClick={e => { e.preventDefault(); e.stopPropagation(); shareResume(url, r.title) }}>
                             <Share2 size={13} /> Share link
                           </button>
-                          <a className="mpx-resumeopt__view" href={url} target="_blank" rel="noreferrer"
+                          <a className="mpx-resumeopt__view" href={safeExternalUrl(url) || url} target="_blank" rel="noopener noreferrer"
                             onClick={e => e.stopPropagation()}>
                             <ExternalLink size={13} /> View
                           </a>

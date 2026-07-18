@@ -4,6 +4,7 @@ import { AlertTriangle, ExternalLink, Loader2, RefreshCw, Save, X } from 'lucide
 import useBodyLock from '../hooks/useBodyLock'
 import useModalA11y from '../hooks/useModalA11y'
 import { getLinkVerifyDisplay } from '../utils/linkVerification'
+import { safeExternalUrl } from '../utils/safeExternalUrl'
 import '../styles/components/link-verify-modal.css'
 
 const LEAD_COPY = {
@@ -97,8 +98,8 @@ export default function LinkVerifyModal({
               <li key={`${r.label}-${r.url}`} className={`link-verify-modal__item link-verify-modal__item--${r.status || 'unverifiable'}`}>
                 <div className="link-verify-modal__item-head">
                   <strong>{r.label}</strong>
-                  {r.url && (
-                    <a href={r.url} target="_blank" rel="noopener noreferrer" className="link-verify-modal__open">
+                  {r.url && safeExternalUrl(r.url) && (
+                    <a href={safeExternalUrl(r.url)} target="_blank" rel="noopener noreferrer" className="link-verify-modal__open">
                       Open <ExternalLink size={15} aria-hidden="true" />
                     </a>
                   )}

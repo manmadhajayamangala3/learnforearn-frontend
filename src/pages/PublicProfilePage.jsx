@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { getPublicProfile } from '../api/api'
 import { getRank } from '../utils/slRank'
+import { safeExternalUrl } from '../utils/safeExternalUrl'
 import '../styles/pages/shared/public-profile.css'
 
 const EASE = [0.16, 1, 0.3, 1]
@@ -48,7 +49,6 @@ function formatEduYears(edu) {
   return null
 }
 const host = (url) => { try { return new URL(/^https?:\/\//i.test(url) ? url : `https://${url}`).hostname.replace(/^www\./, '') } catch { return url } }
-const withProto = (url) => (/^https?:\/\//i.test(url) ? url : `https://${url}`)
 
 // Animated number count-up (honors reduced motion).
 function CountUp({ value, reduce }) {
@@ -205,15 +205,21 @@ export default function PublicProfilePage() {
                 </div>
                 {(links.length > 0 || profile.publicEmail || resume) && (
                   <div className="pp-links">
-                    {links.map(({ key, label, icon: Icon }) => (
-                      <a key={key} className="pp-link" href={profile[key]} target="_blank" rel="noopener noreferrer nofollow">
+                    {links.map(({ key, label, icon: Icon }) => {
+                      const href = safeExternalUrl(profile[key])
+                      if (!href) return null
+                      return (
+                      <a key={key} className="pp-link" href={href} target="_blank" rel="noopener noreferrer nofollow">
                         <Icon size={14} /> {label}
                         {key === 'githubUrl' && profile.githubVerified && (
                           <span className="pp-link__verified" title="Verified via GitHub">Verified</span>
                         )}
                       </a>
-                    ))}
-                    {profile.publicEmail && <a className="pp-link" href={`mailto:${profile.publicEmail}`}><Mail size={14} /> Email</a>}
+                      )
+                    })}
+                    {profile.publicEmail && safeExternalUrl(`mailto:${profile.publicEmail}`) && (
+                      <a className="pp-link" href={safeExternalUrl(`mailto:${profile.publicEmail}`)}><Mail size={14} /> Email</a>
+                    )}
                     {resume && (
                       <a className="pp-link" href={`/r/${resume.slug}`} target="_blank" rel="noopener noreferrer">
                         <FileText size={14} /> Resume
@@ -293,8 +299,8 @@ export default function PublicProfilePage() {
                         </div>
                       )}
                       <div className="pp-work__actions">
-                        {w.deployUrl && <a className="pp-btn pp-btn--primary" href={withProto(w.deployUrl)} target="_blank" rel="noopener noreferrer"><Rocket size={14} /> Live demo</a>}
-                        {w.repoUrl && <a className="pp-btn pp-btn--ghost" href={withProto(w.repoUrl)} target="_blank" rel="noopener noreferrer"><Code2 size={14} /> Code</a>}
+                        {safeExternalUrl(w.deployUrl) && <a className="pp-btn pp-btn--primary" href={safeExternalUrl(w.deployUrl)} target="_blank" rel="noopener noreferrer"><Rocket size={14} /> Live demo</a>}
+                        {safeExternalUrl(w.repoUrl) && <a className="pp-btn pp-btn--ghost" href={safeExternalUrl(w.repoUrl)} target="_blank" rel="noopener noreferrer"><Code2 size={14} /> Code</a>}
                       </div>
                       {(w.deployUrl || w.repoUrl) && <span className="pp-work__host">{host(w.deployUrl || w.repoUrl)}</span>}
                     </motion.article>

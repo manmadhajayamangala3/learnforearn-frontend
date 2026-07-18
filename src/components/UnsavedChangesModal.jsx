@@ -19,7 +19,7 @@ export default function UnsavedChangesModal({
 
   return createPortal(
     <div
-      className="modal-overlay"
+      className="modal-overlay unsaved-changes-modal-overlay"
       onClick={e => e.target === e.currentTarget && !busy && onStay?.()}
     >
       <div
