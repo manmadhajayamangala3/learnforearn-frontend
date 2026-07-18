@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import toast from 'react-hot-toast'
 import { PAGE_MIN_MS } from '../../components/loaders/_config'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Sun, Moon, Search, X, ChevronRight } from 'lucide-react'
@@ -70,7 +71,10 @@ export default function TrackPage() {
     setTopic('All')
     getProblems(track)
       .then(r => setQuestions(r.data))
-      .catch(() => setQuestions([]))
+      .catch(() => {
+        toast.error('Could not load problems. Please try again.')
+        setQuestions([])
+      })
       .finally(() => setTimeout(() => setLoading(false), PAGE_MIN_MS))
   }, [track])
 

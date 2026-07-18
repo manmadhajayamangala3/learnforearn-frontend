@@ -114,6 +114,10 @@ export default function DashboardPage() {
 
   const lastScrollY = useRef(0)
   const navHiddenRef = useRef(false)
+  // Fire-and-forget "loaded" timers started from event handlers (sl:refresh, loadGates,
+  // loadPaths). Tracked so they can be cleared if the page unmounts before they fire.
+  const pendingTimersRef = useRef([])
+  useEffect(() => () => { pendingTimersRef.current.forEach(clearTimeout); pendingTimersRef.current = [] }, [])
 
   // Auto-hide navbar on page scroll (reappears when scrolling up).
   useEffect(() => {
@@ -167,7 +171,7 @@ export default function DashboardPage() {
       active = false
       timers.forEach(clearTimeout)
     }
-  }, []) // eslint-disable-line
+  }, [])
 
   // Full attempt history — loaded lazily the first time the History view is opened.
   useEffect(() => {
@@ -204,7 +208,7 @@ export default function DashboardPage() {
       setPanelRefreshKey(k => k + 1)
       getSubjects().then(r => {
         setSubjects(r.data)
-        setTimeout(() => setGatesLoaded(true), TEST_DELAY_MS)
+        pendingTimersRef.current.push(setTimeout(() => setGatesLoaded(true), TEST_DELAY_MS))
         const ids = r.data.map(s => s.id)
         if (ids.length > 0) {
           getBulkSubjectStatus(ids)
@@ -217,7 +221,7 @@ export default function DashboardPage() {
       })
       getRoadmaps().then(r => {
         setAllRoadmaps(r.data)
-        setTimeout(() => setPathsLoaded(true), TEST_DELAY_MS)
+        pendingTimersRef.current.push(setTimeout(() => setPathsLoaded(true), TEST_DELAY_MS))
       }).catch(err => {
         logApiError('roadmaps-refresh', err)
         setPathsLoaded(true)
@@ -258,13 +262,13 @@ export default function DashboardPage() {
         .catch(() => {})
     }, 60_000)
     return () => { cancelled = true; clearInterval(t) }
-  }, [questData?.studyDone]) // eslint-disable-line
+  }, [questData?.studyDone])
 
   const loadGates = () => {
     if (gatesLoaded) return
     getSubjects().then(r => {
       setSubjects(r.data)
-      setTimeout(() => setGatesLoaded(true), TEST_DELAY_MS)
+      pendingTimersRef.current.push(setTimeout(() => setGatesLoaded(true), TEST_DELAY_MS))
       const ids = r.data.map(s => s.id)
       if (ids.length > 0) {
         getBulkSubjectStatus(ids)
@@ -273,6 +277,7 @@ export default function DashboardPage() {
       }
     }).catch(err => {
       logApiError('subjects-gates', err)
+      toast.error('Could not load gates. Please try again.')
       setGatesLoaded(true)
     })
   }
@@ -281,9 +286,10 @@ export default function DashboardPage() {
     if (pathsLoaded) return
     getRoadmaps().then(r => {
       setAllRoadmaps(r.data)
-      setTimeout(() => setPathsLoaded(true), TEST_DELAY_MS)
+      pendingTimersRef.current.push(setTimeout(() => setPathsLoaded(true), TEST_DELAY_MS))
     }).catch(err => {
       logApiError('roadmaps-paths', err)
+      toast.error('Could not load paths. Please try again.')
       setPathsLoaded(true)
     })
   }

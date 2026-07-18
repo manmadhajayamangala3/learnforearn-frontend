@@ -204,8 +204,6 @@ function usePrefetchRoutes() {
       import('./pages/auth/RegisterForm')
       import('./pages/MissionsPage')
       import('./pages/JobsPage')
-      import('./pages/ailab/AILabPage')
-      import('./pages/DeploymentGuidePage')
       import('./pages/problem-solving/ProblemSolvingPage')
       import('./pages/student-skill-arena/DashboardPage')
       import('./pages/FresherInstructionsPage')

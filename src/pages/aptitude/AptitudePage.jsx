@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, BookOpen, Zap, Filter, Repeat, Timer, Layers } from 'lucide-react'
@@ -115,7 +116,7 @@ export default function AptitudePage() {
         ;(r.data || []).forEach(c => { map[c.category] = c })
         setCounts(map)
       })
-      .catch(() => { if (alive) setCounts({}) })
+      .catch(() => { if (alive) { toast.error('Could not load aptitude sections. Please try again.'); setCounts({}) } })
     return () => { alive = false }
   }, [])
 

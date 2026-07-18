@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import toast from 'react-hot-toast'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ChevronRight, Search, X } from 'lucide-react'
@@ -32,7 +33,10 @@ export default function AptitudeCategoryPage() {
     setQuery('')
     getAptitudeGroups(category)
       .then(r => setGroups(r.data || []))
-      .catch(() => setGroups([]))
+      .catch(() => {
+        toast.error('Could not load topics. Please try again.')
+        setGroups([])
+      })
       .finally(() => { if (!cached) setTimeout(() => setLoading(false), PAGE_MIN_MS) })
   }, [category])
 

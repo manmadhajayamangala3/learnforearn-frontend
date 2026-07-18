@@ -29,7 +29,6 @@ export default function CertificateVerifyPage() {
   // If a code was passed in the URL (a shared verification link), check it immediately.
   useEffect(() => {
     if (codeParam) runVerify(codeParam)
-    // eslint-disable-next-line
   }, [codeParam])
 
   const onSubmit = (e) => {

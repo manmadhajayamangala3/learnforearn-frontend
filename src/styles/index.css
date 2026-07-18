@@ -19,8 +19,9 @@
 @import './pages/shared/index.css';
 @import './features.css';
 @import './landing-animations.css';
-@import './auth-animations.css';
-@import './pages-animations.css';
+/* auth-animations.css and pages-animations.css are imported co-located in their own
+   lazy pages (AuthLayoutShell / Fresher & Career pages) — not globally — so they load
+   only with those routes instead of on every page. */
 
 /* Mobile responsiveness layer — imported LAST so it wins. All rules are
    inside mobile media queries; desktop view is unchanged. */

@@ -54,7 +54,7 @@ export default function CertificateViewPage() {
       const safeTitle = (cert?.credentialTitle || 'certificate').replace(/[^a-z0-9]+/gi, '-').toLowerCase()
       pdf.save(`${safeTitle}-${cert?.code || 'LFE'}.pdf`)
       toast.success('Certificate downloaded')
-    } catch (e) {
+    } catch {
       toast.error('Could not generate the PDF. Please try again.')
     } finally {
       setDownloading(false)
