@@ -8,6 +8,7 @@ import CertificateDocument from '../../../components/CertificateDocument'
 import { getCertificate } from '../../../api/api'
 import { getApiError } from '../../../utils/apiError'
 import { PAGE_MIN_MS } from '../../../components/loaders/_config'
+import '../../../styles/pages/shared/certificates.css'
 
 const EASE = [0.16, 1, 0.3, 1]
 

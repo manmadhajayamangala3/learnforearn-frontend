@@ -10,6 +10,7 @@ import SectionNotFoundPage from '../../components/SectionNotFoundPage'
 import blurOnEnter from '../../utils/blurOnEnter'
 import { PAGE_MIN_MS } from '../../components/loaders/_config'
 import { getAptitudeGroups, aptitudeCache } from '../../api/api'
+import '../../styles/pages/shared/aptitude.css'
 import { APTITUDE_CATEGORY_MAP } from './aptitudeData'
 
 const EASE = [0.16, 1, 0.3, 1]
@@ -27,17 +28,21 @@ export default function AptitudeCategoryPage() {
 
   useEffect(() => {
     if (!meta) return
+    let alive = true
+    let doneTimer
     const cached = aptitudeCache.groups(category)
     if (cached) { setGroups(cached); setLoading(false) }
     else setLoading(true)
     setQuery('')
     getAptitudeGroups(category)
-      .then(r => setGroups(r.data || []))
+      .then(r => { if (alive) setGroups(r.data || []) })
       .catch(() => {
+        if (!alive) return
         toast.error('Could not load topics. Please try again.')
         setGroups([])
       })
-      .finally(() => { if (!cached) setTimeout(() => setLoading(false), PAGE_MIN_MS) })
+      .finally(() => { if (alive && !cached) doneTimer = setTimeout(() => setLoading(false), PAGE_MIN_MS) })
+    return () => { alive = false; clearTimeout(doneTimer) }
   }, [category])
 
   const q = query.trim().toLowerCase()

@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext'
 import { getApiError } from '../../utils/apiError'
 import { isMongoId } from '../../utils/mongoId'
 import toast from 'react-hot-toast'
+import '../../styles/pages/dashboard/index.css'
 
 const QUIZ_TYPES = { concept: startConceptQuiz, subject: startSubjectQuiz, roadmap: startRoadmapQuiz }
 

@@ -5,6 +5,7 @@ import { CheckCircle, XCircle, Home, Search, Loader2 } from 'lucide-react'
 import Navbar from '../../components/navbars/Navbar'
 import CertificateDocument from '../../components/CertificateDocument'
 import { verifyCertificate } from '../../api/api'
+import '../../styles/pages/shared/certificates.css'
 
 const EASE = [0.16, 1, 0.3, 1]
 

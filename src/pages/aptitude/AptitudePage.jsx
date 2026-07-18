@@ -6,6 +6,7 @@ import { ChevronRight, BookOpen, Zap, Filter, Repeat, Timer, Layers } from 'luci
 import Navbar from '../../components/navbars/Navbar'
 import { getAptitudeCategories } from '../../api/api'
 import { APTITUDE_CATEGORIES } from './aptitudeData'
+import '../../styles/pages/shared/aptitude.css'
 
 const EASE = [0.16, 1, 0.3, 1]
 
