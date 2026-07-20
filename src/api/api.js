@@ -202,6 +202,12 @@ export const setResumeShare = (id, isPublic)     => api.post(`/resumes/${id}/sha
 // Public — anyone with the link can view a shared resume.
 export const getPublicResume = (slug)            => api.get(`/public/resume/${slug}`)
 
+// ─── CODE RUNNER ──────────────────────────────────────────────
+// Authenticated + rate limited (10/min). `signal` (AbortController) lets the
+// caller cancel the run when the user navigates away.
+export const executeCode = (code, language, signal) =>
+  api.post('/code/execute', { code, language }, { signal })
+
 // ─── PROBLEMS (public) ────────────────────────────────────────
 export const getProblems  = (track) => withCache(`problems:${track||'all'}`, 5*60_000, () => api.get('/problems' + (track ? `?track=${track}` : '')))
 export const getProblem   = (id)    => withCache(`problem:${id}`,            5*60_000, () => api.get(`/problems/${id}`))

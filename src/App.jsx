@@ -38,6 +38,7 @@ const MissionsPage             = lazy(() => import('./pages/MissionsPage'))
 const MissionDetailPage        = lazy(() => import('./pages/MissionDetailPage'))
 const ResumePage               = lazy(() => import('./pages/resume/ResumePage'))
 const SharedResumePage         = lazy(() => import('./pages/resume/SharedResumePage'))
+const CodeEditorPage           = lazy(() => import('./pages/CodeEditorPage'))
 const JobsPage                 = lazy(() => import('./pages/JobsPage'))
 const FresherInstructionsPage  = lazy(() => import('./pages/FresherInstructionsPage'))
 const CareerGuidancePage       = lazy(() => import('./pages/CareerGuidancePage'))
@@ -361,6 +362,7 @@ const router = createBrowserRouter([
       { path: '/missions/:id', element: <ProtectedRoute><MissionDetailPage /></ProtectedRoute> },
       { path: '/resume', element: <ResumePage /> },
       { path: '/r/:slug', element: <SharedResumePage /> },
+      { path: '/code-editor', element: <ProtectedRoute><CodeEditorPage /></ProtectedRoute> },
       { path: '/u/:username', element: <PublicProfilePage /> },
       { path: '/certificate/verify', element: <CertificateVerifyPage /> },
       { path: '/certificate/verify/:code', element: <CertificateVerifyPage /> },
