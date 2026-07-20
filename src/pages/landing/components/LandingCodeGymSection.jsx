@@ -27,7 +27,7 @@ export default function LandingCodeGymSection() {
               Every problem shows brute force to optimized in four languages.
             </p>
             <button type="button" onClick={() => navigate('/problem-solving')} className="lp-section-cta lp-section-cta--code">
-              💻 Start Solving — Free
+              💻 Start Solving
             </button>
           </div>
 

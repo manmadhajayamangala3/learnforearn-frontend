@@ -44,10 +44,10 @@ export const ABOUT_OFFERINGS = [
 ]
 
 export const ABOUT_TRUST = [
-  { value: '100', suffix: '%', label: 'Free forever' },
   { value: 'subjects',        label: 'Subjects' },
   { value: 'concepts',        label: 'Concepts to learn' },
-  { value: '₹0',              label: 'Credit card needed' },
+  { value: 'paths',           label: 'Career paths' },
+  { value: 'India',           label: 'Built for freshers' },
 ]
 
 export const FRESHER_GUIDE_POINTS = [

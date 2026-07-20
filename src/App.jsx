@@ -141,12 +141,39 @@ function GlobalFooter() {
   return <SiteFooter />
 }
 
+// Per-history-entry scroll positions, keyed by the router location key.
+const scrollPositions = new Map()
+
 function ScrollResetter() {
-  const { pathname } = useLocation()
+  const location = useLocation()
   const navType = useNavigationType()
+  const key = location.key
+
+  // Continuously record the real scroll position for the current entry — but
+  // NEVER while an overlay has the body locked (mobile menus pin the body with
+  // position:fixed, so window.scrollY reads 0 then; recording it would clobber
+  // the true position we need to restore on back-navigation).
   useEffect(() => {
-    if (navType !== 'POP') window.scrollTo(0, 0)
-  }, [pathname, navType])
+    const onScroll = () => {
+      if (document.documentElement.classList.contains('scroll-locked')) return
+      scrollPositions.set(key, window.scrollY)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [key])
+
+  // Forward navigation → top. Back/forward (POP) → restore the saved position.
+  // Desktop already restores correctly via the browser; on mobile the body-lock
+  // zeroes the browser's snapshot, so we re-apply the position we tracked.
+  useEffect(() => {
+    if (navType !== 'POP') {
+      window.scrollTo(0, 0)
+      return
+    }
+    const y = scrollPositions.get(key)
+    if (y != null) requestAnimationFrame(() => window.scrollTo(0, y))
+  }, [key, navType])
+
   return null
 }
 
