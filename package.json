@@ -27,6 +27,7 @@
     "html2canvas-pro": "^2.2.4",
     "jspdf": "^4.2.1",
     "lucide-react": "^0.447.0",
+    "monaco-editor": "^0.56.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-hot-toast": "^2.4.1",

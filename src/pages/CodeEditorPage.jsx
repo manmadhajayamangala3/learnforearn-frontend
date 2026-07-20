@@ -1,11 +1,25 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import Editor from '@monaco-editor/react'
+// Core editor API only (no bundled TS/HTML/CSS/JSON language services), plus the
+// Monarch tokenizers for just the languages we offer. This bundles Monaco from
+// npm — no CDN loader, no CSP issues — while keeping the chunk lean.
+// monaco-editor's exports map rewrites `monaco-editor/<x>` → `esm/vs/<x>.js`,
+// so these specifiers intentionally omit the `esm/vs/` prefix.
+import * as monaco from 'monaco-editor/editor/editor.api'
+import editorWorker from 'monaco-editor/editor/editor.worker?worker'
+import 'monaco-editor/languages/definitions/python/register'
+import 'monaco-editor/languages/definitions/java/register'
+import 'monaco-editor/languages/definitions/cpp/register' // registers c + cpp
+import Editor, { loader } from '@monaco-editor/react'
 import { Play, Loader2, Trash2, Terminal } from 'lucide-react'
 import Navbar from '../components/navbars/Navbar'
 import { useTheme } from '../context/ThemeContext'
 import { executeCode } from '../api/api'
 import getApiError from '../utils/apiError'
 import '../styles/pages/code-editor.css'
+
+// The base editor worker covers every language we use (all main-thread Monarch).
+self.MonacoEnvironment = { getWorker: () => new editorWorker() }
+loader.config({ monaco })
 
 const LANGUAGES = [
   { id: 'python', label: 'Python', monaco: 'python' },
