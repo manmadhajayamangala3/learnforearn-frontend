@@ -1,7 +1,7 @@
 {
   "name": "LearnForEarn",
   "short_name": "LearnForEarn",
-  "description": "Free coding practice, career roadmaps, aptitude, AI tools, and fresher jobs — for students in India.",
+  "description": "Coding practice, career roadmaps, placement aptitude, AI tools, and fresher jobs — for students in India.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

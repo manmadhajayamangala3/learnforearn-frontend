@@ -95,6 +95,9 @@ const ProblemSolvingPage       = lazy(() => import('./pages/problem-solving/Prob
 const TrackPage                = lazy(() => import('./pages/problem-solving/TrackPage'))
 const ProblemDetailPage        = lazy(() => import('./pages/problem-solving/ProblemDetailPage'))
 
+const TipsHubPage              = lazy(() => import('./pages/tips/TipsHubPage'))
+const TipArticlePage           = lazy(() => import('./pages/tips/TipArticlePage'))
+
 const AptitudePage             = lazy(() => import('./pages/aptitude/AptitudePage'))
 const AptitudeCategoryPage     = lazy(() => import('./pages/aptitude/AptitudeCategoryPage'))
 const AptitudeGroupPage        = lazy(() => import('./pages/aptitude/AptitudeGroupPage'))
@@ -204,7 +207,7 @@ function setMeta(selector, attr, value, create) {
   return el
 }
 
-function setRouteJsonLd(pathname, title, description, canonical, noindex) {
+function setRouteJsonLd(pathname, title, description, canonical, noindex, schema) {
   let el = document.getElementById(SEO_LD_ID)
   if (noindex) {
     el?.remove()
@@ -215,23 +218,28 @@ function setRouteJsonLd(pathname, title, description, canonical, noindex) {
     const label = title.replace(/\s*·\s*LearnForEarn\s*$/i, '').trim() || pathname
     crumbs.push({ '@type': 'ListItem', position: 2, name: label, item: canonical })
   }
+  const graph = [
+    {
+      '@type': 'WebPage',
+      '@id': `${canonical}#webpage`,
+      url: canonical,
+      name: title,
+      description,
+      isPartOf: { '@id': 'https://learnforearn.in/#website' },
+      inLanguage: 'en-IN',
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: crumbs,
+    },
+  ]
+  // Page-specific structured data (FAQPage, LearningResource, Course, Article…)
+  // supplied per-route by resolveSeo. Merged into the same @graph so one script
+  // tag carries all schema for the page.
+  if (Array.isArray(schema) && schema.length) graph.push(...schema)
   const data = {
     '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'WebPage',
-        '@id': `${canonical}#webpage`,
-        url: canonical,
-        name: title,
-        description,
-        isPartOf: { '@id': 'https://learnforearn.in/#website' },
-        inLanguage: 'en-IN',
-      },
-      {
-        '@type': 'BreadcrumbList',
-        itemListElement: crumbs,
-      },
-    ],
+    '@graph': graph,
   }
   if (!el) {
     el = document.createElement('script')
@@ -245,7 +253,7 @@ function setRouteJsonLd(pathname, title, description, canonical, noindex) {
 function Seo() {
   const { pathname } = useLocation()
   useEffect(() => {
-    const { title, description, keywords, canonical, noindex } = resolveSeo(pathname)
+    const { title, description, keywords, canonical, noindex, schema } = resolveSeo(pathname)
 
     document.title = title
 
@@ -281,7 +289,7 @@ function Seo() {
         : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
       () => Object.assign(document.createElement('meta'), { name: 'robots' }))
 
-    setRouteJsonLd(pathname, title, description, canonical, noindex)
+    setRouteJsonLd(pathname, title, description, canonical, noindex, schema)
   }, [pathname])
   return null
 }
@@ -370,6 +378,8 @@ const router = createBrowserRouter([
       { path: '/ai-lab', element: <AILabPage /> },
       { path: '/ai-lab/:category/:toolId', element: <ProtectedRoute><AIToolPage /></ProtectedRoute> },
       { path: '/fresher-instructions/career-guidance', element: <CareerGuidancePage /> },
+      { path: '/tips', element: <TipsHubPage /> },
+      { path: '/tips/:slug', element: <TipArticlePage /> },
       { path: '/deployment', element: <DeploymentGuidePage /> },
       {
         element: <ProtectedRoute><Outlet /></ProtectedRoute>,

@@ -1,17 +1,48 @@
 import { TOOLS, CATEGORIES } from '../pages/ailab/aiLabData'
 import { STACKS } from '../pages/deployment/guideIndex'
 import { APTITUDE_CATEGORIES, APTITUDE_CATEGORY_MAP } from '../pages/aptitude/aptitudeData'
+import { TIPS } from '../pages/tips/tipsContent'
 
 const BRAND = 'LearnForEarn'
 const ORIGIN = 'https://learnforearn.in'
 const brand = (label) => `${label} · ${BRAND}`
 
-export const BASE_TITLE = `${BRAND} — Free Coding Practice, Career Roadmaps & Fresher Jobs`
+// Shared JSON-LD fragments (no @context — merged into the page @graph by
+// setRouteJsonLd in App.jsx). Referencing the #organization node keeps a single
+// canonical publisher identity across the site.
+const ORG_REF = { '@id': `${ORIGIN}/#organization` }
+const ORG_INLINE = { '@type': 'Organization', name: BRAND, url: `${ORIGIN}/` }
+
+const faqPage = (qa) => ({
+  '@type': 'FAQPage',
+  mainEntity: qa.map(({ q, a }) => ({
+    '@type': 'Question',
+    name: q,
+    acceptedAnswer: { '@type': 'Answer', text: a },
+  })),
+})
+
+const FRESHER_FAQ = faqPage([
+  { q: 'How long does placement preparation take?', a: 'With structured preparation covering aptitude, coding, and projects, most freshers need 3-6 months. Starting in 5th or 6th semester gives the best results.' },
+  { q: 'Which companies can I get placed in with LearnForEarn preparation?', a: 'Our preparation covers TCS, Infosys, Wipro, Accenture, Cognizant, HCL, and product companies. The platform covers aptitude, DSA, and projects required for all major IT companies.' },
+  { q: 'What is the difference between Code Gym and the Aptitude section?', a: 'Code Gym focuses on DSA and programming problems for technical rounds. Aptitude covers Quantitative, Logical, and Verbal sections tested in written rounds at service companies.' },
+  { q: 'Do I need any prior coding knowledge to start?', a: 'No. LearnForEarn is designed for complete beginners. Start with E-rank missions and aptitude basics, then progress at your own pace through the structured learning path.' },
+])
+
+const APTITUDE_LR = {
+  '@type': 'LearningResource',
+  name: 'Aptitude Practice — Quantitative, Logical, Verbal',
+  description: 'Complete aptitude preparation for placement tests at TCS, Infosys, Wipro and more.',
+  provider: ORG_INLINE,
+  teaches: ['Quantitative Aptitude', 'Logical Reasoning', 'Verbal Ability', 'Data Interpretation'],
+}
+
+export const BASE_TITLE = `${BRAND} — Placement Prep, Coding Practice & Fresher Jobs India`
 export const BASE_DESCRIPTION =
-  'Free learning platform for students and freshers in India. Career roadmaps, coding practice (C, Python, Java, C++), placement aptitude, AI tools, free deployment guides, project missions, and walk-in job drives — go from beginner to hired.'
+  'LearnForEarn helps Indian students and freshers go from zero to hired — career roadmaps, coding practice (C, Python, Java, C++), DSA, placement aptitude, mock tests, AI tools, deployment guides, resume builder, project missions, and walk-in job drives.'
 
 export const BASE_KEYWORDS =
-  'LearnForEarn, free coding practice, DSA practice, placement preparation, aptitude preparation, quantitative aptitude, logical reasoning, verbal ability, fresher jobs India, walk-in drives, AI tools for students, career roadmap, coding problems with solutions, project ideas for students, free deployment guides, interview preparation, learn Python, learn Java, learn React, coding for beginners'
+  'LearnForEarn, ARISE learning platform, coding practice, DSA practice, data structures and algorithms, placement preparation, campus placement preparation, aptitude preparation, quantitative aptitude, logical reasoning, verbal ability, data interpretation, mock aptitude test, TCS NQT, Infosys, Wipro, Accenture, fresher jobs India, walk-in drives, off campus drive, AI tools for students, career roadmap, coding interview questions, coding problems with solutions, project ideas for students, final year project ideas, deployment guides, resume builder for freshers, interview preparation, learn Python, learn Java, learn C, learn C++, learn React, learn SQL, coding for beginners, B.Tech placement, software developer jobs for freshers'
 
 const CATEGORY_LABEL = Object.fromEntries(
   CATEGORIES.filter((c) => c.id !== 'all').map((c) => [c.id, c.label]),
@@ -24,11 +55,11 @@ const ROUTE_SEO = {
   '/': {
     title: BASE_TITLE,
     description: BASE_DESCRIPTION,
-    keywords: 'free coding practice India, learn programming free, student career platform',
+    keywords: 'coding practice India, learn programming online, placement preparation platform, student career platform, zero to hired',
   },
   '/about': {
     title: brand('About Us'),
-    description: 'What LearnForEarn (ARISE) is, who it is for, and how it helps Indian students and freshers go from zero to hired — free.',
+    description: 'What LearnForEarn (ARISE) is, who it is for, and how it helps Indian students and freshers go from zero to hired.',
     keywords: 'about LearnForEarn, ARISE learning platform, career platform India',
   },
   '/contact': {
@@ -60,6 +91,7 @@ const ROUTE_SEO = {
     title: brand('Fresher Guide — First Job Playbook'),
     description: 'Honest fresher guide: how hiring really works, AI impact, and a practical playbook to land your first job.',
     keywords: 'fresher guide, how to get first job, placement tips, first job after graduation',
+    schema: [FRESHER_FAQ],
   },
   '/fresher-instructions/career-guidance': {
     title: brand('Career Guidance for Students'),
@@ -69,22 +101,23 @@ const ROUTE_SEO = {
   '/ai-lab': {
     title: `AI Lab — ${TOOLS.length}+ AI Tools for Students · ${BRAND}`,
     description: `Explore ${TOOLS.length}+ AI tools for students — ChatGPT, coding copilots, agents, RAG, automation, and more. Beginner-friendly guides to learn and build.`,
-    keywords: 'AI tools for students, ChatGPT guide, AI coding tools, prompt engineering, RAG, learn AI free',
+    keywords: 'AI tools for students, ChatGPT guide, AI coding tools, prompt engineering, RAG, learn AI, generative AI tools',
   },
   '/deployment': {
-    title: brand('Free Deployment Guides'),
-    description: `Step-by-step free deployment guides for React, Node, Django, Spring Boot, FastAPI, databases, and AI apps — copy-paste commands, no credit card.`,
-    keywords: 'free hosting, deploy React app, deploy Django, deploy Node.js, free deployment, Vercel, Render',
+    title: brand('Deployment Guides for Students'),
+    description: `Step-by-step deployment guides for React, Node, Django, Spring Boot, FastAPI, databases, and AI apps — copy-paste commands to take your project live.`,
+    keywords: 'hosting for students, deploy React app, deploy Django, deploy Node.js, deploy Spring Boot, host project online, Vercel, Render, Netlify',
   },
   '/aptitude': {
     title: brand('Placement Aptitude — Quant, Reasoning, Verbal & DI'),
     description: 'Master placement aptitude two ways: Learn It (beginner walkthrough) and Crack It (fast shortcuts) — quantitative, logical, verbal, and data interpretation.',
     keywords: 'aptitude preparation, quantitative aptitude, logical reasoning, verbal ability, data interpretation, TCS NQT aptitude',
+    schema: [APTITUDE_LR],
   },
   '/resume': {
-    title: brand('Free Resume Builder for Freshers'),
+    title: brand('Resume Builder for Freshers'),
     description: 'Build an ATS-friendly resume for campus placements and fresher jobs — clean layout, export-ready, made for Indian students.',
-    keywords: 'resume builder for freshers, ATS resume, free resume builder India, campus placement resume',
+    keywords: 'resume builder for freshers, ATS resume, online resume builder India, campus placement resume, fresher resume format',
   },
   '/certificate/verify': {
     title: brand('Verify Certificate'),
@@ -100,7 +133,7 @@ const ROUTE_SEO = {
   },
   '/register': {
     title: brand('Create Account'),
-    description: 'Create your free LearnForEarn account.',
+    description: 'Create your LearnForEarn account and start your journey from zero to hired.',
     noindex: true,
   },
   '/forgot-password': {
@@ -138,10 +171,47 @@ const ROUTE_SEO = {
 
 // Aptitude category hubs are public and crawlable
 for (const cat of APTITUDE_CATEGORIES) {
+  const description = cat.description || cat.tagline
   ROUTE_SEO[`/aptitude/${cat.id}`] = {
     title: brand(`${cat.label} — Placement Aptitude`),
-    description: cat.description || cat.tagline,
+    description,
     keywords: `${cat.label}, aptitude preparation, placement aptitude, ${cat.chips?.join(', ') || ''}`,
+    schema: [{
+      '@type': 'Course',
+      name: `${cat.label} — Aptitude Practice`,
+      description,
+      provider: ORG_INLINE,
+      hasCourseInstance: { '@type': 'CourseInstance', courseMode: 'online' },
+    }],
+  }
+}
+
+// Public /tips content articles — hub + one crawlable page per guide, each with
+// Article + FAQPage structured data built from its own content (tipsContent.js).
+ROUTE_SEO['/tips'] = {
+  title: brand('Placement Preparation Guides for Freshers'),
+  description: 'Placement preparation guides for Indian freshers — how to prepare, TCS NQT, resume projects, aptitude shortcuts, and coding interview roadmaps.',
+  keywords: 'placement preparation guides, fresher placement tips, how to crack placement, TCS NQT preparation, coding interview roadmap',
+}
+for (const t of TIPS) {
+  const path = `/tips/${t.slug}`
+  const schema = [{
+    '@type': 'Article',
+    headline: t.h1,
+    description: t.description,
+    author: ORG_INLINE,
+    publisher: ORG_REF,
+    inLanguage: 'en-IN',
+    mainEntityOfPage: ORIGIN + path,
+  }]
+  if (t.faqs?.length) {
+    schema.push(faqPage(t.faqs.map((f) => ({ q: f.q, a: f.a }))))
+  }
+  ROUTE_SEO[path] = {
+    title: `${t.title} · ${BRAND}`,
+    description: t.description,
+    keywords: t.keywords,
+    schema,
   }
 }
 
@@ -187,9 +257,9 @@ export function resolveSeo(pathname) {
   const stack = STACK_BY_ROUTE[path]
   if (stack) {
     return withCanonical(path, {
-      title: brand(`Deploy ${stack.title} Free`),
-      description: stack.desc || `Free step-by-step guide to deploy ${stack.title}.`,
-      keywords: `${stack.title}, ${stack.platforms || ''}, free deployment, ${(stack.tags || []).slice(0, 6).join(', ')}`,
+      title: brand(`Deploy ${stack.title}`),
+      description: stack.desc || `Step-by-step guide to deploy ${stack.title}.`,
+      keywords: `deploy ${stack.title}, ${stack.platforms || ''}, deployment guide, hosting, ${(stack.tags || []).slice(0, 6).join(', ')}`,
       noindex: true,
     })
   }
@@ -239,6 +309,7 @@ function withCanonical(pathname, meta) {
     keywords,
     canonical: ORIGIN + (pathname === '/' ? '/' : pathname),
     noindex: !!meta.noindex,
+    schema: meta.schema,
   }
 }
 
