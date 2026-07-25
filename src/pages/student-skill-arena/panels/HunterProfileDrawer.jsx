@@ -101,7 +101,7 @@ function SectionTitle({ children }) {
   )
 }
 
-export default function HunterProfileDrawer({ user, rank, xp, level = 1, onClose, onLogout }) {
+export default function HunterProfileDrawer({ user, rank, level = 1, onClose, onLogout }) {
   useBodyLock()
   const drawerRef = useModalA11y(onClose)
   const currentTitle = titleForLevel(level)

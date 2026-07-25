@@ -61,8 +61,8 @@ export default function AdminReports() {
     setLoading(true)
     try {
       const [r, s] = await Promise.all([getAdminReports(p, 20, sf), getReportStats()])
-      setReports(r.data.content)
-      setTotalPages(r.data.totalPages)
+      setReports(Array.isArray(r.data?.content) ? r.data.content : [])
+      setTotalPages(r.data?.totalPages ?? 0)
       setPage(p)
       setStats(s.data)
     } catch (err) { toast.error(getApiError(err, 'We could not load reports. Please refresh.')) }

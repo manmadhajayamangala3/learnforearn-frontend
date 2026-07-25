@@ -44,11 +44,11 @@ export default function AdminFeedbacks() {
     setLoading(true)
     getAllFeedbacks(p)
       .then(r => {
-        const items = r.data.content
+        const items = Array.isArray(r.data?.content) ? r.data.content : []
         setFeedbacks(items)
-        setPage(r.data.number)
-        setTotalPages(r.data.totalPages)
-        setTotalCount(r.data.totalElements)
+        setPage(r.data?.number ?? p)
+        setTotalPages(r.data?.totalPages ?? 0)
+        setTotalCount(r.data?.totalElements ?? 0)
         const avg = items.length ? (items.reduce((s, f) => s + f.rating, 0) / items.length).toFixed(1) : '—'
         setSummary({ avg, useful: items.filter(f => f.isUseful === true).length, notUseful: items.filter(f => f.isUseful === false).length })
       })

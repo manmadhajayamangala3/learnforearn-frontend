@@ -76,9 +76,9 @@ export default function AdminUsers() {
     setLoading(true)
     getAdminUsers(p, SIZE, q, filter)
       .then(r => {
-        setUsers(r.data.content)
-        setTotal(r.data.totalElements)
-        setTotalPages(r.data.totalPages)
+        setUsers(Array.isArray(r.data?.content) ? r.data.content : [])
+        setTotal(r.data?.totalElements ?? 0)
+        setTotalPages(r.data?.totalPages ?? 0)
         setPage(p)
       })
       .catch(err => toast.error(getApiError(err, 'We could not load users. Please refresh.')))
