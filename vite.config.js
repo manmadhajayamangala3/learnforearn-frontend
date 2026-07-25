@@ -9,6 +9,17 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  // Local dev proxy so the frontend can use the same relative "/api" base as test/prod.
+  // With VITE_API_URL=/api (or unset — see api.js fallback), calls to /api/* are forwarded
+  // to the local Spring Boot backend, keeping the auth cookie first-party on localhost.
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
+  },
   build: {
     sourcemap: false,
     // The Spline 3D runtime (react-spline + physics) is unavoidably large, but it is
