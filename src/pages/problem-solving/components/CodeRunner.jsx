@@ -2,6 +2,8 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import toast from 'react-hot-toast'
 import MonacoEditor from './monacoSetup'
 import { Play, Send, Loader2, Check, X, Lock, RotateCcw, Sparkles } from 'lucide-react'
+import XpFloatLayer from '../../../components/XpFloatLayer'
+import useXpAnimation from '../../../hooks/useXpAnimation'
 import { executeCode, judgeCode } from '../../../api/api'
 import getApiError from '../../../utils/apiError'
 import { useAuth } from '../../../context/AuthContext'
@@ -83,6 +85,11 @@ export default function CodeRunner({ problemId, problem, light }) {
   const abortRef = useRef(null)
   useEffect(() => () => abortRef.current?.abort(), [])
 
+  // C3: floating +N XP on a first solve, anchored to the Submit button.
+  const { floats, processResult, cleanup } = useXpAnimation()
+  const submitBtnRef = useRef(null)
+  useEffect(() => cleanup, [cleanup])
+
   const code = codeByLang[lang]
   const setCode = (v) => {
     setCodeByLang(prev => ({ ...prev, [lang]: v ?? '' }))
@@ -124,22 +131,13 @@ export default function CodeRunner({ problemId, problem, light }) {
         if (data?.solved) {
           window.dispatchEvent(new Event('sl:refresh'))
           if (data?.firstSolve && data?.xpEarned > 0) {
-            toast.success(`Problem solved! +${data.xpEarned} XP`, { icon: '🏆' })
-            if (data?.rankUp && data?.newRank) {
-              setTimeout(() => {
-                toast(`Rank Up! You are now rank ${data.newRank}`, {
-                  icon: '⬆️',
-                  duration: 4000,
-                  style: {
-                    background: '#1c1606',
-                    color: '#FBBF24',
-                    border: '1px solid #F59E0B',
-                    fontSize: '1.05rem',
-                    fontWeight: 700,
-                  },
-                })
-              }, 1500)
-            }
+            toast.success('Problem solved!', { icon: '🏆' })
+            // C3: floating +XP at the Submit button. processResult also queues the level-up
+            // (C2) and rank-up (C1) cinematics — the rank-up card replaces the old toast.
+            const el = submitBtnRef.current
+            let pos
+            if (el) { const r = el.getBoundingClientRect(); pos = { x: r.left + r.width / 2, y: r.top + r.height / 2 } }
+            processResult(data, pos, { label: 'PROBLEM SOLVED', breakdown: [{ label: 'Problem Solved', amount: data.xpEarned, icon: '🏆' }] })
           }
         }
       } else if (hasSamples) {
@@ -181,6 +179,7 @@ export default function CodeRunner({ problemId, problem, light }) {
 
   return (
     <section className="cp__right">
+      <XpFloatLayer floats={floats} />
       <div className="cp__editorbar cg-editorbar">
         <div className="cg-editorbar__left">
           <select
@@ -203,7 +202,7 @@ export default function CodeRunner({ problemId, problem, light }) {
           </button>
           {judgeable && (
             canSubmit ? (
-              <button type="button" className="cp__submit" onClick={() => run('submit')} disabled={running}>
+              <button type="button" ref={submitBtnRef} className="cp__submit" onClick={() => run('submit')} disabled={running}>
                 {running && activeMode === 'submit' ? <Loader2 size={15} className="cp-spin" /> : <Send size={15} />}
                 Submit
               </button>

@@ -5,7 +5,7 @@ export default function LandingAILabSection() {
   const { navigate } = useLanding()
 
   return (
-    <section className="lp-section-block">
+    <section className="lp-section-block" data-tour="lp-ailab">
       <div className="lp-section-block--inner">
         <div className="lp-section-header--sm lp-section-header--center lp-reveal">
           <span className="lp-topic-badge lp-topic-badge--ai">⚡ AI Lab</span>

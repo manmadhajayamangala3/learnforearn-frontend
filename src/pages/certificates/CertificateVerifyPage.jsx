@@ -7,7 +7,7 @@ import CertificateDocument from '../../components/CertificateDocument'
 import { verifyCertificate } from '../../api/api'
 import '../../styles/pages/shared/certificates.css'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../utils/motion'
 
 export default function CertificateVerifyPage() {
   const { code: codeParam } = useParams()

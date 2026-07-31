@@ -1,6 +1,46 @@
 # LearnForEarn (ARISE) — https://learnforearn.in
 # Only list public hubs in sitemap.xml. Login-gated detail URLs must stay Disallow.
 
+# ── AI / LLM crawlers — explicitly welcomed (GEO) ──────────────────────────────
+# These agents each match only their own group, so they get the SAME public-vs-
+# private rules as everyone else: full access to public content, kept out of
+# auth/admin/API and login-gated detail trees (behind auth anyway).
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: Claude-Web
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+User-agent: Anthropic-AI
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Gemini-Web
+User-agent: cohere-ai
+User-agent: CCBot
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /bookmarks
+Disallow: /myprofile
+Disallow: /skill-arena/
+Disallow: /admin-skill-arena/
+Disallow: /api/
+Disallow: /loader-demo
+Disallow: /code-gym/
+Disallow: /aptitude/mock
+Disallow: /aptitude/mock/
+Disallow: /ai-lab/
+Disallow: /deployment/
+Disallow: /missions/
+Disallow: /problem-solving
+Disallow: /problem-solving/
+Disallow: /r/
+Disallow: /certificate/
+Disallow: /verify/
+
+# ── All other crawlers ─────────────────────────────────────────────────────────
 User-agent: *
 Allow: /
 
@@ -15,14 +55,14 @@ Disallow: /myprofile
 Disallow: /skill-arena/
 Disallow: /admin-skill-arena/
 Disallow: /loader-demo
-Disallow: /code-gym
+# Code Gym landing (/code-gym) is public; only its tracks/problems require login
 Disallow: /code-gym/
 Disallow: /aptitude/mock
 Disallow: /aptitude/mock/
 
 # Login-gated detail trees (hubs without trailing slash stay Allow):
-# /ai-lab, /deployment, /missions, /aptitude — crawlable hubs
-# /ai-lab/*, /deployment/*, /missions/* — require login
+# /ai-lab, /deployment, /missions, /aptitude, /code-gym — crawlable hubs
+# /ai-lab/*, /deployment/*, /missions/*, /code-gym/* — require login
 Disallow: /ai-lab/
 Disallow: /deployment/
 Disallow: /missions/

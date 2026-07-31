@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { PAGE_MIN_MS } from '../../components/loaders/_config'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { EASE } from '../../utils/motion'
 import SystemAwakeningLoader from '../../components/loaders/SystemAwakeningLoader'
 import { startConceptQuiz, startSubjectQuiz, startRoadmapQuiz, submitQuiz } from '../../api/api'
 import { getRank } from '../../utils/slRank'
@@ -9,6 +11,8 @@ import { useAuth } from '../../context/AuthContext'
 import { getApiError } from '../../utils/apiError'
 import { isMongoId } from '../../utils/mongoId'
 import { stashQuizReview } from '../../utils/quizReviewOnce'
+import { reducedMotion } from '../../utils/motion'
+import useHaptic from '../../hooks/useHaptic'
 import toast from 'react-hot-toast'
 import '../../styles/pages/dashboard/index.css'
 import '../../styles/pages/dashboard/quiz-page.css'
@@ -34,6 +38,8 @@ export default function QuizPage() {
   const { type, refId } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const haptic = useHaptic()
+  const reduce = useReducedMotion()
 
   const [quiz, setQuiz]             = useState(null)
   const [answers, setAnswers]       = useState([])
@@ -99,8 +105,66 @@ export default function QuizPage() {
 
   const selectAnswer = idx =>
     setAnswers(prev => { const a = [...prev]; a[current] = idx; return a })
+
+  // B3: tactile-only feedback — ripple at the tap point + tap haptic. No correctness cue.
+  const tapOption = useCallback((e) => {
+    haptic('tap')
+    if (reducedMotion()) return
+    const host = e.currentTarget
+    const layer = host.querySelector('.dash-quiz-option__ripple-layer')
+    if (!layer) return
+    const rect = host.getBoundingClientRect()
+    const size = Math.max(rect.width, rect.height)
+    const span = document.createElement('span')
+    span.className = 'dash-quiz-option__ripple'
+    span.style.width = span.style.height = `${size}px`
+    span.style.left = `${e.clientX - rect.left - size / 2}px`
+    span.style.top = `${e.clientY - rect.top - size / 2}px`
+    span.addEventListener('animationend', () => span.remove())
+    layer.appendChild(span)
+  }, [haptic])
   const next = () => current < quiz.questions.length - 1 && setCurrent(c => c + 1)
   const prev = () => current > 0 && setCurrent(c => c - 1)
+
+  // B4: keyboard shortcuts — 1–4 select, Enter advances/submits, ←/→ navigate.
+  useEffect(() => {
+    if (!quiz) return
+    const onKey = (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      const tag = e.target?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return
+      const nOpts = quiz.questions[current]?.options?.length || 0
+      const last = current === quiz.questions.length - 1
+      const ans = answers[current]
+      if (e.key >= '1' && e.key <= '4') {
+        const idx = Number(e.key) - 1
+        if (idx < nOpts) { e.preventDefault(); selectAnswer(idx) }
+      } else if (e.key === 'Enter') {
+        e.preventDefault()
+        if (last) { if (ans !== -1 && !submitting) handleSubmit(answers) }
+        else if (ans !== -1) next()
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault(); prev()
+      } else if (e.key === 'ArrowRight') {
+        if (ans !== -1) { e.preventDefault(); next() }
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [quiz, current, answers, submitting, handleSubmit])
+
+  // B4: one-time keyboard hint — desktop only, dismissible, remembered.
+  const [showKbdHint, setShowKbdHint] = useState(() => {
+    try {
+      if (localStorage.getItem('quiz_kbd_hint_seen')) return false
+      return typeof window !== 'undefined'
+        && window.matchMedia?.('(hover: hover) and (pointer: fine)')?.matches === true
+    } catch { return false }
+  })
+  const dismissKbdHint = useCallback(() => {
+    setShowKbdHint(false)
+    try { localStorage.setItem('quiz_kbd_hint_seen', '1') } catch { /* ignore */ }
+  }, [])
 
   // ── Loading ──────────────────────────────────────────
   if (loading) return <SystemAwakeningLoader subtitle="LOADING QUIZ" />
@@ -175,17 +239,29 @@ export default function QuizPage() {
         <div className="dash-quiz-inner">
 
           {/* Question */}
-          <div className="dash-quiz-question-card">
+          <motion.div
+            key={`q-${current}`}
+            className="dash-quiz-question-card"
+            initial={reduce ? false : { opacity: 0, x: 14 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, ease: EASE }}
+          >
             <div className="dash-quiz-question-label">
               TRIAL {current + 1}
             </div>
             <div className="dash-quiz-question-text">
               {q.text}
             </div>
-          </div>
+          </motion.div>
 
           {/* Options — fill remaining space evenly */}
-          <div className="dash-quiz-options">
+          <motion.div
+            key={`opts-${current}`}
+            className="dash-quiz-options"
+            initial={reduce ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.32, ease: EASE, delay: 0.05 }}
+          >
             {q.options.map((opt, i) => {
               const isSelected = answered === i
               return (
@@ -193,6 +269,7 @@ export default function QuizPage() {
                   key={i}
                   role="button"
                   tabIndex={0}
+                  onPointerDown={tapOption}
                   onClick={() => selectAnswer(i)}
                   onKeyDown={e => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -202,6 +279,7 @@ export default function QuizPage() {
                   }}
                   className={`dash-quiz-option${isSelected ? ' is-selected' : ''}`}
                 >
+                  <span className="dash-quiz-option__ripple-layer" aria-hidden="true" />
                   <div className="dash-quiz-option__letter">
                     {LETTERS[i]}
                   </div>
@@ -212,7 +290,7 @@ export default function QuizPage() {
                 </div>
               )
             })}
-          </div>
+          </motion.div>
 
           {/* Nav dots + actions (always at bottom) */}
           <div className="dash-quiz-nav">
@@ -269,6 +347,15 @@ export default function QuizPage() {
 
         </div>
       </div>
+
+      {showKbdHint && (
+        <div className="dash-quiz-kbd-hint" role="note">
+          <span className="dash-quiz-kbd-hint__text">
+            Tip — <kbd>1</kbd>–<kbd>4</kbd> to answer, <kbd>Enter</kbd> to continue, <kbd>←</kbd>/<kbd>→</kbd> to move.
+          </span>
+          <button type="button" className="dash-quiz-kbd-hint__close" onClick={dismissKbdHint} aria-label="Dismiss hint">✕</button>
+        </div>
+      )}
     </div>
   )
 }

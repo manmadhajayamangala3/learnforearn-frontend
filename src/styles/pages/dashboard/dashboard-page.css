@@ -91,6 +91,36 @@
   color: var(--stat-color);
   line-height: 1;
 }
+.dash-arena-stat__value .streak-flame { justify-content: center; }
+
+/* Streak line in the desktop Status Window (B2) */
+.sl-power-streak {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: #F59E0B;
+}
+
+/* Streak row in the mobile Status Window popup (B2) */
+.dash-mob-stats-streak {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #F59E0B;
+}
+.dash-mob-stats-streak-label { color: var(--text-muted); font-size: 0.8rem; font-weight: 600; }
 
 .dash-arena-stat__suffix {
   font-family: 'Share Tech Mono', monospace;
@@ -106,6 +136,97 @@
   color: var(--text-muted);
   letter-spacing: 0.1em;
   margin-top: 0.1rem;
+}
+
+/* ── Continue where you left off (C4) ── */
+.dash-resume-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: linear-gradient(135deg, color-mix(in srgb, #9B6ED4 14%, var(--bg-secondary)), var(--bg-secondary));
+  border: 1px solid color-mix(in srgb, #9B6ED4 32%, transparent);
+  border-left: 3px solid #9B6ED4;
+  border-radius: var(--radius-sm);
+  padding: 0.8rem 0.95rem;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.dash-resume-card:hover {
+  border-color: color-mix(in srgb, #9B6ED4 55%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, #9B6ED4 22%, transparent);
+}
+.dash-resume-card:active { transform: scale(0.99); }
+
+.dash-resume-card__label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: #9B6ED4;
+  margin-bottom: 0.45rem;
+}
+
+.dash-resume-card__row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.dash-resume-card__icon { font-size: 1.4rem; line-height: 1; flex-shrink: 0; }
+
+.dash-resume-card__concept {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.dash-resume-card__subject {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.dash-resume-card__track {
+  height: 4px;
+  background: rgba(155, 110, 212, 0.14);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 0.4rem;
+}
+
+.dash-resume-card__fill {
+  height: 100%;
+  width: var(--progress-pct, 0%);
+  background: linear-gradient(90deg, color-mix(in srgb, #9B6ED4 50%, transparent), #9B6ED4);
+  border-radius: 2px;
+  transition: width 0.8s ease;
+}
+
+.dash-resume-card__btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  border-radius: var(--radius-sm);
+  background: #9B6ED4;
+  color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-resume-card,
+  .dash-resume-card:active { transition: none; transform: none; }
+  .dash-resume-card__fill { transition: none; }
 }
 
 .dash-active-path {
@@ -301,6 +422,26 @@
   font-family: 'Share Tech Mono', monospace;
   font-size: 0.72rem;
   letter-spacing: 0.08em;
+}
+
+/* B9: empty states as invitations — a momentum line plus one clear action. */
+.dash-empty-invite {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+.dash-empty-invite__line {
+  margin: 0;
+  max-width: 34ch;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.dash-activity-empty__cta {
+  margin-top: 0.5rem;
 }
 
 .dash-cards-grid-2 {

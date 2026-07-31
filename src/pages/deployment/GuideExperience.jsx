@@ -19,7 +19,7 @@ function toRows(stages) {
   return rows
 }
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../utils/motion'
 
 const reveal = {
   initial: { opacity: 0, y: 22 },

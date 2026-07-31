@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ChevronRight } from 'lucide-react'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../../utils/motion'
 
 const TICKER = [
   'Python', 'Java', 'C++', 'JavaScript', 'Arrays', 'Strings', 'Recursion',

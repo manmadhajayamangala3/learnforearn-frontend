@@ -12,8 +12,8 @@ import { getRank } from '../utils/slRank'
 import { getInitials as initials } from '../utils/initials'
 import { safeExternalUrl } from '../utils/safeExternalUrl'
 import '../styles/pages/shared/public-profile.css'
-
-const EASE = [0.16, 1, 0.3, 1]
+import CountUp from '../components/CountUp'
+import { EASE } from '../utils/motion'
 
 const PROFILE_LINKS = [
   { key: 'githubUrl', label: 'GitHub', icon: Github },
@@ -44,27 +44,6 @@ function formatEduYears(edu) {
   return null
 }
 const host = (url) => { try { return new URL(/^https?:\/\//i.test(url) ? url : `https://${url}`).hostname.replace(/^www\./, '') } catch { return url } }
-
-// Animated number count-up (honors reduced motion).
-function CountUp({ value, reduce }) {
-  const to = Number(value) || 0
-  const [n, setN] = useState(reduce ? to : 0)
-  useEffect(() => {
-    if (reduce) { setN(to); return undefined }
-    let raf, start
-    const dur = 1050
-    const tick = (t) => {
-      if (!start) start = t
-      const p = Math.min(1, (t - start) / dur)
-      const eased = 1 - Math.pow(1 - p, 3)
-      setN(Math.round(to * eased))
-      if (p < 1) raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [to, reduce])
-  return <>{n.toLocaleString('en-IN')}</>
-}
 
 export default function PublicProfilePage() {
   const { username } = useParams()
@@ -529,7 +508,7 @@ export default function PublicProfilePage() {
             )}
 
             {work.length === 0 && certs.length === 0 && badges.length === 0 && !hasAbout && !resume && (
-              <div className="pp-empty"><Rows3 size={20} /><p>This hunter is just getting started — achievements will appear here soon.</p></div>
+              <div className="pp-empty"><Rows3 size={20} /><p>This hunter just awakened — badges, certificates and projects will appear here as they clear gates.</p></div>
             )}
 
             {/* ═══════════ FOOTER CTA ═══════════ */}

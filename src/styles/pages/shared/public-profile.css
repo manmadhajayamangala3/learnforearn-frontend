@@ -156,6 +156,10 @@
   background: linear-gradient(90deg, color-mix(in srgb, var(--rank) 55%, transparent), var(--rank));
   box-shadow: 0 0 14px color-mix(in srgb, var(--rank) 55%, transparent);
   overflow: hidden;
+  transition: width 0.6s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pp-xp__fill { transition: none; }
 }
 .pp-xp__shine { position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent); transform: translateX(-100%); animation: ppShine 2.4s ease-in-out infinite; }
 @keyframes ppShine { 0% { transform: translateX(-100%); } 60%, 100% { transform: translateX(220%); } }

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../utils/motion'
 
 // Sarcastic rotator — roasting a Gen-Z traveler who got lost WITH technology
 const ROASTS = [

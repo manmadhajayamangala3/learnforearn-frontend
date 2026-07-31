@@ -1,0 +1,46 @@
+# LearnForEarn
+> Online learning platform for tech students at every stage
+
+LearnForEarn is a learning platform for anyone who wants
+to grow in tech. It serves beginners learning to code for
+the first time, students improving their skills, developers
+building real projects, students preparing for placement
+tests, and anyone exploring AI tools and modern development
+practices. Based in India, used by students across all
+stages of their tech learning journey.
+
+## What students come here for
+- Learning to code from scratch
+- Practicing DSA and coding problems at every level
+- Building real projects for their portfolio
+- Preparing for placement aptitude and coding tests
+- Following structured career roadmaps for every tech role
+- Learning AI tools like GitHub Copilot and ChatGPT
+- Deploying projects live for the first time
+- Practicing aptitude for placement and competitive exams
+- Understanding which tech role to pursue
+
+## Platform sections
+- Aptitude Lab: Quantitative, Logical, Verbal, Data Interpretation
+- Code GYM: Coding problems from beginner to advanced
+- Mission Board: Guided real projects at every skill level
+- AI Lab: AI tools for modern developers
+- Career Guidance: Role roadmaps for every tech path
+- Deploy Guidance: How to deploy any project live
+
+## Who uses it
+Beginners, students, freshers, self-learners, career
+switchers, developers improving skills, students preparing
+for competitive exams and placements in India.
+
+## Key URLs
+- Homepage: https://learnforearn.in
+- Aptitude: https://learnforearn.in/aptitude
+- Code GYM: https://learnforearn.in/code-gym
+- Missions: https://learnforearn.in/missions
+- AI Lab: https://learnforearn.in/ai-lab
+- Career Guidance: https://learnforearn.in/fresher-instructions/career-guidance
+- Fresher Guide: https://learnforearn.in/fresher-instructions
+- FAQ: https://learnforearn.in/faq
+- Deploy Guidance: https://learnforearn.in/deployment
+- Learning Guides: https://learnforearn.in/tips

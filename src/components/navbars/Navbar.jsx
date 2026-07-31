@@ -38,8 +38,13 @@ const MOBILE_DRAWER_EASE = [0.16, 1, 0.3, 1]
  *            a fixed overlay bar used by the landing hero.
  *
  * The logo/title always navigates home; back navigation is left to the browser.
+ *
+ *  - profileForceOpen:     onboarding tour holds the profile dropdown open.
+ *  - mobileMenuForceOpen:  onboarding tour (mobile) holds the hamburger drawer open so it can
+ *                          spotlight the sections inside. Additive + mobile-only — desktop never
+ *                          sets it and the drawer never renders above 768px, so desktop is untouched.
  */
-export default function Navbar({ sticky = false }) {
+export default function Navbar({ sticky = false, profileForceOpen = false, mobileMenuForceOpen = false }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const { theme, toggleTheme } = useTheme()
@@ -64,16 +69,18 @@ export default function Navbar({ sticky = false }) {
     mq.addEventListener('change', sync)
     return () => mq.removeEventListener('change', sync)
   }, [])
-  useBodyLock(mobileMenuOpen && isMobile)
+  // The drawer is open when the hunter toggled it OR the onboarding tour is forcing it open.
+  const drawerShown = mobileMenuOpen || mobileMenuForceOpen
+  useBodyLock(drawerShown && isMobile)
   useBackClose(mobileMenuOpen && isMobile, () => setMobileMenuOpen(false))
   // Some pages (e.g. auth) scroll an inner container instead of the body, so a
   // body lock alone won't freeze them. Flag <html> so CSS can stop those too.
   useEffect(() => {
-    if (!(mobileMenuOpen && isMobile)) return
+    if (!(drawerShown && isMobile)) return
     const root = document.documentElement
     root.classList.add('lp-drawer-open')
     return () => root.classList.remove('lp-drawer-open')
-  }, [mobileMenuOpen, isMobile])
+  }, [drawerShown, isMobile])
 
   const handleEnter = () =>
     navigate(user ? '/skill-arena/dashboard' : '/login?redirect=/skill-arena/dashboard')
@@ -134,6 +141,7 @@ export default function Navbar({ sticky = false }) {
           {NAV_LINKS.map(link => (
             <div
               key={link.label}
+              data-tour-nav={link.href || link.label}
               className={`lp-nav-link${link.live ? ' lp-nav-link--live' : ''}${link.href && pathname.startsWith(link.href) ? ' lp-nav-link--active' : ''}`}
               onClick={onNavLink(link)}
             >
@@ -194,23 +202,24 @@ export default function Navbar({ sticky = false }) {
               user={user}
               logout={logout}
               dismissSignal={mobileMenuOpen}
+              forceOpen={profileForceOpen}
             />
           )}
 
           <button
             type="button"
-            className={`lp-mob-menu-btn${mobileMenuOpen ? ' is-open' : ''}`}
+            className={`lp-mob-menu-btn${drawerShown ? ' is-open' : ''}`}
             onClick={() => setMobileMenuOpen(o => !o)}
-            aria-expanded={mobileMenuOpen}
-            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={drawerShown}
+            aria-label={drawerShown ? 'Close menu' : 'Open menu'}
           >
-            {mobileMenuOpen ? <XIcon size={18} /> : <Menu size={18} />}
+            {drawerShown ? <XIcon size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </nav>
 
       <AnimatePresence>
-        {mobileMenuOpen && (
+        {drawerShown && (
           <>
             <motion.div
               key="lp-mobile-overlay"

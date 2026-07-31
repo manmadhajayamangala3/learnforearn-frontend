@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider, Navigate, Outlet, useLocation, use
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ConfirmProvider } from './context/ConfirmContext'
+import { CelebrationProvider } from './context/CelebrationContext'
 import { ThemeProvider } from './context/ThemeContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import GuestRoute from './components/GuestRoute'
@@ -23,6 +24,7 @@ const GlobalSearchOverlay      = lazy(() => import('./components/GlobalSearchOve
 // Each route loads its chunk only when first visited; subsequent visits use cache
 const LandingPage              = lazy(() => import('./pages/landing'))
 const LoaderDemo               = lazy(() => import('./pages/LoaderDemo'))
+const BadgeShowcasePage        = lazy(() => import('./pages/BadgeShowcasePage'))
 const AuthLayoutShell            = lazy(() => import('./pages/auth/AuthLayoutShell'))
 const LoginForm                  = lazy(() => import('./pages/auth/LoginForm'))
 const RegisterForm               = lazy(() => import('./pages/auth/RegisterForm'))
@@ -97,6 +99,7 @@ const ProblemDetailPage        = lazy(() => import('./pages/problem-solving/Prob
 
 const TipsHubPage              = lazy(() => import('./pages/tips/TipsHubPage'))
 const TipArticlePage           = lazy(() => import('./pages/tips/TipArticlePage'))
+const FaqPage                  = lazy(() => import('./pages/FaqPage'))
 
 const AptitudePage             = lazy(() => import('./pages/aptitude/AptitudePage'))
 const AptitudeCategoryPage     = lazy(() => import('./pages/aptitude/AptitudeCategoryPage'))
@@ -129,7 +132,7 @@ const AdminWalkIns             = lazy(() => import('./pages/admin-skill-arena/Ad
 
 function GlobalReportButton() {
   const { pathname } = useLocation()
-  const hide = pathname.startsWith('/admin') || pathname.startsWith('/r/') || pathname === '/login' || pathname === '/register' || pathname === '/forgot-password' || pathname === '/loader-demo'
+  const hide = pathname.startsWith('/admin') || pathname.startsWith('/r/') || pathname === '/login' || pathname === '/register' || pathname === '/forgot-password' || pathname === '/loader-demo' || pathname === '/allbadges'
   if (hide) return null
   return <ReportButton variant="floating" />
 }
@@ -147,7 +150,8 @@ function GlobalFooter() {
     pathname === '/login' ||
     pathname === '/register' ||
     pathname === '/forgot-password' ||
-    pathname === '/loader-demo'
+    pathname === '/loader-demo' ||
+    pathname === '/allbadges'
   if (hide) return null
   return <SiteFooter />
 }
@@ -227,6 +231,11 @@ function setRouteJsonLd(pathname, title, description, canonical, noindex, schema
       description,
       isPartOf: { '@id': 'https://learnforearn.in/#website' },
       inLanguage: 'en-IN',
+      about: { '@type': 'Thing', name: 'Tech Learning and Career Development for Students India' },
+      audience: {
+        '@type': 'Audience',
+        audienceType: 'Tech students at every stage — beginners, skill builders, placement seekers, career switchers, AI learners',
+      },
     },
     {
       '@type': 'BreadcrumbList',
@@ -341,9 +350,11 @@ function AppShell() {
       <Suspense fallback={null}>
         <GlobalSearchOverlay />
       </Suspense>
-      <Suspense fallback={<PageTransitionLoader />}>
-        <Outlet />
-      </Suspense>
+      <CelebrationProvider>
+        <Suspense fallback={<PageTransitionLoader />}>
+          <Outlet />
+        </Suspense>
+      </CelebrationProvider>
       <GlobalFooter />
     </>
   )
@@ -355,6 +366,7 @@ const router = createBrowserRouter([
     children: [
       { path: '/', element: <LandingPage /> },
       { path: '/loader-demo', element: import.meta.env.DEV ? <LoaderDemo /> : <Navigate to="/" replace /> },
+      { path: '/allbadges', element: import.meta.env.DEV ? <BadgeShowcasePage /> : <Navigate to="/" replace /> },
       {
         element: <GuestRoute />,
         children: [
@@ -380,6 +392,7 @@ const router = createBrowserRouter([
       { path: '/fresher-instructions/career-guidance', element: <CareerGuidancePage /> },
       { path: '/tips', element: <TipsHubPage /> },
       { path: '/tips/:slug', element: <TipArticlePage /> },
+      { path: '/faq', element: <FaqPage /> },
       { path: '/deployment', element: <DeploymentGuidePage /> },
       {
         element: <ProtectedRoute><Outlet /></ProtectedRoute>,
@@ -427,8 +440,9 @@ const router = createBrowserRouter([
           { path: '/deployment/expo-mobile', element: <ExpoDeployPage /> },
         ],
       },
-      // Code Gym — authenticated (landing, tracks, problem workspace)
-      { path: '/code-gym', element: <ProtectedRoute><ProblemSolvingPage /></ProtectedRoute> },
+      // Code Gym — landing is public (preview the tracks); login is required only when
+      // entering a track or a problem workspace (mirrors the Aptitude landing/mock split).
+      { path: '/code-gym', element: <ProblemSolvingPage /> },
       { path: '/code-gym/start-coding', element: <ProtectedRoute><TrackPage /></ProtectedRoute> },
       { path: '/code-gym/logic-building', element: <ProtectedRoute><TrackPage /></ProtectedRoute> },
       { path: '/code-gym/skill-up', element: <ProtectedRoute><TrackPage /></ProtectedRoute> },

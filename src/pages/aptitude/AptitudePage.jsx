@@ -13,7 +13,7 @@ import AptitudeMockInstructionsModal from './AptitudeMockInstructionsModal'
 import '../../styles/pages/shared/aptitude.css'
 import '../../styles/pages/dashboard/index.css'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../utils/motion'
 
 function fmtMockDate(iso) {
   if (!iso) return '—'

@@ -26,6 +26,11 @@ export default function LandingAboutSection() {
             <strong> "zero idea"</strong> to <strong>"I got the offer"</strong> — learn, practice,
             build and get noticed.
           </p>
+          <p className="lp-section-desc lp-about-lead">
+            LearnForEarn is a placement preparation platform for Indian freshers. It covers
+            aptitude practice, coding problems, real projects, and career guidance — everything
+            needed to get hired at TCS, Infosys, Wipro, and Accenture.
+          </p>
         </div>
 
         <div className="lp-about-audience lp-reveal">

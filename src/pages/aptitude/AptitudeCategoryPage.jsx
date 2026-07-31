@@ -13,7 +13,7 @@ import { getAptitudeGroups, aptitudeCache } from '../../api/api'
 import '../../styles/pages/shared/aptitude.css'
 import { APTITUDE_CATEGORY_MAP } from './aptitudeData'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../utils/motion'
 
 export default function AptitudeCategoryPage() {
   const { category } = useParams()

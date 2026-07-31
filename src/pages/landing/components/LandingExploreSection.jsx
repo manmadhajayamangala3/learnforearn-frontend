@@ -9,7 +9,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { GraduationCap, ArrowRight, Sparkles } from 'lucide-react'
 import { useLanding } from '../context/LandingPageContext'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../../utils/motion'
 
 // ── map geometry (viewBox 0 0 1200 340) ─────────────────────────────────────
 const SOURCES = [{ x: 60, y: 110 }, { x: 60, y: 170 }, { x: 60, y: 230 }]

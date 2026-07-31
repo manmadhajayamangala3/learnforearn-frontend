@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, memo } from 'react'
+import { motion, useMotionValue, useSpring, useReducedMotion } from 'framer-motion'
 import { TEST_DELAY_MS } from '../../../components/loaders/_config'
 import DungeonPortalLoader from '../../../components/loaders/DungeonPortalLoader'
 import { getConcept, getQuizStatus } from '../../../api/api'
@@ -68,6 +69,29 @@ export default function ConceptInlinePanel({ conceptId, navList, onClose, startQ
   const trickyRef   = useRef(null)
   const quizRef     = useRef(null)
   const panelRef    = useRef(null)
+  const bodyRef     = useRef(null)
+
+  // B6: reading-progress indicator — a navigation aid only. Never completes a
+  // concept and never awards XP (concept completion is quiz-only, see D1).
+  const reduce       = useReducedMotion()
+  const rawProgress  = useMotionValue(0)
+  const readProgress = useSpring(rawProgress, { stiffness: 120, damping: 28 })
+
+  useEffect(() => {
+    const el = bodyRef.current
+    if (!el) return
+    const update = () => {
+      const max = el.scrollHeight - el.clientHeight
+      rawProgress.set(max > 8 ? Math.min(1, el.scrollTop / max) : 0)
+    }
+    update()
+    el.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      el.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
+  }, [concept, rawProgress])
 
   const scrollTo = (ref) => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
@@ -161,7 +185,14 @@ export default function ConceptInlinePanel({ conceptId, navList, onClose, startQ
         </div>
       </div>
 
-      <div className="sl-concept-inline-body">
+      <div className="sl-concept-progress" aria-hidden="true">
+        <motion.div
+          className="sl-concept-progress__fill"
+          style={{ scaleX: reduce ? rawProgress : readProgress }}
+        />
+      </div>
+
+      <div className="sl-concept-inline-body" ref={bodyRef}>
         {concept.introduction && (
           <p className="dash-concept-intro">{concept.introduction}</p>
         )}

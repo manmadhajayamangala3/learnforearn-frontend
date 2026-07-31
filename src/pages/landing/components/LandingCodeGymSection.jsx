@@ -10,7 +10,7 @@ export default function LandingCodeGymSection() {
   }
 
   return (
-    <section className="lp-section-block">
+    <section className="lp-section-block" data-tour="lp-codegym">
       <div className="lp-section-block--inner">
         <div className="lp-section-header--sm lp-section-header--center lp-reveal">
           <span className="lp-topic-badge lp-topic-badge--code">💻 Code GYM</span>

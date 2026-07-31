@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Lock, Sparkles } from 'lucide-react'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../utils/motion'
 
 // Warm, composed "sealed résumé" screen — deliberately NOT an error feel.
 // A real résumé sits behind frosted glass; a lock medallion pops in once and

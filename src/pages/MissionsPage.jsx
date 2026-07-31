@@ -15,7 +15,7 @@ import blurOnEnter from '../utils/blurOnEnter'
 import '../styles/pages/shared/missions.css'
 import '../styles/pages/shared/missions-board.css'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../utils/motion'
 
 const RANK_META = {
   E: { color: '#888888', bg: 'rgba(136,136,136,0.12)', label: 'E-RANK' },
@@ -277,8 +277,8 @@ export default function MissionsPage() {
         ) : filtered.length === 0 ? (
           <div className="mb-empty">
             <div className="mb-empty__icon">🗂</div>
-            <div className="mb-empty__title">No missions match</div>
-            <div className="mb-empty__hint">Try a different type, subject, or search term</div>
+            <div className="mb-empty__title">No missions match that filter</div>
+            <div className="mb-empty__hint">Every hunter starts with one build — reset the filters to see them all.</div>
             <button
               type="button"
               onClick={() => { setCategory(''); setSubFilter(''); setFilter('') }}
@@ -315,12 +315,16 @@ export default function MissionsPage() {
 function MissionDossier({ mission, index, status, onClick, onAdd }) {
   const m = RANK_META[mission.rank] || RANK_META['D']
   const objectives = mission.objectives?.length || 0
+  const objDone = Math.min(objectives, status?.completedObjectives || 0)
+  const objPct = objectives > 0 ? Math.round((objDone / objectives) * 100) : 0
 
   const repoHref = status?.repoUrl ? safeExternalUrl(status.repoUrl) : ''
   const deployHref = status?.deployUrl ? safeExternalUrl(status.deployUrl) : ''
   const hasRepo = !!repoHref
   const hasDeploy = !!deployHref
   const accomplished = hasRepo || hasDeploy
+  // Accepted = started tracking (explicit flag or any prior work). Accomplished implies accepted.
+  const accepted = accomplished || !!status?.accepted || objDone > 0
 
   const stop = (e) => e.stopPropagation()
   const handleKeyDown = (e) => {
@@ -404,9 +408,18 @@ function MissionDossier({ mission, index, status, onClick, onAdd }) {
       ) : (
         <div className="mb-card__foot">
           <span className="mb-card__objectives">
-            {objectives > 0 ? `◇ ${objectives} objectives` : '◇ full brief inside'}
+            {objectives > 0
+              ? (objDone > 0 ? `◇ ${objDone} of ${objectives} objectives` : `◇ ${objectives} objectives`)
+              : '◇ full brief inside'}
           </span>
-          <span className="mb-card__accept">ACCEPT MISSION →</span>
+          <span className={`mb-card__accept${accepted ? ' mb-card__accept--progress' : ''}`}>
+            {accepted ? 'IN PROGRESS' : 'ACCEPT MISSION →'}
+          </span>
+        </div>
+      )}
+      {!accomplished && accepted && objectives > 0 && (
+        <div className="mb-card__obj-bar" aria-hidden="true">
+          <span className="mb-card__obj-fill" style={{ '--obj-pct': `${objPct}%` }} />
         </div>
       )}
     </motion.div>

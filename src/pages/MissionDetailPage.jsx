@@ -12,7 +12,8 @@ import SmokeBladeLoader from '../components/loaders/SmokeBladeLoader'
 import EnterArenaButton from '../components/EnterArenaButton'
 import SectionNotFoundPage from '../components/SectionNotFoundPage'
 import { isMongoId } from '../utils/mongoId'
-import { getMission, getMissionSubmission, saveMissionSubmission, connectGitHub, clearUserCache } from '../api/api'
+import { getMission, getMissionSubmission, saveMissionSubmission, saveMissionObjectives, acceptMission, connectGitHub, clearUserCache, getMissions, getMissionSubmissions } from '../api/api'
+import { useCelebrate } from '../context/CelebrationContext'
 import { getApiError } from '../utils/apiError'
 import { getLinkVerificationResults, isLinkVerificationError } from '../utils/linkVerification'
 import { normalizeGitHubRepoUrl } from '../utils/githubRepoUrl'
@@ -23,6 +24,8 @@ import { safeExternalUrl } from '../utils/safeExternalUrl'
 import { useConfirm } from '../context/ConfirmContext'
 import BookmarkButton from '../components/BookmarkButton'
 import LinkVerifyModal from '../components/LinkVerifyModal'
+import XpFloatLayer from '../components/XpFloatLayer'
+import useXpAnimation from '../hooks/useXpAnimation'
 import '../styles/pages/shared/missions.css'
 import GitHubConnectModal from '../components/GitHubConnectModal'
 import { useUnsavedChangesGuard } from '../hooks/useUnsavedChangesGuard'
@@ -30,7 +33,7 @@ import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../utils/motion'
 
 const GITHUB_ERRORS = {
   denied: 'GitHub connection was cancelled.',
@@ -127,6 +130,7 @@ export default function MissionDetailPage() {
   // ── Hunter's submitted work (repo + live demo) ──
   const [submission, setSubmission] = useState(null)
   const [subLoading, setSubLoading] = useState(true)
+  const [objDone, setObjDone] = useState(() => new Set())
   const [repoUrl, setRepoUrl]       = useState('')
   const [deployUrl, setDeployUrl]   = useState('')
   const [savingRepo, setSavingRepo] = useState(false)
@@ -141,11 +145,59 @@ export default function MissionDetailPage() {
   const saveAllBeforeLeaveRef = useRef(async () => true)
   const submitRef = useRef(null)
 
+  const celebrate = useCelebrate()
+  const missionDoneRef = useRef(false)
+
+  // C3: floating ±XP on mission-link save/removal, anchored to the submission section.
+  const { floats, processResult, cleanup } = useXpAnimation()
+  useEffect(() => cleanup, [cleanup])
+  const fireXp = useCallback((data) => {
+    if (!data || !data.xpEarned) return
+    const el = submitRef.current
+    let pos
+    if (el) { const r = el.getBoundingClientRect(); pos = { x: r.left + r.width / 2, y: r.top + r.height / 2 } }
+    const up = Number(data.xpEarned) >= 0
+    processResult(data, pos, {
+      label: up ? 'MISSION PROGRESS' : 'MISSION UPDATED',
+      breakdown: [{ label: up ? 'Mission Link Added' : 'Mission Link Removed', amount: data.xpEarned, icon: '🛰️' }],
+    })
+  }, [processResult])
+
+  // C14 — when a mission first becomes accomplished (its first repo/live-demo link is saved),
+  // queue the full-screen "Mission Accomplished" card AFTER the ±XP popup fireXp already shows.
+  // Fires at most once per page mount (missionDoneRef) and only on the not-done → done transition.
+  // Best-effort suggests the next mission (same rank preferred, else next on the board).
+  const maybeCelebrateMission = useCallback(async (wasAccomplished, data) => {
+    const nowAccomplished = !!(data?.repoUrl || data?.deployUrl)
+    if (wasAccomplished || !nowAccomplished || missionDoneRef.current) return
+    missionDoneRef.current = true
+    const totalXp = (Number(data?.repoXp) || 0) + (Number(data?.deployXp) || 0) || (Number(data?.xpEarned) || 0)
+    let next = null
+    try {
+      const [missionsR, subsR] = await Promise.all([
+        getMissions().then(r => r.data).catch(() => []),
+        getMissionSubmissions().then(r => r.data).catch(() => []),
+      ])
+      const list = Array.isArray(missionsR) ? missionsR : []
+      const subs = Array.isArray(subsR) ? subsR : []
+      const doneIds = new Set(subs.filter(s => s.repoUrl || s.deployUrl).map(s => s.missionId))
+      doneIds.add(id)
+      const candidates = list.filter(mm => mm.id !== id && !doneIds.has(mm.id))
+      const pick = candidates.find(mm => mm.rank === mission?.rank) || candidates[0]
+      if (pick) next = { id: pick.id, title: pick.title, rank: pick.rank }
+    } catch { /* next-mission suggestion is a nicety — never block the celebration */ }
+    celebrate({ xpEarned: 0, missionComplete: { title: mission?.title, rank: mission?.rank, xpEarned: totalXp, next } })
+  }, [celebrate, id, mission])
+
   const githubConnected = !!user?.githubConnected
   const githubLogin = user?.githubLogin || 'you'
 
   const savedRepo = (submission?.repoUrl || '').trim()
   const savedDeploy = (submission?.deployUrl || '').trim()
+  // A mission is "accepted" (tracking started) via the explicit flag, or grandfathered from any
+  // prior work (a saved link or ticked objective) so older submissions never look un-started.
+  const [accepting, setAccepting] = useState(false)
+  const accepted = !!(submission?.accepted || savedRepo || savedDeploy || objDone.size > 0)
   const repoTrim = repoUrl.trim()
   const deployTrim = deployUrl.trim()
   const repoNormalized = repoTrim ? normalizeGitHubRepoUrl(repoTrim) : ''
@@ -198,11 +250,41 @@ export default function MissionDetailPage() {
         setSubmission(s)
         setRepoUrl(s?.repoUrl || '')
         setDeployUrl(s?.deployUrl || '')
+        setObjDone(new Set(Array.isArray(s?.completedObjectives) ? s.completedObjectives : []))
       })
       .catch(() => {})
       .finally(() => { if (active) setSubLoading(false) })
     return () => { active = false }
   }, [id])
+
+  // Accept the mission — start tracking. Workflow flag only (no XP, marks nothing complete).
+  const handleAccept = useCallback(async () => {
+    if (!isMongoId(id) || accepting) return
+    setAccepting(true)
+    try {
+      const { data } = await acceptMission(id)
+      setSubmission((prev) => ({ ...(prev || {}), ...data }))
+      toast.success('Mission accepted — tick off objectives as you build.')
+    } catch {
+      toast.error('Could not accept the mission. Please try again.')
+    } finally {
+      setAccepting(false)
+    }
+  }, [id, accepting])
+
+  // B7: toggle an objective's ticked state — optimistic, persisted for self-tracking only.
+  // Never awards XP and never marks the mission or a concept complete. Requires acceptance first
+  // so the flow reads: Accept → track objectives → submit a link to accomplish.
+  const toggleObjective = useCallback((idx) => {
+    if (!accepted) return
+    const next = new Set(objDone)
+    if (next.has(idx)) next.delete(idx)
+    else next.add(idx)
+    setObjDone(next)
+    if (isMongoId(id)) {
+      saveMissionObjectives(id, [...next].sort((a, b) => a - b)).catch(() => {})
+    }
+  }, [objDone, id, accepted])
 
   // Deep-link from the mission board's "Add repo / demo" button: once the page content
   // is actually on screen (both the mission AND the submission have loaded — otherwise
@@ -274,10 +356,13 @@ export default function MissionDetailPage() {
       setRepoErr('Enter a GitHub repository link like https://github.com/your-username/project-name')
       return
     }
+    const wasAccomplished = !!(savedRepo || savedDeploy)
     setSavingRepo(true)
     try {
       const { data } = await saveMissionSubmission(id, { target: 'repo', repoUrl: normalized || '' })
       mergeSubmission(data)
+      fireXp(data)
+      maybeCelebrateMission(wasAccomplished, data)
       toast.success(normalized ? `Repository saved${xpSuffix(data)}` : removeToast('Repository removed', data))
     } catch (e) {
       setRepoErr(getApiError(e, 'Could not save your repository. Check the link and try again.'))
@@ -296,6 +381,7 @@ export default function MissionDetailPage() {
     try {
       const { data } = await saveMissionSubmission(id, { target: 'repo', repoUrl: '' })
       mergeSubmission(data)
+      fireXp(data)
       toast.success(removeToast('Repository removed', data))
     } catch (e) {
       setRepoErr(getApiError(e, 'Could not remove repository. Please try again.'))
@@ -305,6 +391,7 @@ export default function MissionDetailPage() {
   }
 
   const executeDeploySave = async (skipLinkVerification = false) => {
+    const wasAccomplished = !!(savedRepo || savedDeploy)
     const deploy = normalizeHttpUrl(pendingDeploySaveRef.current ?? deployUrl)
     pendingDeploySaveRef.current = deploy
     const { data } = await saveMissionSubmission(id, {
@@ -313,6 +400,8 @@ export default function MissionDetailPage() {
       ...(skipLinkVerification ? { skipLinkVerification: true } : {}),
     })
     mergeSubmission(data)
+    fireXp(data)
+    maybeCelebrateMission(wasAccomplished, data)
     toast.success(deploy ? `Live demo saved${xpSuffix(data)}` : removeToast('Live demo removed', data))
   }
 
@@ -393,7 +482,18 @@ export default function MissionDetailPage() {
     }
   }
 
-  const submissionDirty = repoTrim !== savedRepo || deployTrim !== savedDeploy
+  // "Unsaved changes" for the leave guard. Two things matter here:
+  //   1. While a save/remove is in flight (savingRepo/savingDeploy), the input already
+  //      reflects the new value before the server round-trip returns — e.g. remove clears
+  //      the field first, so repoTrim ('') briefly differs from the still-old savedRepo.
+  //      Counting that transient window as dirty flashed the Stay/Discard guard right after
+  //      a successful add/remove, so an in-flight save is never treated as dirty.
+  //   2. Repo dirtiness compares the NORMALIZED input against savedRepo — the same basis the
+  //      Save button uses (repoUnchanged) — so an equivalent-but-reformatted link isn't seen
+  //      as a change and the guard can't disagree with the button.
+  const repoDirty = repoTrim ? repoNormalized !== savedRepo : savedRepo !== ''
+  const deployDirty = deployTrim !== savedDeploy
+  const submissionDirty = !savingRepo && !savingDeploy && (repoDirty || deployDirty)
 
   const saveAllBeforeLeave = useCallback(async () => {
     if (!ensureCanSave()) return false
@@ -458,7 +558,7 @@ export default function MissionDetailPage() {
     notifyDeferredLeave: leaveGuard.notifyDeferredLeave,
     completePendingLeave: leaveGuard.completePendingLeave,
   }
-  const { requestLeave, leaveModal } = leaveGuard
+  const { leaveModal } = leaveGuard
 
   if (loading) return <SmokeBladeLoader />
   if (notFound) return <SectionNotFoundPage variant="missions" />
@@ -483,9 +583,10 @@ export default function MissionDetailPage() {
 
   return (
     <div className="md" style={rankStyle}>
+      <XpFloatLayer floats={floats} />
       {/* ── Sticky top bar ─────────────────────────────────────────────── */}
       <header className="md-top">
-        <button type="button" onClick={() => requestLeave(() => navigate(-1))} className="md-top__back">
+        <button type="button" onClick={() => navigate('/missions')} className="md-top__back">
           <ArrowLeft size={14} /> <span>All Missions</span>
         </button>
         <span className="md-top__title">{mission.title}</span>
@@ -570,16 +671,51 @@ export default function MissionDetailPage() {
                   
                   <div className="md-block__headtext">
                     <h2 className="md-block__title"><ListChecks size={18} /> What your build must do</h2>
-                    <p className="md-block__hint">These are the requirements. Aim to make every one of them work.</p>
+                    <p className="md-block__hint">
+                      {accepted
+                        ? <>These are the requirements. Tick each one off as you build it.</>
+                        : <>These are the requirements. <strong>Accept the mission</strong> to start ticking them off and track your progress.</>}
+                    </p>
                   </div>
                 </div>
-                <ol className="md-steps">
-                  {mission.objectives.map((obj, i) => (
-                    <li key={i} className="md-step">
-                      <span className="md-step__num">{String(i + 1).padStart(2, '0')}</span>
-                      <span className="md-step__text">{obj}</span>
-                    </li>
-                  ))}
+
+                {!accepted && (
+                  <div className="md-accept">
+                    <div className="md-accept__copy">
+                      <span className="md-accept__title"><Rocket size={15} /> Ready to build this?</span>
+                      <span className="md-accept__hint">Accepting starts your progress tracker — objectives here and your repo / live-demo links below.</span>
+                    </div>
+                    <button type="button" className="md-accept__btn" onClick={handleAccept} disabled={accepting}>
+                      {accepting ? <><Loader2 size={15} className="md-accept__spin" /> Accepting…</> : <>Accept Mission</>}
+                    </button>
+                  </div>
+                )}
+                {accepted && (
+                  <div className="md-accept md-accept--done">
+                    <span className="md-accept__badge"><Check size={14} /> Mission accepted</span>
+                    <span className="md-accept__meta">{objDone.size} of {mission.objectives.length} objectives tracked</span>
+                  </div>
+                )}
+
+                <ol className={`md-steps${accepted ? '' : ' md-steps--locked'}`}>
+                  {mission.objectives.map((obj, i) => {
+                    const done = objDone.has(i)
+                    return (
+                      <li key={i} className={`md-step${done ? ' md-step--done' : ''}`}>
+                        <button
+                          type="button"
+                          className="md-step__num md-step__num--check"
+                          role="checkbox"
+                          aria-checked={done}
+                          aria-label={!accepted ? 'Accept the mission to track objectives' : (done ? 'Mark objective as not done' : 'Mark objective as done')}
+                          onClick={() => toggleObjective(i)}
+                        >
+                          {done ? <Check size={14} /> : String(i + 1).padStart(2, '0')}
+                        </button>
+                        <span className="md-step__text">{obj}</span>
+                      </li>
+                    )
+                  })}
                 </ol>
 
                 {mission.bonusObjectives?.length > 0 && (
@@ -857,7 +993,7 @@ export default function MissionDetailPage() {
         </motion.section>
 
         <div className="md-back-wrap">
-          <button type="button" onClick={() => requestLeave(() => navigate(-1))} className="md-back-btn">
+          <button type="button" onClick={() => navigate('/missions')} className="md-back-btn">
             <ArrowLeft size={14} /> Back to Mission Board
           </button>
         </div>

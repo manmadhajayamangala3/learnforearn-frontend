@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Zap, CheckCircle2 } from 'lucide-react'
 import { DIFFICULTY_META } from './aptitudeData'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../utils/motion'
 
 // Shared "Practice It" question set — tap an option to reveal answer + solution.
 export default function AptitudePracticeList({ questions = [], emptyAction = null }) {

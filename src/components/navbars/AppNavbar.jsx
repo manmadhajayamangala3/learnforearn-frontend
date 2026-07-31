@@ -5,6 +5,7 @@ import { useTheme } from '../../context/ThemeContext'
 import { getRank } from '../../utils/slRank'
 import { levelProgress } from '../../utils/slLevel'
 import { openGlobalSearch } from '../globalSearchBus'
+import CountUp from '../CountUp'
 
 /** Skill Arena top bar (used by AppLayout): sidebar toggle + XP/rank + hunter avatar. */
 export default function AppNavbar({ onMenuClick, title = '' }) {
@@ -86,7 +87,7 @@ export default function AppNavbar({ onMenuClick, title = '' }) {
           <div className="navbar-xp-block">
             <span className={`rank-badge ${rank.cls}`}>{rank.label}</span>
             <div className="navbar-xp-meta">
-              <span className="navbar-xp-label">{xp.toLocaleString()} XP</span>
+              <span className="navbar-xp-label"><CountUp value={xp} format={(n) => n.toLocaleString()} /> XP</span>
               <div className="xp-bar-track navbar-xp-track">
                 <div
                   className="xp-bar-fill"

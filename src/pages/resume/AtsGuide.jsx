@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import '../../styles/pages/ats-guide.css'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../utils/motion'
 
 const SECTIONS = [
   { id: 'what',     n: '01', label: 'What is ATS' },

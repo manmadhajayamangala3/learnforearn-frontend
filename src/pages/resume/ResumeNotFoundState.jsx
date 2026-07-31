@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Sparkles } from 'lucide-react'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../utils/motion'
 
 // Creative, resume-themed dead-end (404). A ghost résumé sheet the archive
 // scanner sweeps but finds no record of — then a "NO RECORD" stamp lands.

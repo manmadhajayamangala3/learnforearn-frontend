@@ -1,8 +1,10 @@
 import { X } from 'lucide-react'
 import useBodyLock from '../../../hooks/useBodyLock'
 import { levelProgress } from '../../../utils/slLevel'
+import CountUp from '../../../components/CountUp'
+import StreakFlame from '../../../components/StreakFlame'
 
-export default function MobileStatsPopup({ rank, level, xp, stats, onClose }) {
+export default function MobileStatsPopup({ rank, level, xp, stats, streak = 0, shields = 0, onClose }) {
   const lp = levelProgress(xp)
   const xpToNext = Math.max(0, lp.span - lp.into)
   useBodyLock()
@@ -22,7 +24,7 @@ export default function MobileStatsPopup({ rank, level, xp, stats, onClose }) {
             </div>
             <div className="dash-flex-1">
               <div className="dash-mob-stats-xp-row">
-                <span className="dash-mob-stats-xp">{xp.toLocaleString()} XP</span>
+                <span className="dash-mob-stats-xp"><CountUp value={xp} format={(n) => n.toLocaleString()} /> XP</span>
                 <span className={`rank-badge ${rank.cls} dash-rank-badge-xs`}>{rank.label}</span>
               </div>
               <div className="dash-progress-track dash-progress-track--md">
@@ -36,6 +38,13 @@ export default function MobileStatsPopup({ rank, level, xp, stats, onClose }) {
               </div>
             </div>
           </div>
+
+          {streak > 0 && (
+            <div className="dash-mob-stats-streak">
+              <StreakFlame count={streak} size={18} shields={shields} />
+              <span className="dash-mob-stats-streak-label">day streak</span>
+            </div>
+          )}
 
           <div className="dash-mob-stats-section-title">— COMBAT STATS —</div>
           {stats.map(stat => {

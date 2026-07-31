@@ -261,6 +261,82 @@
   line-height: 1.6;
 }
 
+/* Live rank-progression checklist — real met/unmet counts per tier. */
+.dash-hunter-rank-card {
+  padding: 0.875rem;
+  background: var(--badge-bg);
+  border: 1px solid var(--badge-border);
+  border-radius: 10px;
+}
+.dash-hunter-rank-card.is-earned { opacity: 0.7; }
+.dash-hunter-rank-card.is-next {
+  border-color: var(--badge-color);
+  box-shadow: 0 6px 26px -14px var(--badge-color);
+}
+
+.dash-hunter-rank-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.625rem;
+}
+
+.dash-hunter-rank-card__status {
+  margin-left: auto;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  color: var(--badge-color);
+  background: var(--badge-bg);
+  border: 1px solid var(--badge-border);
+  white-space: nowrap;
+}
+.dash-hunter-rank-card.is-earned .dash-hunter-rank-card__status {
+  color: #4ADE80;
+  background: rgba(74, 222, 128, 0.12);
+  border-color: rgba(74, 222, 128, 0.32);
+}
+
+.dash-hunter-req {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.dash-hunter-req__mark {
+  flex-shrink: 0;
+  width: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #55627A;
+  font-size: 0.68rem;
+  line-height: 1;
+}
+.dash-hunter-req.is-met .dash-hunter-req__mark { color: #4ADE80; }
+
+.dash-hunter-req__text {
+  font-size: 0.775rem;
+  color: #8B9AB8;
+  line-height: 1.5;
+}
+.dash-hunter-req.is-met .dash-hunter-req__text { color: #C3CEE0; }
+.dash-hunter-req.is-todo .dash-hunter-req__text { color: #E7ECF5; font-weight: 600; }
+
+.dash-hunter-req__count {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #6B7890;
+  white-space: nowrap;
+}
+.dash-hunter-req.is-met .dash-hunter-req__count { color: #4ADE80; }
+.dash-hunter-req.is-todo .dash-hunter-req__count { color: var(--badge-color); }
+
 .dash-hunter-ranks { display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 0.875rem; }
 
 .dash-hunter-rank-row {
@@ -499,6 +575,12 @@
 }
 
 .dash-hunter-mission__val--demo { color: #E2E8F0; }
+
+/* Streak milestone table — align the inline flame/shield glyphs and mark reached days. */
+.dash-hunter-mission__rank { display: inline-flex; align-items: center; gap: 0.3rem; }
+.dash-hunter-mission__val svg { vertical-align: -2px; }
+.dash-hunter-mission__row.is-met { background: rgba(74, 222, 128, 0.06); border-radius: 4px; }
+.dash-hunter-mission__row.is-met .dash-hunter-mission__rank { color: #4ADE80; }
 
 .dash-hunter-mission__note {
   margin-top: 0.75rem;

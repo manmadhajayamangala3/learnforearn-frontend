@@ -1,8 +1,12 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
+import { EASE } from '../../utils/motion'
 import { PAGE_MIN_MS } from '../../components/loaders/_config'
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { CheckCircle, XCircle, ArrowLeft, RotateCcw, Trophy, Zap } from 'lucide-react'
 import SystemAwakeningLoader from '../../components/loaders/SystemAwakeningLoader'
+import CountUp from '../../components/CountUp'
+import { useCelebrate } from '../../context/CelebrationContext'
 import { getAttemptResult } from '../../api/api'
 import { badgeMeta } from '../../utils/badgeMeta'
 import { getRank } from '../../utils/slRank'
@@ -34,10 +38,13 @@ export default function QuizResultPage() {
   const refId            = searchParams.get('refId')
   const navigate         = useNavigate()
   const { user }         = useAuth()
+  const reduce           = useReducedMotion()
   const [result, setResult]   = useState(null)
   const [loading, setLoading] = useState(true)
   const [hasLiveReview, setHasLiveReview] = useState(false)
   const [showAll, setShowAll] = useState(false)
+  const celebrate = useCelebrate()
+  const firedRef = useRef(false)
 
   const xp       = user?.xp ?? 0
   const rank     = getRank(xp, user?.rank)
@@ -68,6 +75,36 @@ export default function QuizResultPage() {
       .finally(() => { if (active) doneTimer = setTimeout(() => setLoading(false), PAGE_MIN_MS) })
     return () => { active = false; clearTimeout(doneTimer) }
   }, [attemptId, location.state, navigate])
+
+  // Free Fire–style reward popup: on a fresh pass (live review only, never on revisit),
+  // fire the central celebration pipeline once. It queues the XP reward card (with the
+  // +XP count-up, level bar fill, inline level-up + title) then the rank-up card (C1),
+  // one at a time — identical to every other earn point in the app.
+  useEffect(() => {
+    if (firedRef.current || !hasLiveReview || !result) return
+    firedRef.current = true
+    if (result.passed && result.xpEarned > 0) {
+      // Real breakdown: base trial XP, then the +50 daily bonus line when it's the first
+      // skill cleared today (dailyBonusEarned). Never invents XP — bonus is split from total.
+      const bonus = result.dailyBonusEarned ? QUIZ_XP.concept.dailyBonus : 0
+      const breakdown = [{ label: 'Trial Cleared', amount: result.xpEarned - bonus, icon: '⚔️' }]
+      if (bonus > 0) breakdown.push({ label: 'First Skill Today', amount: bonus, icon: '⭐' })
+      // C15 — a fresh pass that mints a certificate (badge) queues the full-screen certificate
+      // moment AFTER the XP popup + any rank-up. Never fires on a revisit (xpEarned is 0 then).
+      const cert = result.badge ? (() => {
+        const bm = badgeMeta(result.badge)
+        return {
+          title: bm?.label || result.badge,
+          kind: bm?.kind ? `${bm.kind} Mastered` : 'Skill Gate Mastered',
+          icon: bm?.icon || '📜',
+          color: bm?.color || undefined,
+          name: user?.fullName || user?.username || 'Hunter',
+          href: '/skill-arena/certificates',
+        }
+      })() : null
+      celebrate({ ...result, sourceLabel: 'TRIAL COMPLETE', breakdown, certificate: cert })
+    }
+  }, [hasLiveReview, result, celebrate, user?.fullName, user?.username])
 
   // Memoized so the review slice / wrong-count aren't rebuilt on every showAll toggle
   // or unrelated re-render. Placed before the early returns to satisfy the Rules of
@@ -134,7 +171,12 @@ export default function QuizResultPage() {
         <div className="dash-quiz-result-inner">
 
           {/* Score hero card */}
-          <div className="dash-quiz-result-hero">
+          <motion.div
+            className="dash-quiz-result-hero"
+            initial={reduce ? false : { opacity: 0, scale: 0.94, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: EASE }}
+          >
             {/* Score */}
             <div className="dash-quiz-result-score">
               {result.score}/{result.total}
@@ -160,7 +202,7 @@ export default function QuizResultPage() {
             {result.passed && result.xpEarned > 0 && (
               <div className="dash-quiz-result-xp-wrap">
                 <div className="dash-quiz-result-xp">
-                  <Zap size={14} /> +{result.xpEarned} XP EARNED
+                  <Zap size={14} /> +<CountUp value={result.xpEarned} format={(n) => n} /> XP EARNED
                 </div>
                 {result.dailyBonusEarned && (
                   <div className="dash-quiz-result-bonus">
@@ -176,7 +218,7 @@ export default function QuizResultPage() {
                 <RotateCcw size={13} /> RETRY AVAILABLE IN <strong>{retryIn.toUpperCase()}</strong>
               </div>
             )}
-          </div>
+          </motion.div>
 
           {/* Badge banner */}
           {badge && (

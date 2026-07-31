@@ -5,7 +5,7 @@ export default function LandingMissionsSection() {
   const { navigate } = useLanding()
 
   return (
-    <section className="lp-section-pad">
+    <section className="lp-section-pad" data-tour="lp-missions">
       <div className="lp-section-inner">
         <div className="lp-section-header--sm lp-section-header--center lp-reveal">
           <span className="lp-topic-badge lp-topic-badge--missions">⚔ Mission Board</span>

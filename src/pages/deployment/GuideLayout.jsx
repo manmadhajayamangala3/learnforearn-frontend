@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { ArrowLeft, Sun, Moon, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react'
 import { motion, useScroll, useSpring } from 'framer-motion'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../utils/motion'
 
 // Visual classification of a single text line so long instruction blocks stay
 // scannable for students of every level — headings pop, warnings go red,

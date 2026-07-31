@@ -8,7 +8,7 @@ import { STACKS, PLATFORMS } from './deployment/guideIndex'
 import '../styles/pages/shared/deployment.css'
 import '../styles/pages/shared/deployment-stations.css'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../utils/motion'
 
 // ── The universal journey every guide teaches — visualised once, up top ──────
 const PIPELINE = [

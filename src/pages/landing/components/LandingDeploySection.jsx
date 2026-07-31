@@ -5,7 +5,7 @@ export default function LandingDeploySection() {
   const { navigate } = useLanding()
 
   return (
-    <section className="lp-section-pad">
+    <section className="lp-section-pad" data-tour="lp-deploy">
       <div className="lp-section-inner">
         <div className="lp-section-header--sm lp-section-header--center lp-reveal">
           <span className="lp-topic-badge lp-topic-badge--deploy">🚀 Deploy Guidance</span>

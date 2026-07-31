@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { PANEL_NOT_FOUND } from '../config/sectionNotFoundConfigs'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../utils/motion'
 
 /**
  * Compact cinematic not-found for dashboard panels (Skill Arena overlays).

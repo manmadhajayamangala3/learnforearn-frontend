@@ -4,9 +4,11 @@
  *
  * IMPORTANT: only list URLs that are BOTH crawlable (not Disallow'd in
  * robots.txt) AND indexable (not noindex in src/utils/documentTitle.js).
- * AI Lab tools, deployment guide details, Code Gym, Skill Arena, aptitude
- * topics, missions details, profiles and resumes are login-gated / noindex,
- * so they are deliberately omitted — listing them only produces
+ * The Code Gym LANDING (/code-gym) is public and listed here; its tracks and
+ * problem workspaces (/code-gym/*) stay login-gated / noindex and are omitted.
+ * AI Lab tools, deployment guide details, Skill Arena, aptitude topics,
+ * missions details, profiles and resumes are login-gated / noindex, so they are
+ * deliberately omitted — listing them only produces
  * "Submitted URL blocked by robots.txt / marked noindex" errors in Search Console.
  */
 import fs from 'node:fs'
@@ -26,6 +28,7 @@ const STATIC = [
   { loc: '/aptitude/logical', priority: '0.8', changefreq: 'monthly' },
   { loc: '/aptitude/verbal', priority: '0.8', changefreq: 'monthly' },
   { loc: '/aptitude/data-interpretation', priority: '0.8', changefreq: 'monthly' },
+  { loc: '/code-gym', priority: '0.9', changefreq: 'weekly' },
   { loc: '/missions', priority: '0.9', changefreq: 'weekly' },
   { loc: '/ai-lab', priority: '0.8', changefreq: 'weekly' },
   { loc: '/deployment', priority: '0.8', changefreq: 'weekly' },

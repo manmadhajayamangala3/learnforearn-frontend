@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
+import CountUp from '../components/CountUp'
 import {
   updateProfile, checkUsername, listResumes, connectGitHub, disconnectGitHub, clearUserCache,
   sendProfileContactOtp, verifyProfileContactOtp,
@@ -34,7 +35,7 @@ const BIO_MAX = 150
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 const PHONE_RE = /^[+]?\d[\d\s().-]{6,17}$/
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../utils/motion'
 
 const AVATAR_COLORS = [
   '#6366F1', '#8B5CF6', '#EC4899', '#EF4444', '#F97316',
@@ -796,7 +797,7 @@ export default function MyProfilePage() {
     try {
       const { data } = await updateProfile({ featuredResumeId: resumeId || '' })
       setSavedFeaturedResumeId(resumeId)
-      toast.success(resumeId ? `Resume added to your profile${xpSuffix(data)}` : 'Resume removed from your profile')
+      toast.success(resumeId ? `Resume pinned to your hunter profile${xpSuffix(data)}` : 'Resume removed from your profile')
       window.dispatchEvent(new Event('sl:refresh'))
     } catch (err) {
       setForm(f => ({ ...f, featuredResumeId: prev }))
@@ -839,7 +840,7 @@ export default function MyProfilePage() {
     setPrivacyBusy(true)
     try {
       await updateProfile({ publicProfile: next })
-      toast.success(next ? 'Profile is now public' : 'Profile is now private')
+      toast.success(next ? 'Your hunter profile is now public' : 'Your hunter profile is now private')
       window.dispatchEvent(new Event('sl:refresh'))
     } catch (err) {
       if (mountedRef.current) setForm(f => ({ ...f, publicProfile: !next }))
@@ -924,7 +925,7 @@ export default function MyProfilePage() {
               <div className="mpx-hero__meta">
                 <span className="mpx-rankpill">{rank.label} rank</span>
                 <span className="mpx-dot">•</span>
-                <span>{xp.toLocaleString()} XP</span>
+                <span><CountUp value={xp} format={(n) => n.toLocaleString()} /> XP</span>
                 <span className="mpx-dot">•</span>
                 <span>Joined {fmtMonthYear(user?.createdAt)}</span>
               </div>
@@ -1326,7 +1327,7 @@ export default function MyProfilePage() {
           ) : resumes.length === 0 ? (
             <div className="mpx-resumeempty">
               <p className="mpx-resumeempty__text">
-                No saved resumes yet. Create one in Resume Studio, then come back to feature it here.
+                A recruiter-ready resume is minutes away. Build one in Resume Studio, then feature it on your hunter profile.
               </p>
               <Link to="/resume" className="mpx-resumeempty__btn">
                 <FileText size={15} /> Go to Resume Studio

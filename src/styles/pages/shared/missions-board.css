@@ -537,6 +537,23 @@
   color: var(--text-muted);
 }
 
+/* B7: per-user objective progress bar under the footer. */
+.mb-card__obj-bar {
+  height: 3px;
+  margin-top: 0.5rem;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--rank-color) 14%, transparent);
+  overflow: hidden;
+}
+.mb-card__obj-fill {
+  display: block;
+  height: 100%;
+  width: var(--obj-pct, 0%);
+  border-radius: 2px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--rank-color) 55%, transparent), var(--rank-color));
+  transition: width 0.6s ease;
+}
+
 .mb-card__accept {
   font-family: 'Orbitron', sans-serif;
   font-size: 0.58rem;
@@ -551,6 +568,13 @@
 .mb-card:hover .mb-card__accept {
   opacity: 1;
   transform: translateX(0);
+}
+
+/* "In progress" is a status, not a hover CTA — always visible, muted, no slide. */
+.mb-card__accept--progress {
+  opacity: 1;
+  transform: none;
+  color: var(--text-muted);
 }
 
 /* ── Accomplished state (hunter has submitted at least one link) ───────────── */

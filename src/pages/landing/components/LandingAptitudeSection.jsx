@@ -5,7 +5,7 @@ export default function LandingAptitudeSection() {
   const { navigate } = useLanding()
 
   return (
-    <section className="lp-section-block">
+    <section className="lp-section-block" data-tour="lp-aptitude">
       <div className="lp-section-block--inner">
         <div className="lp-section-header--sm lp-section-header--center lp-reveal">
           <span className="lp-topic-badge lp-topic-badge--aptitude">🧠 Aptitude</span>

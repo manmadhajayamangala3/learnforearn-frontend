@@ -68,7 +68,7 @@ export default function TipArticlePage() {
         )}
 
         <footer className="tip-footer">
-          <Link to="/tips" className="tip-cta">Explore all placement guides <ArrowRight size={15} /></Link>
+          <Link to="/tips" className="tip-cta">Explore all learning guides <ArrowRight size={15} /></Link>
         </footer>
       </article>
     </main>

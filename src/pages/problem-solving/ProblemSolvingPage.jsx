@@ -23,7 +23,7 @@ const HERO_CONVO = [
   { speaker: 'echo',  text: 'And your first bug is probably ten minutes away. That is a good thing, promise.' },
 ]
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../utils/motion'
 
 export default function ProblemSolvingPage() {
   return (

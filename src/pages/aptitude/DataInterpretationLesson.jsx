@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Eye, EyeOff, BookOpen, Target, CheckCircle2, Zap, AlertTriangle, ListChecks, Layers } from 'lucide-react'
 import { DIChart } from './AptitudeCharts'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../utils/motion'
 
 /* Split layout: chart(s) pinned to the side(s), the reading/answering column
    scrolls in the middle so the data stays on screen the whole time.

@@ -10,6 +10,78 @@
   font-family: 'Rajdhani', sans-serif;
 }
 
+/* B4: one-time keyboard hint — fixed overlay so it never disturbs the 100dvh grid. */
+.dash-quiz-kbd-hint {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: calc(100vw - 24px);
+  padding: 0.4rem 0.5rem 0.4rem 0.85rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+  font-family: 'Rajdhani', sans-serif;
+  animation: quizHintIn 0.3s ease;
+}
+
+@keyframes quizHintIn {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.dash-quiz-kbd-hint__text {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-quiz-kbd-hint kbd {
+  display: inline-block;
+  min-width: 1.1em;
+  padding: 0.05em 0.35em;
+  margin: 0 0.05em;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.7rem;
+  text-align: center;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-hover);
+  border-radius: 5px;
+}
+
+.dash-quiz-kbd-hint__close {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.dash-quiz-kbd-hint__close:hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-quiz-kbd-hint { animation: none; }
+}
+
 /* Empty/error state when a quiz loads but has no data */
 .dash-quiz-unavailable {
   flex: 1;
@@ -175,6 +247,7 @@
 
 .dash-quiz-option {
   flex: 1;
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.875rem;
@@ -185,6 +258,39 @@
   cursor: pointer;
   transition: all 0.12s ease;
   min-height: 0;
+}
+
+/* B3: press-in spring — transform only, springs back via the 0.12s transition above. */
+.dash-quiz-option:active {
+  transform: scale(0.97);
+}
+
+/* B3: ripple layer clips the ripple to the card without clipping the selected box-shadow. */
+.dash-quiz-option__ripple-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dash-quiz-option__ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(155, 110, 212, 0.22);
+  transform: scale(0);
+  opacity: 0.7;
+  animation: quizRipple 0.5s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes quizRipple {
+  to { transform: scale(1); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-quiz-option:active { transform: none; }
+  .dash-quiz-option__ripple { display: none; }
 }
 
 .dash-quiz-option:hover {

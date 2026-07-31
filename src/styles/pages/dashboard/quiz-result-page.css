@@ -114,6 +114,10 @@
   margin-top: 1rem;
 }
 
+.dash-quiz-result-xpbar {
+  margin-top: 0.5rem;
+}
+
 .dash-quiz-result-xp {
   display: inline-flex;
   align-items: center;

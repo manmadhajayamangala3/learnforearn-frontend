@@ -14,7 +14,7 @@ import DataInterpretationLesson from './DataInterpretationLesson'
 import AptitudePracticeList from './AptitudePracticeList'
 import '../../styles/pages/shared/aptitude.css'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../utils/motion'
 
 export default function AptitudeTopicPage() {
   const { category, group, topicId } = useParams()

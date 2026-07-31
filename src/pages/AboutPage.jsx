@@ -11,7 +11,7 @@ import { isGuest } from '../utils/auth'
 import RegisterCTA from '../components/RegisterCTA'
 import '../styles/pages/about.css'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../utils/motion'
 
 const reveal = {
   initial: { opacity: 0, y: 26 },
@@ -310,6 +310,24 @@ export default function AboutPage() {
                 )
               })}
             </ul>
+          </motion.section>
+
+          {/* ── 05 · About LearnForEarn ─────────────────────────────────── */}
+          <motion.section className="ab-section" {...reveal}>
+            <div className="ab-shead">
+              <span className="ab-shead__tag">05 · About LearnForEarn</span>
+              <h2 className="ab-shead__title">About LearnForEarn</h2>
+            </div>
+            <p className="ab-goal">
+              LearnForEarn is an online learning platform for tech students at every stage. It covers
+              coding practice, aptitude tests, real project building, AI tools, career roadmaps, and
+              deployment guidance. It is designed for beginners learning to code for the first time,
+              students preparing for placements, developers building their portfolio, and anyone
+              wanting to grow in tech. Based in India and built specifically for students in the Indian
+              tech ecosystem, it helps you bridge the gap between college and industry. Target companies
+              for placement preparation include TCS, Infosys, Wipro, Accenture, Cognizant, HCL, and
+              product companies like Amazon and Microsoft.
+            </p>
           </motion.section>
 
           {/* ── Final CTA ───────────────────────────────────────────────── */}

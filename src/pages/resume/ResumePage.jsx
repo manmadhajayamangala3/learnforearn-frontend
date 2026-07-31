@@ -34,7 +34,7 @@ import {
 } from './resumeProfile'
 import '../../styles/pages/resume.css'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../utils/motion'
 const MAX_RESUMES = 3
 
 const EMPTY = {

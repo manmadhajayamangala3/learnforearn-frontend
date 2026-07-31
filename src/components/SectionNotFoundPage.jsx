@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SECTION_NOT_FOUND } from '../config/sectionNotFoundConfigs'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../utils/motion'
 const T_SIGNAL = 1100
 const T_RIFT   = 800
 const T_ERA    = 430

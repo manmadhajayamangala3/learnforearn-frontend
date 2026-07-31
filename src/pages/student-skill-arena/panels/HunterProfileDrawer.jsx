@@ -1,8 +1,11 @@
-import { X, LogOut, UserPlus } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { X, LogOut, UserPlus, Check, Flame, Shield } from 'lucide-react'
 import useBodyLock from '../../../hooks/useBodyLock'
 import useModalA11y from '../../../hooks/useModalA11y'
 import { RANK_LADDER } from '../../../constants/ranks'
 import { isGuest } from '../../../utils/auth'
+import { getRankProgress } from '../../../api/api'
+import { RANK_REQ_TIERS, RANK_ORDER, haveFor } from '../../../utils/rankReqs'
 import RegisterCTA from '../../../components/RegisterCTA'
 import { CONCEPT_XP_RANGE, QUIZ_XP } from '../../../utils/quizXp'
 import { LEVEL_TITLES, titleForLevel, cumulativeXpForLevel } from '../../../utils/slLevel'
@@ -46,33 +49,6 @@ const XP_TIPS = [
   'Enroll a Hunter Path to track your full career progress',
 ]
 
-// Rank requirements — mirror backend RankEvaluationService.computeCategoryRank EXACTLY.
-// Every listed condition must be met; rank is raise-only (never drops once earned).
-const RANK_REQS = [
-  { letter: 'D', color: '#4ADE80', xp: '1,000', reqs: [
-    '1 subject badge', '5 coding problems solved', 'Missions: 5 E-rank + 2 D-rank',
-  ] },
-  { letter: 'C', color: '#60A5FA', xp: '3,500', reqs: [
-    '3 subject badges', '20 coding problems', 'Aptitude mock best 35/50',
-    'Start 1 career path', 'Missions: 5 D-rank + 2 C-rank',
-  ] },
-  { letter: 'B', color: '#9B6ED4', xp: '8,000', reqs: [
-    '6 subject badges', '50 coding problems', 'Aptitude mock best 41/50',
-    '70% of one path · 2 paths started', 'Missions: 5 C-rank + 2 B-rank',
-    'Profile + resume complete',
-  ] },
-  { letter: 'A', color: '#F59E0B', xp: '16,000', reqs: [
-    '10 subject badges', '100 coding problems', 'Aptitude mock best 46/50',
-    '1 path completed · 50% of a 2nd', 'Missions: 4 B-rank + 2 A-rank',
-    'Profile + resume complete',
-  ] },
-  { letter: 'S', color: '#EF4444', xp: '30,000', reqs: [
-    '15 subject badges', '180 coding problems', 'Aptitude mock best 49/50',
-    '2 paths completed', 'Missions: 3 A-rank + 2 S-rank',
-    'Profile + resume complete',
-  ] },
-]
-
 // What it takes to accomplish a mission. Mirrors MissionDetailPage / the board.
 const MISSION_REQS = [
   'Open the MISSIONS tab and build the project to its objectives',
@@ -80,6 +56,14 @@ const MISSION_REQS = [
   'Deploy it live and submit the demo URL — proof it actually runs',
   'A mission is Accomplished once you submit at least one link',
   'Each repo links to one mission only — build something new for each',
+]
+
+// Daily-streak milestones — mirrors backend StreakService (bonus XP awarded once per run).
+const STREAK_MILESTONES = [
+  { day: 3,  xp: 25,  color: '#4ADE80', label: 'Habit forming' },
+  { day: 7,  xp: 50,  color: '#60A5FA', label: 'One week strong', shield: true },
+  { day: 14, xp: 100, color: '#9B6ED4', label: 'Two weeks unbroken', shield: true },
+  { day: 30, xp: 200, color: '#F59E0B', label: 'A full month' },
 ]
 
 // Mission-link XP by rank — mirrors backend MissionSubmissionService (repo / live demo).
@@ -106,6 +90,18 @@ export default function HunterProfileDrawer({ user, rank, level = 1, onClose, on
   const drawerRef = useModalA11y(onClose)
   const currentTitle = titleForLevel(level)
   const curRankIdx = Math.max(0, RANK_LADDER.findIndex(r => r.letter === rank.label))
+
+  // Live pillar counts for the rank-progression checklist. Fetched once when the drawer opens
+  // (guests have no persisted rank progress, so we skip and fall back to the static list).
+  const [rankProg, setRankProg] = useState(null)
+  useEffect(() => {
+    if (isGuest(user)) return undefined
+    let alive = true
+    getRankProgress()
+      .then(res => { if (alive) setRankProg(res.data) })
+      .catch(() => { /* keep static fallback on error */ })
+    return () => { alive = false }
+  }, [user])
 
   return (
     <>
@@ -280,6 +276,55 @@ export default function HunterProfileDrawer({ user, rank, level = 1, onClose, on
           </div>
 
           <div>
+            <SectionTitle>DAILY STREAK &amp; REWARDS</SectionTitle>
+            <div className="dash-hunter-about-card">
+              <p className="dash-hunter-about-card__text">
+                Your <strong>streak</strong> counts every day you do <strong>anything</strong> that moves you forward —
+                clear a skill, pass a trial, take an aptitude mock, solve a coding problem, or accomplish a mission.
+                Any <strong>one</strong> action before midnight keeps the flame alive; miss a whole day and it resets.
+              </p>
+              <div className="dash-hunter-about-card__tags">
+                {rankProg && Number(rankProg.streak) > 0
+                  ? <>🔥 Current streak · {rankProg.streak} {Number(rankProg.streak) === 1 ? 'day' : 'days'}</>
+                  : <>🔥 Do one action today to start your streak</>}
+                {rankProg && Number(rankProg.shields) > 0 && (
+                  <> · 🛡️ {rankProg.shields} shield{Number(rankProg.shields) === 1 ? '' : 's'} held</>
+                )}
+              </div>
+            </div>
+            <div className="dash-hunter-mission__xp">
+              <div className="dash-hunter-mission__xp-title">[ MILESTONE REWARDS ]</div>
+              <div className="dash-hunter-mission__row dash-hunter-mission__row--head">
+                <span>STREAK</span>
+                <span>REWARD</span>
+                <span>MILESTONE</span>
+              </div>
+              {STREAK_MILESTONES.map(m => {
+                const reached = rankProg && Number(rankProg.streak) >= m.day
+                return (
+                  <div
+                    key={m.day}
+                    className={`dash-hunter-mission__row${reached ? ' is-met' : ''}`}
+                    style={{ '--rank-color': m.color }}
+                  >
+                    <span className="dash-hunter-mission__rank">
+                      <Flame size={12} strokeWidth={2.5} /> Day {m.day}
+                    </span>
+                    <span className="dash-hunter-mission__val">
+                      +{m.xp} XP{m.shield && <> · <Shield size={11} strokeWidth={2.5} /></>}
+                    </span>
+                    <span className="dash-hunter-mission__val dash-hunter-mission__val--demo">{m.label}</span>
+                  </div>
+                )
+              })}
+            </div>
+            <p className="dash-hunter-mission__note">
+              Bonus XP is granted once each time you reach a milestone. Days 7 and 14 each grant a Streak Shield
+              (hold up to 2) — if you miss a single day, one is spent automatically to keep your streak alive.
+            </p>
+          </div>
+
+          <div>
             <SectionTitle>RANK PROGRESSION GUIDE</SectionTitle>
             <div className="dash-hunter-about-card">
               <p className="dash-hunter-about-card__text">
@@ -307,22 +352,47 @@ export default function HunterProfileDrawer({ user, rank, level = 1, onClose, on
               })}
             </div>
             <div className="dash-hunter-badge-guide">
-              {RANK_REQS.map(r => (
-                <div key={r.letter} className="dash-hunter-badge-card" style={{ '--badge-color': r.color, '--badge-bg': `${r.color}0A`, '--badge-border': `${r.color}25` }}>
-                  <div className="dash-hunter-badge-card__header">
-                    <span className="dash-hunter-badge-card__icon">{r.letter}</span>
-                    <span className="dash-hunter-badge-card__title">{r.letter}-Rank · {r.xp}+ XP</span>
+              {RANK_REQ_TIERS.map(tier => {
+                const tierIdx = RANK_ORDER.indexOf(tier.letter)
+                const earned = tierIdx <= curRankIdx
+                const isNext = tierIdx === curRankIdx + 1
+                const rows = tier.atoms.map(a => {
+                  const have = haveFor(rankProg, a)
+                  const met = earned || (have !== null && have >= (a.bool ? 1 : a.need))
+                  return { atom: a, have, met }
+                })
+                const done = rankProg ? rows.filter(r => r.met).length : 0
+                const total = rows.length
+                const cls = `dash-hunter-rank-card${earned ? ' is-earned' : ''}${isNext ? ' is-next' : ''}`
+                return (
+                  <div key={tier.letter} className={cls} style={{ '--badge-color': tier.color, '--badge-bg': `${tier.color}0A`, '--badge-border': `${tier.color}25` }}>
+                    <div className="dash-hunter-rank-card__header">
+                      <span className="dash-hunter-badge-card__icon">{tier.letter}</span>
+                      <span className="dash-hunter-badge-card__title">{tier.letter}-Rank · {tier.xp}+ XP</span>
+                      {rankProg && (
+                        <span className="dash-hunter-rank-card__status">
+                          {earned ? 'EARNED' : isNext ? `NEXT · ${done}/${total}` : `${done}/${total}`}
+                        </span>
+                      )}
+                    </div>
+                    <div className="dash-hunter-badge-card__steps">
+                      {rows.map(({ atom, have, met }, i) => (
+                        <div key={i} className={`dash-hunter-req${met ? ' is-met' : ''}${!met && rankProg && isNext ? ' is-todo' : ''}`}>
+                          <span className="dash-hunter-req__mark">{met ? <Check size={12} strokeWidth={3} /> : '○'}</span>
+                          <span className="dash-hunter-req__text">{atom.label}</span>
+                          {have !== null && (
+                            <span className="dash-hunter-req__count">
+                              {atom.bool
+                                ? (met ? 'Complete' : 'Not yet')
+                                : `${Number(have).toLocaleString()}${atom.suffix || ''} / ${atom.need.toLocaleString()}${atom.suffix || ''}`}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="dash-hunter-badge-card__steps">
-                    {r.reqs.map((req, i) => (
-                      <div key={i} className="dash-hunter-badge-step">
-                        <span className="dash-hunter-badge-step__num">✓</span>
-                        <span className="dash-hunter-badge-step__text">{req}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
             <div className="dash-hunter-xp-tips">
               <div className="dash-hunter-xp-tips__title">[ XP TIPS ]</div>

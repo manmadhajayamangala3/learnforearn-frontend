@@ -12,7 +12,7 @@ const SECTION_META = {
 }
 const fallbackMeta = { accent: '#9B6ED4', icon: '💠' }
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../../utils/motion'
 
 export default function MobileNavDrawer({ navItems, activeView, onSelect, onClose }) {
   const reduce = useReducedMotion()

@@ -92,17 +92,17 @@ function ProfileOverview({ user, onLogout, onNavigate, onClose }) {
       <div className="lp-profile-panel__actions">
         {!meta.isAdmin && (
           <>
-            <button type="button" className="lp-profile-panel__action" onClick={() => onNavigate('/bookmarks')}>
+            <button type="button" data-tour="profile-bookmarks" className="lp-profile-panel__action" onClick={() => onNavigate('/bookmarks')}>
               <Bookmark size={15} /> My Bookmarks
             </button>
             {!meta.isGuest && (
-              <button type="button" className="lp-profile-panel__action" onClick={() => onNavigate('/myprofile')}>
+              <button type="button" data-tour="profile-myprofile" className="lp-profile-panel__action" onClick={() => onNavigate('/myprofile')}>
                 <UserCog size={15} /> My Profile
               </button>
             )}
           </>
         )}
-        <button type="button" className="lp-profile-panel__action" onClick={() => onNavigate('/about')}>
+        <button type="button" data-tour="profile-tutorial" className="lp-profile-panel__action" onClick={() => onNavigate('/about')}>
           <GraduationCap size={15} /> Tutorial
         </button>
         {meta.isGuest && (
@@ -121,7 +121,7 @@ function ProfileOverview({ user, onLogout, onNavigate, onClose }) {
   )
 }
 
-export function LandingProfileDropdown({ user, logout, dismissSignal = false }) {
+export function LandingProfileDropdown({ user, logout, dismissSignal = false, forceOpen = false }) {
   const [open, setOpen] = useState(false)
   const btnRef = useRef(null)
   const [anchor, setAnchor] = useState(null)
@@ -130,17 +130,21 @@ export function LandingProfileDropdown({ user, logout, dismissSignal = false }) 
   const rank = getRank(user?.xp ?? 0, user?.rank)
   const isAdmin = user?.role === 'ADMIN'
 
-  useBodyLock(open && isMobile)
-  useBackClose(open && isMobile, () => setOpen(false))
+  // `forceOpen` lets the onboarding tour hold the menu open while it spotlights the items inside;
+  // user-driven close handlers are ignored while it is set so the tour can't be dismissed early.
+  const shown = open || forceOpen
 
-  const close = () => setOpen(false)
+  useBodyLock(shown && isMobile)
+  useBackClose(shown && isMobile, () => setOpen(false))
+
+  const close = () => { if (!forceOpen) setOpen(false) }
 
   useEffect(() => {
     if (dismissSignal) close()
-  }, [dismissSignal])
+  }, [dismissSignal]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useLayoutEffect(() => {
-    if (!open || isMobile || !btnRef.current) {
+    if (!shown || isMobile || !btnRef.current) {
       setAnchor(null)
       return
     }
@@ -158,19 +162,19 @@ export function LandingProfileDropdown({ user, logout, dismissSignal = false }) 
       window.removeEventListener('resize', update)
       window.removeEventListener('scroll', update, true)
     }
-  }, [open, isMobile])
+  }, [shown, isMobile])
 
   useEffect(() => {
-    if (!open) return
+    if (!shown) return undefined
     const onKey = (e) => {
       if (e.key === 'Escape') close()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [open])
+  }, [shown]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!open || isMobile) return
+    if (!shown || isMobile) return undefined
     const onPointer = (e) => {
       const inBtn = btnRef.current?.contains(e.target)
       const inPanel = e.target.closest?.('.lp-profile-dropdown')
@@ -178,9 +182,9 @@ export function LandingProfileDropdown({ user, logout, dismissSignal = false }) 
     }
     document.addEventListener('mousedown', onPointer)
     return () => document.removeEventListener('mousedown', onPointer)
-  }, [open, isMobile])
+  }, [shown, isMobile]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const overlay = open ? (
+  const overlay = shown ? (
     <>
       <div
         className={`lp-profile-backdrop${isMobile ? ' lp-profile-backdrop--mobile' : ''}`}
@@ -208,13 +212,13 @@ export function LandingProfileDropdown({ user, logout, dismissSignal = false }) 
       <button
         ref={btnRef}
         type="button"
-        className={`sl-nav-avatar lp-profile-avatar${open ? ' lp-profile-avatar--open' : ''}`}
+        className={`sl-nav-avatar lp-profile-avatar${shown ? ' lp-profile-avatar--open' : ''}`}
         style={{
           '--avatar-bg': user?.avatarColor || '#9B6ED4',
           '--rank-color': isAdmin ? '#F59E0B' : rank.color,
         }}
         onClick={() => setOpen(o => !o)}
-        aria-expanded={open}
+        aria-expanded={shown}
         aria-haspopup="true"
         aria-label={`Open profile for ${user?.fullName || 'user'}`}
       >

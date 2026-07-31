@@ -898,6 +898,55 @@
 [data-theme="light"] .md-chip--blue { color: #234066; }
 
 /* Numbered objectives */
+/* Accept-mission gate — start tracking. Muted card that matches the brief's surface. */
+.md-accept {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  margin: 0 0 0.95rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--border));
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+.md-accept__copy { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
+.md-accept__title {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-weight: 700; font-size: 0.95rem; color: var(--text-primary);
+}
+.md-accept__hint { font-size: 0.82rem; color: var(--text-muted); line-height: 1.35; }
+.md-accept__btn {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  min-height: 44px; padding: 0 1.2rem;
+  border: none; border-radius: 10px; cursor: pointer;
+  font-weight: 700; font-size: 0.9rem; letter-spacing: 0.02em;
+  color: #fff; background: var(--accent);
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+.md-accept__btn:hover:not(:disabled) { filter: brightness(1.06); }
+.md-accept__btn:active:not(:disabled) { transform: scale(0.97); }
+.md-accept__btn:disabled { opacity: 0.7; cursor: default; }
+.md-accept__spin { animation: mdAcceptSpin 0.8s linear infinite; }
+@keyframes mdAcceptSpin { to { transform: rotate(360deg); } }
+.md-accept--done {
+  border-color: color-mix(in srgb, var(--text-primary) 12%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+}
+.md-accept__badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-weight: 700; font-size: 0.88rem; color: var(--accent);
+}
+.md-accept__meta { font-size: 0.82rem; color: var(--text-muted); }
+/* Before acceptance the checkboxes are visible but inert — only the Accept button accepts. */
+.md-steps--locked .md-step__num--check { opacity: 0.5; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) {
+  .md-accept__spin { animation-duration: 1.6s; }
+  .md-accept__btn { transition: none; }
+}
+
 .md-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
 
 .md-step {
@@ -925,6 +974,36 @@
 }
 
 .md-step__text { font-size: 0.94rem; line-height: 1.55; color: var(--text-primary); padding-top: 0.15rem; }
+
+/* B7: interactive objective checkbox (self-tracking only). 44px+ touch target. */
+.md-step__num--check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  min-height: 34px;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+}
+.md-step__num--check:hover {
+  border-color: color-mix(in srgb, var(--rank-color) 55%, transparent);
+}
+.md-step__num--check:active { transform: scale(0.94); }
+.md-step__num--check:focus-visible {
+  outline: 2px solid var(--rank-color);
+  outline-offset: 2px;
+}
+.md-step--done .md-step__num--check {
+  color: #fff;
+  background: var(--rank-color);
+  border-color: var(--rank-color);
+}
+.md-step--done .md-step__text {
+  color: var(--text-secondary);
+}
+@media (prefers-reduced-motion: reduce) {
+  .md-step__num--check:active { transform: none; }
+}
 
 /* Bonus (nested inside objectives) */
 .md-bonus {

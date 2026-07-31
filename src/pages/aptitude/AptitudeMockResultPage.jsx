@@ -1,8 +1,10 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { ArrowLeft, CheckCircle, XCircle, Zap, RotateCcw, ChevronDown } from 'lucide-react'
 import toast from 'react-hot-toast'
 import SystemAwakeningLoader from '../../components/loaders/SystemAwakeningLoader'
+import XpFloatLayer from '../../components/XpFloatLayer'
+import useXpAnimation from '../../hooks/useXpAnimation'
 import { PAGE_MIN_MS } from '../../components/loaders/_config'
 import CooldownTimer from '../../components/CooldownTimer'
 import { getAttemptResult, getAptitudeMockStatus } from '../../api/api'
@@ -33,6 +35,9 @@ export default function AptitudeMockResultPage() {
   const [hasLiveReview, setHasLiveReview] = useState(false)
   const [reviewSection, setReviewSection] = useState('')
   const [mockStatus, setMockStatus] = useState(null)
+  const { floats, processResult, cleanup } = useXpAnimation()
+  const xpRef = useRef(null)
+  const firedRef = useRef(false)
 
   useEffect(() => {
     let active = true
@@ -76,6 +81,22 @@ export default function AptitudeMockResultPage() {
     return () => { active = false }
   }, [attemptId])
 
+  // C3: floating +N XP once, anchored to the XP badge — only on a fresh pass (live
+  // review), never on revisit. processResult also queues the level-up / rank-up cinematics.
+  useEffect(() => {
+    if (firedRef.current || !hasLiveReview || !result) return
+    firedRef.current = true
+    if (!(result.passed && result.xpEarned > 0)) return
+    const raf = requestAnimationFrame(() => {
+      const el = xpRef.current
+      let pos
+      if (el) { const r = el.getBoundingClientRect(); pos = { x: r.left + r.width / 2, y: r.top + r.height / 2 } }
+      processResult(result, pos, { label: 'MOCK CLEARED', breakdown: [{ label: 'Mock Test Cleared', amount: result.xpEarned, icon: '🎯' }] })
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [hasLiveReview, result, processResult])
+  useEffect(() => cleanup, [cleanup])
+
   // Memoized so the per-section wrong-count reduce isn't recomputed on every unrelated
   // re-render (e.g. expanding a review section). Placed before the early returns to satisfy
   // the Rules of Hooks; the value is identical to the previous inline expression.
@@ -100,6 +121,7 @@ export default function AptitudeMockResultPage() {
 
   return (
     <div className="dash-quiz-result-page apt-mock-result" style={{ '--accent': accentColor, '--mock-accent': MOCK_ACCENT }}>
+      <XpFloatLayer floats={floats} />
       <header className="dash-quiz-result-header">
         <button type="button" className="dash-quiz-result-back" onClick={() => navigate('/aptitude')}>
           <ArrowLeft size={14} /> APTITUDE
@@ -131,7 +153,7 @@ export default function AptitudeMockResultPage() {
             </div>
             {result.passed && result.xpEarned > 0 && (
               <div className="dash-quiz-result-xp-wrap">
-                <div className="dash-quiz-result-xp">
+                <div className="dash-quiz-result-xp" ref={xpRef}>
                   <Zap size={14} /> +{result.xpEarned} XP EARNED
                 </div>
               </div>

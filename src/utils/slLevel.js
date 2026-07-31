@@ -38,25 +38,7 @@ export function levelProgress(xp = 0) {
 }
 
 // ── Hunter Titles — cosmetic milestone names unlocked purely by Hunter Level ──
-// Each title unlocks the moment the level threshold is reached. Colors run the same
-// E→S palette used across the arena so they read as a rising ladder.
-export const LEVEL_TITLES = [
-  { level: 1,  title: 'Awakened',        icon: '🌑', color: '#64748B' },
-  { level: 5,  title: 'Novice Hunter',   icon: '🗡️', color: '#4ADE80' },
-  { level: 10, title: 'Skilled Hunter',  icon: '⚔️', color: '#22D3EE' },
-  { level: 15, title: 'Elite Hunter',    icon: '🛡️', color: '#60A5FA' },
-  { level: 20, title: 'Veteran Hunter',  icon: '🏹', color: '#818CF8' },
-  { level: 25, title: 'Ace Hunter',      icon: '💠', color: '#9B6ED4' },
-  { level: 30, title: 'Master Hunter',   icon: '👑', color: '#F59E0B' },
-  { level: 40, title: 'Monarch',         icon: '🔥', color: '#FB7185' },
-  { level: 50, title: 'Sovereign',       icon: '⭐', color: '#EF4444' },
-]
-
-/** Highest title unlocked at `level` (never returns null — Level 1 = Awakened). */
-export function titleForLevel(level = 1) {
-  let current = LEVEL_TITLES[0]
-  for (const entry of LEVEL_TITLES) {
-    if (level >= entry.level) current = entry
-  }
-  return current
-}
+// The title ladder and its icons now live in the central progression registry
+// (constants/progression.js) alongside the rank titles, so custom logos can be
+// swapped in one place. Re-exported here so existing imports keep working.
+export { LEVEL_TITLES, titleForLevel } from '../constants/progression'

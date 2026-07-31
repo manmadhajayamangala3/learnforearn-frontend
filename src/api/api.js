@@ -91,6 +91,9 @@ export const loginUser        = (data)      => api.post('/auth/login', data)
 export const googleLogin      = (credential) => api.post('/auth/google', { credential })
 export const guestLogin       = (guestId)   => api.post('/auth/guest', guestId ? { guestId } : {})
 export const getMe            = ()          => api.get('/auth/me')
+// First-run guided tours (C21): mark a tour ('landing' | 'arena') as seen so it runs once
+// per account. Fire-and-forget from the UI — the caller flips the flag optimistically.
+export const markTourSeen     = (tour)      => api.post('/auth/tour-seen', { tour })
 export const forgotPassword       = (email) => api.post('/auth/forgot-password', { email })
 export const verifyForgotPasswordOtp = (email, otp) => api.post('/auth/forgot-password/verify-otp', { email, otp })
 export const resetPassword        = (email, newPassword) => api.post('/auth/reset-password', { email, newPassword })
@@ -104,6 +107,13 @@ export const getConcept       = (id)        => withCache(`concept:${id}`,     2*
 // ─── PROGRESS ────────────────────────────────
 export const getProgressSummary = ()        => withCache('progressSummary',   60_000,   () => api.get('/progress/summary'))
 export const getHunterStats     = ()        => withCache('hunterStats',        60_000,   () => api.get('/progress/hunter-stats'))
+// Live pillar counts behind the multi-dimensional rank — drives the Hunter Instructions
+// rank-progression checklist. Fetched on demand when the drawer opens; short TTL dedupes
+// rapid reopens while still reflecting fresh progress the next time it's opened.
+export const getRankProgress    = ()        => withCache('rankProgress',       30_000,   () => api.get('/progress/rank-progress'))
+// C12 + C13 — dashboard learning insights (personal bests + weakest/stuck concept). Read-only;
+// short TTL so it feels live after a trial without re-fetching on every re-render.
+export const getLearningInsights = ()       => withCache('learningInsights',   60_000,   () => api.get('/progress/insights'))
 export const getDashboardBootstrap = ()     => withCache('dashboardBootstrap', 30_000,   () => api.get('/dashboard/bootstrap').then(res => {
   const store = _read()
   const ts = Date.now()
@@ -120,6 +130,16 @@ export const getDashboardBootstrap = ()     => withCache('dashboardBootstrap', 3
 // ping and must reflect the concept-quest sync immediately.
 export const getQuests   = ()  => withCache('quests', 60_000, () => api.get('/progress/quests'))
 export const studyPing   = ()  => api.post('/progress/study-ping').then(r => { clearApiCache('quests'); return r })
+
+// C17 — claim the once-per-day login bonus (+10 XP). Idempotent server-side; returns
+// xpEarned:0 when already claimed today. Busts progress caches so the XP total refreshes.
+export const claimDailyLogin = () =>
+  api.post('/progress/daily-login').then(r => { clearApiCache('progressSummary', 'dashboardBootstrap'); return r })
+
+// Bookmark the last-opened concept for the dashboard "Continue where you left off" card (C4).
+// Fire-and-forget; awards nothing. Busts the bootstrap cache so the next load reflects it.
+export const recordConceptOpen = (conceptId) =>
+  api.post(`/progress/concept/${conceptId}/open`).then(r => { clearApiCache('dashboardBootstrap'); return r })
 
 // ─── CERTIFICATES ────────────────────────────
 export const getCertificates   = ()      => withCache('certificates', 60_000, () => api.get('/certificates'))
@@ -212,6 +232,17 @@ export const getMissionSubmissions = ()         => withCache('missionSubmissions
 // user's XP/level/rank + hunter caches to reflect the new total immediately.
 export const saveMissionSubmission = (id, body) => api.put(`/missions/${id}/submission`, body).then(r => {
   clearApiCache('progressSummary', 'hunterStats', 'missionSubmissions')
+  return r
+})
+// B7: persist ticked-off objective indices (self-tracking only — no XP, marks nothing complete).
+export const saveMissionObjectives = (id, completed) => api.put(`/missions/${id}/objectives`, { completed }).then(r => {
+  clearApiCache('missionSubmissions')
+  return r
+})
+// Accept a mission (start tracking). Workflow flag only — no XP, marks nothing complete.
+// Bust the board cache so the card flips to "in progress" immediately.
+export const acceptMission = (id) => api.post(`/missions/${id}/accept`).then(r => {
+  clearApiCache('missionSubmissions')
   return r
 })
 

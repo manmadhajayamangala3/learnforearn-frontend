@@ -8,16 +8,25 @@ import DungeonPortalLoader from '../../components/loaders/DungeonPortalLoader'
 import { CheckCircle, Search, Trophy, Info, Menu, Sun, Moon } from 'lucide-react'
 import {
   getProgressSummary, getRoadmap, getBulkSubjectStatus,
-  getSubjects, getRoadmaps, getDashboardBootstrap,
+  getSubjects, getSubject, getRoadmaps, getDashboardBootstrap,
   getHunterStats, clearApiCache, getQuests, studyPing, getQuizHistory, getCertificates,
-  peekApiCache,
+  recordConceptOpen, peekApiCache, claimDailyLogin, getRankProgress,
 } from '../../api/api'
+import { isGuest } from '../../utils/auth'
+import ResumeConceptCard from './ResumeConceptCard'
+import XpFloatLayer from '../../components/XpFloatLayer'
+import useXpAnimation from '../../hooks/useXpAnimation'
+import CountUp from '../../components/CountUp'
+import StreakFlame from '../../components/StreakFlame'
+import StreakAtRiskBanner from '../../components/StreakAtRiskBanner'
 import { badgeMeta } from '../../utils/badgeMeta'
 import { subjectBadgeTitle } from '../../utils/subjectBadgeTitle'
 import { useAuth } from '../../context/AuthContext'
+import { useCelebrationActive } from '../../context/CelebrationContext'
 import blurOnEnter from '../../utils/blurOnEnter'
 import { useTheme } from '../../context/ThemeContext'
 import { getRank } from '../../utils/slRank'
+import { RANK_LADDER } from '../../constants/ranks'
 import { levelProgress, LEVEL_TITLES, titleForLevel } from '../../utils/slLevel'
 import toast from 'react-hot-toast'
 import { getApiError } from '../../utils/apiError'
@@ -33,7 +42,13 @@ import '../../styles/pages/shared/certificates.css'
 const ConceptInlinePanel  = lazy(() => import('./panels/ConceptInlinePanel'))
 const RoadmapPanel        = lazy(() => import('./panels/RoadmapPanel'))
 const SubjectPanel        = lazy(() => import('./panels/SubjectPanel'))
-const HunterProfileDrawer = lazy(() => import('./panels/HunterProfileDrawer'))
+const MissionOverviewCard = lazy(() => import('./MissionOverviewCard'))
+const BookmarkQueueCard = lazy(() => import('./BookmarkQueueCard'))
+const LearningInsights = lazy(() => import('./LearningInsights'))
+const OnboardingTour = lazy(() => import('../../components/onboarding/OnboardingTour'))
+// Hunter Profile drawer — statically imported (not lazy) so the avatar menu opens instantly
+// with no Suspense/loading flash. It is small and its CSS (certificates.css) is already loaded.
+import HunterProfileDrawer from './panels/HunterProfileDrawer'
 // ─── Extracted modal components ────────────────────────────
 import AboutRoadmapModal   from './modals/AboutRoadmapModal'
 import AboutGateModal      from './modals/AboutGateModal'
@@ -127,8 +142,45 @@ const GateCard = memo(function GateCard({ s, pOvr, quizStatuses, summaryBadgeMap
   )
 })
 
+// B5: time-of-day word for the dynamic greeting.
+function greetingWord() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Morning'
+  if (h < 17) return 'Afternoon'
+  return 'Evening'
+}
+
+// B5: the single nearest milestone — next rank if there is one, else next level.
+function nearestMilestone(xp, level) {
+  const next = RANK_LADDER.find(r => r.min > xp)
+  if (next) return `${(next.min - xp).toLocaleString()} XP to ${next.letter}-Rank`
+  const lp = levelProgress(xp)
+  const toNext = Math.max(0, lp.span - lp.into)
+  return `${toNext.toLocaleString()} XP to Level ${level + 1}`
+}
+
+// C4: resolve the dashboard resume target from server history, else recommend a first gate.
+function computeResumeTarget(resumeConcept, summary) {
+  if (resumeConcept?.conceptId) {
+    const gate = (summary?.subjectProgress || []).find(s => s.subjectId === resumeConcept.subjectId)
+    return {
+      kind: 'resume',
+      conceptId: resumeConcept.conceptId,
+      subjectId: resumeConcept.subjectId,
+      conceptTitle: resumeConcept.conceptTitle,
+      subjectTitle: resumeConcept.subjectTitle,
+      subjectIcon: resumeConcept.subjectIcon,
+      pct: gate?.percentage ?? 0,
+    }
+  }
+  const sp = summary?.subjectProgress || []
+  const rec = sp.find(s => s.percentage > 0 && !s.hasBadge) || sp.find(s => !s.hasBadge) || sp[0]
+  if (rec) return { kind: 'recommend', subjectId: rec.subjectId, subjectTitle: rec.title, subjectIcon: rec.icon, pct: rec.percentage ?? 0 }
+  return null
+}
+
 export default function DashboardPage() {
-  const { user, logout } = useAuth()
+  const { user, logout, markTourSeen } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -146,6 +198,10 @@ export default function DashboardPage() {
   const [selectedConceptId, setSelectedConceptId] = useState(() => searchParams.get('concept') || null)
   const [conceptNavList, setConceptNavList] = useState([])
   const [selectedRoadmapId, setSelectedRoadmapId] = useState(null)
+  // C4: last-opened concept (server history) for the "Continue where you left off" card.
+  const [resumeConcept, setResumeConcept] = useState(bootSeed?.resumeConcept ?? null)
+  // C3: floating XP when the daily study quest completes on a background ping.
+  const { floats: xpFloats, processResult: processXp, cleanup: cleanupXp } = useXpAnimation()
 
   // Daily-quest state now comes from the server (survives reloads, syncs across devices,
   // and awards real XP). Shape: { quests:[{id,label,xp,done,progressSeconds?,targetSeconds?}],
@@ -209,6 +265,38 @@ export default function DashboardPage() {
   const pendingTimersRef = useRef([])
   useEffect(() => () => { pendingTimersRef.current.forEach(clearTimeout); pendingTimersRef.current = [] }, [])
 
+  // C7 — streak at-risk nudge. Eligible only when the hunter HAS a streak, has done NOTHING
+  // qualifying today, and fewer than 4 hours remain in their day. Shown at most once per day
+  // (marked in localStorage the moment it becomes eligible). Never for hunters with no streak.
+  const [atRisk, setAtRisk] = useState(null)
+  useEffect(() => {
+    if (!summary || (summary.streak ?? 0) <= 0 || summary.activeToday) { setAtRisk(null); return }
+    const now = new Date()
+    const eod = new Date(now); eod.setHours(23, 59, 59, 999)
+    const hoursLeft = (eod - now) / 3600000
+    if (hoursLeft >= 4) { setAtRisk(null); return }
+    const uid = user?.id || user?.username || 'me'
+    const key = `arise:atrisk:${uid}`
+    const today = new Date().toISOString().slice(0, 10)
+    try { if (localStorage.getItem(key) === today) { setAtRisk(null); return } } catch { /* storage blocked */ }
+    try { localStorage.setItem(key, today) } catch { /* ignore */ }
+    setAtRisk({ streak: summary.streak, hoursLeft })
+  }, [summary, user?.id, user?.username])
+
+  // C6 — "your shield saved your streak" acknowledgment. When a shield was auto-consumed to
+  // bridge a missed day, the summary carries shieldSavedToday; tell the hunter once (deduped
+  // per day in localStorage) so the save is loss-aversion positive, not a silent rescue.
+  useEffect(() => {
+    if (!summary?.shieldSavedToday) return
+    const uid = user?.id || user?.username || 'me'
+    const key = `arise:shieldsaved:${uid}`
+    const today = new Date().toISOString().slice(0, 10)
+    try { if (localStorage.getItem(key) === today) return } catch { /* storage blocked */ }
+    try { localStorage.setItem(key, today) } catch { /* ignore */ }
+    const left = summary?.shields ?? 0
+    toast(`Your shield saved your streak. ${left} shield${left === 1 ? '' : 's'} left.`, { icon: '🛡️' })
+  }, [summary?.shieldSavedToday, summary?.shields, user?.id, user?.username])
+
   // Auto-hide navbar on page scroll (reappears when scrolling up).
   // Paused while subject / path / concept panels are open — locks AutoHideNav too
   // (panel inner scroll was still toggling html.nav-hidden via App-level listener).
@@ -265,6 +353,7 @@ export default function DashboardPage() {
       setQuestData(data.quests)
       setRecentHistory(data.quizHistory || [])
       setAllRoadmaps(data.roadmaps || [])
+      setResumeConcept(data.resumeConcept ?? null)
       pendingTimersRef.current.push(setTimeout(() => setPathsLoaded(true), TEST_DELAY_MS))
       setLoading(false)
     }
@@ -402,16 +491,41 @@ export default function DashboardPage() {
   useEffect(() => {
     if (loading || questData?.studyDone) return  // wait for shell; stop when study quest done
     let cancelled = false
+    // C3: when a ping is the one that completes the 45-min study quest, the response carries
+    // xpEarned (+ level/title flags) — fire the floating XP and any level-up cinematic.
+    const applyPing = (r) => {
+      if (cancelled) return
+      setQuestData(r.data)
+      if (r.data?.xpEarned) processXp(r.data, undefined, { label: 'DAILY QUEST', breakdown: [{ label: 'Study Quest Complete', amount: r.data.xpEarned, icon: '📖' }] })
+    }
     // First ping establishes the server-side baseline (lastPingAt); no time credited yet.
-    studyPing().then(r => { if (!cancelled) setQuestData(r.data) }).catch(() => {})
+    studyPing().then(applyPing).catch(() => {})
     const t = setInterval(() => {
       if (document.hidden) return  // don't credit time while the tab is backgrounded
-      studyPing()
-        .then(r => { if (!cancelled) setQuestData(r.data) })
-        .catch(() => {})
+      studyPing().then(applyPing).catch(() => {})
     }, 5 * 60_000)
     return () => { cancelled = true; clearInterval(t) }
-  }, [loading, questData?.studyDone])
+  }, [loading, questData?.studyDone, processXp])
+
+  // C17 — daily login bonus. Once the shell is ready, claim the +10 "showed up today" XP.
+  // Idempotent server-side (once per IST day), so a re-mount or refresh never double-awards;
+  // when granted we play the reward popup and refresh the summary so the XP total updates.
+  const loginBonusFired = useRef(false)
+  useEffect(() => {
+    if (loading || loginBonusFired.current || user?.role === 'GUEST') return
+    loginBonusFired.current = true
+    claimDailyLogin()
+      .then(r => {
+        if (r.data?.xpEarned > 0) {
+          processXp(r.data, undefined, { label: 'DAILY LOGIN', breakdown: [{ label: 'Showed up today', amount: r.data.xpEarned, icon: '📅' }] })
+          getProgressSummary().then(s => setSummary(s.data)).catch(() => {})
+        }
+      })
+      .catch(() => {})
+  }, [loading, user?.role, processXp])
+
+  // C3: clear any pending XP-float timers on unmount.
+  useEffect(() => cleanupXp, [cleanupXp])
 
   const loadGates = () => {
     if (gatesLoaded) return
@@ -482,6 +596,40 @@ export default function DashboardPage() {
     if (selectedSubjectId) params.subject = selectedSubjectId
     params.concept = conceptId
     setSearchParams(params)
+    // C4: bookmark this concept server-side (fire-and-forget) and optimistically update the
+    // resume card so it's fresh the moment the hunter returns to the arena view.
+    recordConceptOpen(conceptId).catch(() => {})
+    const c = (navList || []).find(x => x.id === conceptId)
+    const subj = subjects.find(s => s.id === selectedSubjectId)
+    if (selectedSubjectId) {
+      setResumeConcept({
+        conceptId,
+        subjectId: selectedSubjectId,
+        conceptTitle: c?.title || '',
+        subjectTitle: subj?.title || '',
+        subjectIcon: subj?.icon || '',
+        resumed: true,
+      })
+    }
+  }
+
+  // C4: one-tap resume. History → open the exact concept. Recommendation → open the
+  // recommended gate's first incomplete concept (resolved from getSubject).
+  const handleResume = () => {
+    if (!resumeTarget) return
+    if (resumeTarget.kind === 'resume') {
+      setSearchParams({ subject: resumeTarget.subjectId, concept: resumeTarget.conceptId })
+      return
+    }
+    getSubject(resumeTarget.subjectId)
+      .then(r => {
+        const concepts = r.data?.concepts || []
+        const first = concepts.find(c => !c.completed) || concepts[0]
+        setSearchParams(first
+          ? { subject: resumeTarget.subjectId, concept: first.id }
+          : { subject: resumeTarget.subjectId })
+      })
+      .catch(() => setSearchParams({ subject: resumeTarget.subjectId }))
   }
 
   const handleConceptClose = (action, targetId) => {
@@ -510,6 +658,179 @@ export default function DashboardPage() {
   const totalQuests    = questData?.totalCount ?? questList.length
   const earnedXp       = questData?.earnedXp ?? 0
 
+  // B5: dynamic arena greeting — time-of-day + first name + streak + single nearest milestone.
+  const streakCount    = summary?.streak ?? 0
+  const firstName      = user?.fullName?.split(' ')[0] || 'Hunter'
+  const greetLabel     = greetingWord()
+  const milestoneText  = nearestMilestone(xp, level)
+  const hasProgress    = xp > 0 || streakCount > 0
+
+  // ── C21: first-run "System" tour ─────────────────────────────────────────────
+  // Narrated spotlight over the real dashboard. Auto-runs exactly once per registered account —
+  // gated purely on the server flag user.tourArenaDone (authoritative: survives hard refresh,
+  // next login and other devices). ?tour=1 force-starts it for testing/replay (never touches the
+  // flag). Guests and admins never see it. The tour also waits for any load-time celebration
+  // (e.g. the daily-login-bonus XP popup) to clear before it starts, so the two never overlap.
+  const [tourOn, setTourOn] = useState(false)
+  const [tourArmed, setTourArmed] = useState(false)
+  const tourStarted = useRef(false)
+  const tourViewRef = useRef(null)
+  const celebrationActive = useCelebrationActive()
+  const sawCelebration = useRef(false)
+
+  // Mobile layout kicks in at ≤768px (side panels + desktop nav links hide; nav moves behind the
+  // hamburger and status/quests/profile move behind the avatar sheet). The tour swaps to a
+  // hamburger/avatar-based step set below it. Kept separate so desktop is never disturbed.
+  const [isMobileTour, setIsMobileTour] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches,
+  )
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const sync = () => setIsMobileTour(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  const tourSteps = useMemo(() => {
+    // ── MOBILE step set (≤768px) ─────────────────────────────────────────────
+    // Side panels and desktop nav links don't exist on mobile — the map lives behind the
+    // hamburger and Status/Quests/Badges/Instructions behind the avatar sheet. Same engine,
+    // same once-only gating; steps open those overlays via `drawer`/`avatar` flags (onStep).
+    if (isMobileTour) {
+      return [
+        { view: 'arena',
+          title: `Welcome, ${firstName}.`,
+          body: 'This is your Skill Arena — where you learn real tech skills like a game and level up from complete beginner to job-ready. Here’s a quick look around; it moves on its own, tap Next to jump ahead.' },
+        { view: 'arena', drawer: true, targets: ['.mnav-drawer', '.sl-mob-menu-btn'], place: 'bottom',
+          title: 'This is your map',
+          body: 'Tap the menu any time to move around: Overview (this home screen), Dungeon Gates (your subjects), Hunter Paths (career roadmaps) and Missions (real projects you build).' },
+        { view: 'gates', target: '.sl-cards-grid .sl-gate-card',
+          title: 'Gates are your subjects',
+          body: 'A Dungeon Gate is simply a subject — like HTML, Java or Python. Open one to see the Skills inside and start learning, at your own pace.' },
+        { view: 'gates',
+          title: 'Skills & Trials',
+          body: 'Inside a Gate are Skills — each is one short lesson followed by a Trial (a quick quiz). Pass the Trial to clear the Skill and earn XP. Passing the quiz is the only way forward — no shortcuts.' },
+        { view: 'paths', target: '.dash-path-card',
+          title: 'Paths are career roadmaps',
+          body: 'A Hunter Path is a career roadmap — it lines up the right subjects, in the right order, for a job like Full-Stack or Data. Follow one and you’ll always know what to learn next.' },
+        { view: 'arena', avatar: true, targets: ['.dash-mob-menu', '.sl-mob-avatar'],
+          title: 'Everything about you lives here',
+          body: 'Tap your avatar for your Stats and streak, your Badges, Certificates and Titles, your Daily Quests, and the Hunter Instructions — a live checklist that tells you exactly what to do next to reach your next Rank (E up to S).' },
+        { view: 'arena',
+          title: `You’re all set, ${firstName}.`,
+          body: 'Pick a Gate and clear your very first Skill — that’s all it takes to begin. Your climb starts now.',
+          cta: 'Enter the dungeon' },
+      ]
+    }
+
+    // ── DESKTOP step set (>768px) ────────────────────────────────────────────
+    return [
+    { view: 'arena',
+      title: `Welcome, ${firstName}.`,
+      body: 'This is your Skill Arena — where you learn real tech skills like a game and level up from complete beginner to job-ready. Give me a moment and I’ll show you around; it moves on its own, so hover any card to pause.' },
+    { view: 'arena', target: '.sl-dash-left-panel',
+      title: 'This side is all about you',
+      body: 'Your Level and XP (the points you earn for everything you finish) and your daily streak sit up top — with quick links to the Badges, Certificates and Titles you unlock as you grow.' },
+    { view: 'arena', target: '.sl-dash-nav-links',
+      title: 'This is your map',
+      body: 'Four places to explore, always up here: Overview (this home screen), Dungeon Gates (your subjects), Hunter Paths (career roadmaps) and Missions (real projects you build).' },
+    { view: 'gates', targets: ['.sl-cards-grid .sl-gate-card', '[data-tour-nav="gates"]'],
+      title: 'Gates are your subjects',
+      body: 'A Dungeon Gate is simply a subject — like HTML, Java or Python. Open one to see the Skills inside and start learning, at your own pace.' },
+    { view: 'gates',
+      title: 'Skills & Trials',
+      body: 'Inside a Gate are Skills — each is one short lesson followed by a Trial (a quick quiz). Pass the Trial to clear the Skill and earn XP. Passing the quiz is the only way forward — no shortcuts.' },
+    { view: 'paths', targets: ['.dash-path-card', '[data-tour-nav="paths"]'],
+      title: 'Paths are career roadmaps',
+      body: 'A Hunter Path is a career roadmap — it lines up the right subjects, in the right order, for a job like Full-Stack or Data. Follow one and you’ll always know what to learn next.' },
+    { view: 'arena', target: '.sl-dash-right-panel',
+      title: 'Daily Quests & your activity',
+      body: 'Small Daily Quests give you bonus XP just for showing up, and Recent Activity shows your latest trials — an easy way to see how you’re doing day to day.' },
+    { view: 'arena', target: '.sl-nav-avatar',
+      title: 'Always know your next step',
+      body: 'Open your profile here for the Hunter Instructions — a live checklist that tells you exactly what to do next to reach your next Rank (your overall class, from E up to S).' },
+    { view: 'arena',
+      title: `You’re all set, ${firstName}.`,
+      body: 'Pick a Gate and clear your very first Skill — that’s all it takes to begin. Your climb starts now.',
+      cta: 'Enter the dungeon' },
+    ]
+  }, [firstName, isMobileTour])
+
+  // Step 1 — decide eligibility and "arm" the tour (does not show it yet). Marks the account
+  // as seen up front (optimistic local flip + fire-and-forget server write).
+  useEffect(() => {
+    if (loading || tourStarted.current) return
+    // Only registered students get the guided tour — never guests or admins.
+    const isRegisteredStudent = !!user && user.role !== 'GUEST' && user.role !== 'ADMIN'
+    if (!isRegisteredStudent) return
+    const forced = searchParams.get('tour') === '1'
+    if (!forced && user.tourArenaDone) return // server flag is authoritative
+    tourStarted.current = true
+    if (!forced) markTourSeen('arena') // the ?tour=1 replay must never mark the account done
+    setTourArmed(true)
+    // Depend only on values stable across markTourSeen's optimistic user flip (which mutates
+    // user.tourArenaDone). Including the full `user` object here would re-run this effect on the flip.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, user?.role, user?.id, searchParams])
+
+  // Step 2 — actually show the tour once nothing else is on screen. If a load-time celebration
+  // (daily-login bonus, XP popup…) is up, wait for it to close first. When no celebration ever
+  // appears, a short grace lets a late-arriving popup register before we commit to starting.
+  useEffect(() => {
+    if (!tourArmed || tourOn) return undefined
+    if (celebrationActive) { sawCelebration.current = true; return undefined }
+    const delay = sawCelebration.current ? 400 : 1100
+    const t = setTimeout(() => setTourOn(true), delay)
+    return () => clearTimeout(t)
+  }, [tourArmed, tourOn, celebrationActive])
+
+  // Pre-warm the rank-progress data the Hunter Profile drawer reads on open, so its live
+  // checklist shows real numbers immediately instead of the static fallback. The drawer itself
+  // is statically imported (no chunk to fetch). Runs once on idle after the dashboard settles.
+  const drawerWarmed = useRef(false)
+  useEffect(() => {
+    if (loading || drawerWarmed.current || isGuest(user)) return
+    drawerWarmed.current = true
+    const warm = () => { getRankProgress().catch(() => { /* cache warm is best-effort */ }) }
+    const ric = window.requestIdleCallback
+    if (ric) { const id = ric(warm, { timeout: 2000 }); return () => window.cancelIdleCallback?.(id) }
+    const t = setTimeout(warm, 1200)
+    return () => clearTimeout(t)
+  }, [loading, user])
+
+  const closeTour = useCallback(() => {
+    setTourOn(false)
+    // Disarm so the "show when armed" effect can't re-trigger and re-open the tour after a
+    // Skip/Done (tourOn flips back to false while tourArmed was still true — the re-appear bug).
+    setTourArmed(false)
+    tourViewRef.current = null
+    // Close any overlay the mobile tour opened so Skip/Done never leaves the drawer/sheet up.
+    setMobileMenuOpen(false)
+    setMobileAvatarMenu(false)
+    // "Seen" is already persisted server-side when the tour is armed (markTourSeen), so nothing
+    // to write here. The forced ?tour=1 replay just cleans the query param below.
+    if (searchParams.get('tour')) {
+      const p = new URLSearchParams(searchParams)
+      p.delete('tour')
+      setSearchParams(p, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
+
+  // The tour drives the arena for the hunter — switch to the view each step is about
+  // (Gates / Paths / back to arena) so the spotlight lands on the real thing.
+  const handleTourStep = useCallback((s) => {
+    // Mobile arena tour: open exactly the overlay this step spotlights (the nav drawer or the
+    // avatar sheet), and close it otherwise. Harmless no-ops on desktop — those steps never set
+    // the flags, so both stay false.
+    setMobileMenuOpen(!!s?.drawer)
+    setMobileAvatarMenu(!!s?.avatar)
+    if (s?.view && s.view !== tourViewRef.current) {
+      tourViewRef.current = s.view
+      switchView(s.view)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Badge lookup from the progress summary — a resilient fallback so an earned badge still
   // shows on a gate card even if the parallel bulk-status call failed or hasn't returned yet.
   const summaryBadgeMap = useMemo(() => {
@@ -536,6 +857,11 @@ export default function DashboardPage() {
     () => (summary?.subjectProgress ?? []).filter(s => s.hasBadge), [summary])
   const inProgress = useMemo(
     () => (summary?.subjectProgress ?? []).filter(s => s.percentage > 0 && !s.hasBadge), [summary])
+
+  // C4: resume-card target — the last-opened concept (server history), else a recommended
+  // first gate derived from the progress summary. Gate % comes from subjectProgress.
+  // Plain render-scope computation (the React Compiler memoizes it); cheap either way.
+  const resumeTarget = computeResumeTarget(resumeConcept, summary)
   const enrolledPaths = useMemo(
     () => allRoadmaps.filter(r => r.enrolled && !r.paused), [allRoadmaps])
 
@@ -604,7 +930,7 @@ export default function DashboardPage() {
   const arenaStatCards = useMemo(() => [
     { label: 'SKILLS LEARNED', value: summary?.completedConcepts ?? 0, color: '#9B6ED4' },
     { label: 'GATES CLOSED',  value: cleared.length,    color: '#4ADE80' },
-    { label: 'DAY STREAK',     value: summary?.streak ?? 0, suffix: (summary?.streak ?? 0) === 1 ? 'day' : 'days', color: '#F59E0B' },
+    { label: 'DAY STREAK',     value: summary?.streak ?? 0, suffix: (summary?.streak ?? 0) === 1 ? 'day' : 'days', color: '#F59E0B', streak: true },
   ], [summary, cleared])
 
   const renderMiddle = () => {
@@ -615,11 +941,28 @@ export default function DashboardPage() {
       return (
         <div className="dash-arena-view">
 
+          {/* ── Streak at-risk nudge (C7) ── */}
+          {atRisk && (
+            <StreakAtRiskBanner
+              streak={atRisk.streak}
+              hoursLeft={atRisk.hoursLeft}
+              onGo={() => { setAtRisk(null); handleResume() }}
+              onDismiss={() => setAtRisk(null)}
+            />
+          )}
+
+          {/* ── Continue where you left off (C4) ── */}
+          <ResumeConceptCard target={resumeTarget} onResume={handleResume} />
+
           {/* ── Hunter overview strip ── */}
           <div className="dash-arena-stats">
             {arenaStatCards.map(stat => (
               <div key={stat.label} className="dash-arena-stat" style={{ '--stat-color': stat.color }}>
-                <div className="dash-arena-stat__value">{stat.value}</div>
+                <div className="dash-arena-stat__value">
+                  {stat.streak
+                    ? <StreakFlame count={stat.value} size={18} shields={summary?.shields ?? 0} />
+                    : stat.value}
+                </div>
                 {stat.suffix && <div className="dash-arena-stat__suffix">{stat.suffix}</div>}
                 <div className="dash-arena-stat__label">{stat.label}</div>
               </div>
@@ -650,10 +993,25 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="dash-no-path" onClick={() => switchView('paths')}>
-              <div className="dash-no-path__label">NO ACTIVE PATH</div>
-              <div className="dash-no-path__cta">→ Go to Hunter Path to Start Hunting </div>
+              <div className="dash-no-path__label">Pick a path, start ranking up</div>
+              <div className="dash-no-path__cta">→ Choose a Hunter Path to start climbing</div>
             </div>
           )}
+
+          {/* ── Missions overview (accepted / in-progress / accomplished) ── */}
+          <Suspense fallback={null}>
+            <MissionOverviewCard />
+          </Suspense>
+
+          {/* ── C18: saved-for-later study queue (renders only when bookmarks exist) ── */}
+          <Suspense fallback={null}>
+            <BookmarkQueueCard />
+          </Suspense>
+
+          {/* ── C12 + C13: weak-area nudge + personal bests (renders only with real data) ── */}
+          <Suspense fallback={null}>
+            <LearningInsights />
+          </Suspense>
 
           {/* ── In-progress gates ── */}
           {inProgress.length > 0 && (
@@ -716,7 +1074,12 @@ export default function DashboardPage() {
           {!gatesLoaded ? (
             <div className="flex-center dash-flex-center-fill--h200"><DungeonPortalLoader panel height={200} /></div>
           ) : filteredSubjects.length === 0 ? (
-            <div className="dash-no-match">NO GATES MATCH</div>
+            <div className="dash-empty-invite">
+              <p className="dash-empty-invite__line">No gates match that search — try another, or open them all.</p>
+              <button type="button" className="btn btn-primary btn-sm" onClick={() => setGateSearch('')}>
+                Show all gates
+              </button>
+            </div>
           ) : (
             <div className="sl-cards-grid dash-cards-grid-2">
               {filteredSubjects.map((s) => (
@@ -982,7 +1345,12 @@ export default function DashboardPage() {
           {!historyLoaded ? (
             <div className="flex-center dash-flex-center-fill--h200"><DungeonPortalLoader panel height={200} /></div>
           ) : filtered.length === 0 ? (
-            <div className="dash-no-match">NO ATTEMPTS YET</div>
+            <div className="dash-empty-invite">
+              <p className="dash-empty-invite__line">No trials logged yet — your first skill trial starts your track record.</p>
+              <button type="button" className="btn btn-primary btn-sm" onClick={() => switchView('gates')}>
+                Find a gate to clear
+              </button>
+            </div>
           ) : (
             <div className="hist-list">
               {filtered.map(a => (
@@ -1015,6 +1383,12 @@ export default function DashboardPage() {
 
   return (
     <div className="sl-dashboard-wrapper">
+      <XpFloatLayer floats={xpFloats} />
+      {tourOn && (
+        <Suspense fallback={null}>
+          <OnboardingTour steps={tourSteps} onClose={closeTour} onStep={handleTourStep} />
+        </Suspense>
+      )}
       {/* ══ QUIZ INSTRUCTIONS MODAL ══ */}
       {quizIntent && (
         <InstructionsModal
@@ -1025,15 +1399,10 @@ export default function DashboardPage() {
       )}
 
       {/* ══ HUNTER PROFILE DRAWER (desktop + mobile Hunter Profile button) ══ */}
+      {/* Statically imported (see top of file) — opens instantly, no Suspense/loading flash. */}
       {avatarOpen && (
-        <Suspense fallback={
-          <div className="dash-drawer-loading" role="status" aria-busy="true">
-            <DungeonPortalLoader panel height={120} />
-          </div>
-        }>
-          <HunterProfileDrawer user={user} rank={rank} level={level} xp={xp}
-            onClose={() => setAvatarOpen(false)} onLogout={logout} />
-        </Suspense>
+        <HunterProfileDrawer user={user} rank={rank} level={level} xp={xp}
+          onClose={() => setAvatarOpen(false)} onLogout={logout} />
       )}
 
       {/* ══ MOBILE: avatar action sheet ══ */}
@@ -1054,7 +1423,7 @@ export default function DashboardPage() {
       {/* ══ MOBILE: Stats popup ══ */}
       {mobilePopup === 'stats' && (
         <MobileStatsPopup user={user} rank={rank} level={level} xp={xp} stats={stats}
-          onClose={() => setMobilePopup(null)} />
+          streak={summary?.streak ?? 0} shields={summary?.shields ?? 0} onClose={() => setMobilePopup(null)} />
       )}
 
       {/* ══ MOBILE: Daily Quests popup ══ */}
@@ -1088,7 +1457,7 @@ export default function DashboardPage() {
         {/* Desktop nav links */}
         <div className="sl-dash-nav-links">
           {NAV_ITEMS.map(item => (
-            <button key={item.label} className={`sl-nav-link${activeView === item.view ? ' active' : ''}`}
+            <button key={item.label} data-tour-nav={item.view} className={`sl-nav-link${activeView === item.view ? ' active' : ''}`}
               onClick={() => item.href ? navigate(item.href) : switchView(item.view)}>
               <span className="sl-nav-link__label">{item.label}</span>
               {item.sub && <span className="sl-nav-link__sub">{item.sub}</span>}
@@ -1150,7 +1519,9 @@ export default function DashboardPage() {
               ? <>Scout mode active — <strong>{filteredSubjects.length} gates</strong> <span className="sl-alert-plain">(subjects)</span> detected.</>
               : activeView === 'paths'
               ? <>Hunter path registry — <strong>{allRoadmaps.length} paths</strong> <span className="sl-alert-plain">(career roadmaps)</span> available.</>
-              : <>Welcome, Hunter <strong>{user?.fullName?.split(' ')[0]}</strong>. Choose a dungeon gate <span className="sl-alert-plain">(subject)</span> to begin.</>}
+              : hasProgress
+              ? <>{greetLabel}, <strong>{firstName}</strong>.{streakCount > 0 && <> <StreakFlame count={streakCount} size={14} /></>} <span className="sl-alert-plain">— {milestoneText}</span></>
+              : <>Welcome, Hunter <strong>{firstName}</strong>. Choose a dungeon gate <span className="sl-alert-plain">(subject)</span> to begin.</>}
           </span>
         </div>
 
@@ -1188,7 +1559,12 @@ export default function DashboardPage() {
               <div className="sl-panel-title">Status Window</div>
               <div className="sl-hunter-level-num">{level}</div>
               <div className="sl-hunter-level-label">HUNTER LEVEL</div>
-              <div className="sl-power-xp">POWER: {xp.toLocaleString()} XP</div>
+              <div className="sl-power-xp">POWER: <CountUp value={xp} format={(n) => n.toLocaleString()} /> XP</div>
+              {(summary?.streak ?? 0) > 0 && (
+                <div className="sl-power-streak">
+                  <StreakFlame count={summary.streak} size={15} shields={summary?.shields ?? 0} /> day streak
+                </div>
+              )}
 
               {stats.map(stat => {
                 const isUntouched = stat.totalAll === 0
@@ -1313,7 +1689,12 @@ export default function DashboardPage() {
                   </button>
                 </div>
                 {recentHistory.length === 0 ? (
-                  <div className="dash-activity-empty">No attempts yet. Take a skill trial to begin.</div>
+                  <div className="dash-activity-empty">
+                    <span>No trials yet — clear your first skill to start your streak.</span>
+                    <button type="button" className="dash-activity-more dash-activity-empty__cta" onClick={() => switchView('gates')}>
+                      Find a gate →
+                    </button>
+                  </div>
                 ) : (
                   recentHistory.map(a => (
                     <div key={a.id} className="dash-activity-item">

@@ -12,7 +12,7 @@ import { getAptitudeGroups, getAptitudeTopics, aptitudeCache } from '../../api/a
 import { APTITUDE_CATEGORY_MAP, DIFFICULTY_META, PRIORITY_META, sortTopics } from './aptitudeData'
 import '../../styles/pages/shared/aptitude.css'
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../../utils/motion'
 
 // Difficulty as a level (drives the signal-bar meter on each card).
 const DIFF_LEVEL = { easy: 1, medium: 2, hard: 3 }

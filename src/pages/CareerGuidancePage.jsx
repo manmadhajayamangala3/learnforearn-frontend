@@ -320,7 +320,7 @@ const ADVICE_ITEMS = [
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-const EASE = [0.16, 1, 0.3, 1]
+import { EASE } from '../utils/motion'
 
 // ─── Hero visual: conflicting advice in every direction → one clear fit ─────
 const CG_HERO_EASE = [0.16, 1, 0.3, 1]

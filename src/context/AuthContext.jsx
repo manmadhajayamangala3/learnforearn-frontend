@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
-import { getMe, clearUserCache, getDashboardBootstrap } from '../api/api'
+import { getMe, clearUserCache, getDashboardBootstrap, markTourSeen as apiMarkTourSeen } from '../api/api'
 import { logApiError } from '../utils/devLog'
 import { clearBrowserSessionPreservingPrefs } from '../utils/browserSession'
 import api from '../api/api'
@@ -70,6 +70,20 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  // First-run guided tours (C21): called the moment a tour starts. Flips the matching
+  // flag in local auth state immediately (so the tour never re-triggers, even for a split
+  // second), then persists it server-side in the background — fire-and-forget, so a slow
+  // or failed network never blocks or delays the tour. On failure the optimistic flag still
+  // holds for this session; the server self-corrects on the next /me if the write succeeds.
+  const markTourSeen = useCallback((which) => {
+    const field = which === 'landing' ? 'tourLandingDone'
+                : which === 'arena'   ? 'tourArenaDone'
+                : null
+    if (!field) return
+    setUser(u => (u && !u[field] ? { ...u, [field]: true } : u))
+    apiMarkTourSeen(which).catch(err => logApiError('auth-tour-seen', err))
+  }, [])
+
   const logout = useCallback(async () => {
     setLogoutOverlay(true)
     setLogoutDone(false)
@@ -84,8 +98,8 @@ export function AuthProvider({ children }) {
 
   const value = useMemo(() => ({
     user, login, logout, isAuthenticated: !!user, loading,
-    showAuthOverlay, completeAuthOverlay, hideAuthOverlay,
-  }), [user, loading, login, logout, showAuthOverlay, completeAuthOverlay, hideAuthOverlay])
+    showAuthOverlay, completeAuthOverlay, hideAuthOverlay, markTourSeen,
+  }), [user, loading, login, logout, showAuthOverlay, completeAuthOverlay, hideAuthOverlay, markTourSeen])
 
   return (
     <AuthContext.Provider value={value}>
